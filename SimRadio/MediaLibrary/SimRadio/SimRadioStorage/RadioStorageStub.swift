@@ -30,4 +30,28 @@ class RadioStorageStub: SimRadioStorage {
     var allStoredStationStates: [SimStation.ID: StationStorageState] {
         [:]
     }
+
+    var addedNewModelSeriesIDs: [NewModelSimGameSeries.ID] {
+        []
+    }
+
+    var allStoredNewModelStationStates: [NewModelSimStation.ID: StationStorageState] {
+        [:]
+    }
+
+    func addSeries(id _: NewModelSimGameSeries.ID) {}
+
+    func removeSeries(id _: NewModelSimGameSeries.ID) {}
+
+    func containsSeries(id _: NewModelSimGameSeries.ID) -> Bool {
+        false
+    }
+
+    func setStorageState(_: StationStorageState, for _: NewModelSimStation.ID) {}
+
+    func getStorageState(for _: NewModelSimStation.ID) -> StationStorageState? {
+        nil
+    }
+
+    func removeStorageState(for _: NewModelSimStation.ID) {}
 }

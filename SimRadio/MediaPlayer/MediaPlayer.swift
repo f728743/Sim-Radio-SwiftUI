@@ -140,6 +140,8 @@ private extension MediaPlayer {
         switch mediaID {
         case let .simRadio(stationID):
             simRadio?.playStation(withID: stationID)
+        case let .newModelSimRadio(stationID):
+            print("paly", stationID.value)
         }
         state = .playing(mediaID)
         let profile = CommandProfile(isLiveStream: true, isSwitchTrackEnabled: items.count > 1)
@@ -152,6 +154,8 @@ private extension MediaPlayer {
             switch mediaID {
             case .simRadio:
                 simRadio?.stop()
+            case let .newModelSimRadio(stationID):
+                print("stop", stationID.value)
             }
         }
     }
@@ -247,6 +251,9 @@ extension SimRadioMediaState {
         switch id {
         case let .simRadio(id):
             await simRadio.stations[id]?.meta.nowPlayingMeta
+        case let .newModelSimRadio(id):
+            nil
+//            return await newModelSimRadio.stations[id]?.meta.nowPlayingMeta
         }
     }
 }

@@ -9,6 +9,9 @@
 protocol SimRadioMediaState: AnyObject, Sendable {
     var simRadio: SimRadioMedia { get }
     var simDownloadStatus: [SimStation.ID: MediaDownloadStatus] { get }
+
+    var newModelSimRadio: NewModelSimRadioMedia { get }
+    var newModelSimDownloadStatus: [NewModelSimStation.ID: MediaDownloadStatus] { get }
 }
 
 struct SimRadioStationData {
@@ -27,6 +30,15 @@ extension SimRadioMedia {
 }
 
 extension MediaState: SimRadioMediaState {
+    var newModelSimDownloadStatus: [NewModelSimStation.ID: MediaDownloadStatus] {
+        Dictionary(uniqueKeysWithValues: downloadStatus.compactMap {
+            if case let .newModelSimRadio(id) = $0.key {
+                return (id, $0.value)
+            }
+            return nil
+        })
+    }
+
     var simDownloadStatus: [SimStation.ID: MediaDownloadStatus] {
         Dictionary(uniqueKeysWithValues: downloadStatus.compactMap {
             if case let .simRadio(id) = $0.key {

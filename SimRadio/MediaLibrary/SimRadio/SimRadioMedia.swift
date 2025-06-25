@@ -78,7 +78,9 @@ private extension URL {
     var simRadioBaseURL: URL {
         deletingLastPathComponent()
     }
+}
 
+extension URL {
     var nonCryptoHash: UInt64 {
         absoluteString.nonCryptoHash
     }
@@ -179,7 +181,30 @@ extension SimRadioMedia {
     }
 }
 
-extension Collection<URL> {}
+extension NewModelSimRadioMedia {
+    func sharedTrackLists(
+        of _: NewModelSimStation.ID,
+        among _: [NewModelSimStation.ID]? = nil
+    ) -> [NewModelTrackList.ID] {
+        // TODO:
+        []
+//        guard let targetStation = stations[stationID], !targetStation.fileGroupIDs.isEmpty else {
+//            return []
+//        }
+//
+//        let frequencyPairs = stations
+//            .filter { stationIDs?.contains($0.key) ?? true }
+//            .values
+//            .flatMap(\.fileGroupIDs).map { ($0, 1) }
+//        let allFileGroupCounts = Dictionary(frequencyPairs, uniquingKeysWith: +)
+//        let sharedGroupsForTarget = targetStation.fileGroupIDs.filter { fileGroupID in
+//            (allFileGroupCounts[fileGroupID] ?? 0) > 0
+//        }
+//        return Array(sharedGroupsForTarget)
+    }
+}
+
+extension Collection<URL> {} // TODO: ?
 
 extension SimGameSeries {
     init(dto: SimRadioDTO.GameSeries, origin: URL) {

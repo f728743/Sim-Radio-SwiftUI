@@ -120,7 +120,10 @@ extension SimRadioMediaState {
     func metaOfMedia(withID id: MediaID) -> SimStationMeta? {
         switch id {
         case let .simRadio(id):
-            simRadio.stations[id]?.meta
+            return simRadio.stations[id]?.meta
+        case let .newModelSimRadio(id):
+            guard let station = newModelSimRadio.stations[id] else { return nil }
+            return .init(title: station.id.value, artwork: nil, genre: "unknown", host: nil)
         }
     }
 }

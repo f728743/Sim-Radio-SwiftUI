@@ -23,4 +23,14 @@ protocol SimRadioStorage {
     func getStorageState(for stationID: SimStation.ID) -> StationStorageState?
     func removeStorageState(for stationID: SimStation.ID)
     var allStoredStationStates: [SimStation.ID: StationStorageState] { get }
+
+    var addedNewModelSeriesIDs: [NewModelSimGameSeries.ID] { get }
+    func addSeries(id: NewModelSimGameSeries.ID)
+    func removeSeries(id: NewModelSimGameSeries.ID)
+    func containsSeries(id: NewModelSimGameSeries.ID) -> Bool
+
+    func setStorageState(_ state: StationStorageState, for stationID: NewModelSimStation.ID)
+    func getStorageState(for stationID: NewModelSimStation.ID) -> StationStorageState?
+    func removeStorageState(for stationID: NewModelSimStation.ID)
+    var allStoredNewModelStationStates: [NewModelSimStation.ID: StationStorageState] { get }
 }

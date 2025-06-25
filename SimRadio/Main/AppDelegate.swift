@@ -22,14 +22,18 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 private extension AppDelegate {
     func setupDependencies() {
         let simRadioDownload = DefaultSimRadioDownload()
+        let newModelSimRadioDownload = DefaultNewModelSimRadioDownload()
+
         let simRadioLibrary = DefaultSimRadioLibrary(
             storage: UserDefaultsRadioStorage(),
-            simRadioDownload: simRadioDownload
+            simRadioDownload: simRadioDownload,
+            newModelSimRadioDownload: newModelSimRadioDownload
         )
 
         let mediaState = MediaState(simRadioLibrary: simRadioLibrary)
 
         simRadioDownload.mediaState = mediaState
+        newModelSimRadioDownload.mediaState = mediaState
         simRadioLibrary.delegate = mediaState
         simRadioLibrary.mediaState = mediaState
 

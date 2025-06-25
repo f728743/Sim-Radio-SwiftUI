@@ -8,6 +8,12 @@
 import Foundation
 
 class SimRadioLibraryStub: SimRadioLibrary {
+    func downloadStation(_: NewModelSimStation.ID) async {}
+
+    func removeDownload(_: NewModelSimStation.ID) async {}
+
+    func pauseDownload(_: NewModelSimStation.ID) async {}
+
     func testPopulate() async {}
 
     func load() async {}

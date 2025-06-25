@@ -12,6 +12,8 @@ class UserDefaultsRadioStorage: SimRadioStorage {
     private enum Key: String {
         case addedSeriesIDs = "UserData.addedSeriesIDs" // Use a prefix for uniqueness
         case stationStorageStates = "UserData.stationStorageStates"
+        case addedNewModelSeriesIDs = "UserData.addedNewModelSeriesIDs" // Use a prefix for uniqueness
+        case newModelStationStorageStates = "UserData.newModelStationStorageStates"
     }
 
     private let userDefaults: UserDefaults
@@ -89,5 +91,91 @@ class UserDefaultsRadioStorage: SimRadioStorage {
 
     private func saveStoredStatesDictionary(_ dictionary: [String: String]) {
         userDefaults.set(dictionary, forKey: Key.stationStorageStates.rawValue)
+    }
+
+    // ----
+
+    func addSeries(id: NewModelSimGameSeries.ID) {
+        var currentIDs = addedNewModelSeriesIDs
+        if !currentIDs.contains(id) {
+            currentIDs.append(id)
+            saveNewModelSeriesIDs(currentIDs)
+        }
+    }
+
+    func removeSeries(id: NewModelSimGameSeries.ID) {
+        var currentIDs = addedNewModelSeriesIDs
+        currentIDs.removeAll { $0 == id }
+        saveNewModelSeriesIDs(currentIDs)
+    }
+
+    func containsSeries(id: NewModelSimGameSeries.ID) -> Bool {
+        addedNewModelSeriesIDs.contains(id)
+    }
+
+    func setStorageState(_ state: StationStorageState, for stationID: NewModelSimStation.ID) {
+        var currentStates = loadStoredNewModelStatesDictionary()
+        currentStates[stationID.userDefaultsKey] = state.rawValue
+        saveStoredNewModelStatesDictionary(currentStates)
+    }
+
+    func getStorageState(for stationID: NewModelSimStation.ID) -> StationStorageState? {
+        let currentStates = loadStoredNewModelStatesDictionary()
+        guard let rawValue = currentStates[stationID.value] else {
+            return nil
+        }
+        return StationStorageState(rawValue: rawValue)
+    }
+
+    func removeStorageState(for stationID: NewModelSimStation.ID) {
+        var currentStates = loadStoredNewModelStatesDictionary()
+        currentStates.removeValue(forKey: stationID.userDefaultsKey)
+        saveStoredNewModelStatesDictionary(currentStates)
+    }
+
+    var addedNewModelSeriesIDs: [NewModelSimGameSeries.ID] {
+        (userDefaults.stringArray(forKey: Key.addedNewModelSeriesIDs.rawValue) ?? [])
+            .compactMap { value in
+                URL(string: value).map { NewModelSimGameSeries.ID(origin: $0) }
+            }
+    }
+
+    private func saveNewModelSeriesIDs(_ ids: [NewModelSimGameSeries.ID]) {
+        let stringIDs = ids.map(\.origin.absoluteString)
+        userDefaults.set(stringIDs, forKey: Key.addedNewModelSeriesIDs.rawValue)
+    }
+
+    var allStoredNewModelStationStates: [NewModelSimStation.ID: StationStorageState] {
+        let rawStates = loadStoredNewModelStatesDictionary()
+        var result: [NewModelSimStation.ID: StationStorageState] = [:]
+        for (key, rawValue) in rawStates {
+            if let state = StationStorageState(rawValue: rawValue) {
+                result[NewModelSimStation.ID(userDefaultsKey: key)] = state
+            }
+        }
+        return result
+    }
+
+    private func loadStoredNewModelStatesDictionary() -> [String: String] {
+        userDefaults.dictionary(forKey: Key.newModelStationStorageStates.rawValue) as? [String: String] ?? [:]
+    }
+
+    private func saveStoredNewModelStatesDictionary(_ dictionary: [String: String]) {
+        userDefaults.set(dictionary, forKey: Key.newModelStationStorageStates.rawValue)
+    }
+}
+
+private extension NewModelSimStation.ID {
+    var userDefaultsKey: String {
+        [value, series.origin.absoluteString].joined(separator: ";")
+    }
+
+    init(userDefaultsKey: String) {
+        let components = userDefaultsKey.split(separator: ";")
+        guard components.count == 2, let url = URL(string: String(components[1])) else {
+            fatalError("Invalid ID format: \(userDefaultsKey)")
+        }
+        value = String(components[0])
+        series = .init(origin: url)
     }
 }

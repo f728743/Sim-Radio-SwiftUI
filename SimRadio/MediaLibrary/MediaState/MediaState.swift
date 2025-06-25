@@ -20,11 +20,24 @@ protocol SimRadioLibraryDelegate: AnyObject {
         _ library: SimRadioLibrary,
         didChange media: SimRadioMedia
     )
+
+    func simRadioLibrary(
+        _ library: SimRadioLibrary,
+        didChangeDownloadStatus status: MediaDownloadStatus?,
+        for stationID: NewModelSimStation.ID
+    )
+
+    func simRadioLibrary(
+        _ library: SimRadioLibrary,
+        didChange media: NewModelSimRadioMedia
+    )
 }
 
 @Observable @MainActor
 class MediaState {
     var simRadio: SimRadioMedia = .empty
+    var newModelSimRadio: NewModelSimRadioMedia = .empty
+
     private(set) var downloadStatus: [MediaID: MediaDownloadStatus] = [:]
     var simRadioLibrary: any SimRadioLibrary
 
@@ -33,7 +46,7 @@ class MediaState {
     }
 
     var mediaList: [MediaList] {
-        simRadio.series.values.map { series in
+        let simRadioMedia = simRadio.series.values.map { series in
             MediaList(
                 id: .simRadioSeries(series.id),
                 meta: series.meta,
@@ -52,6 +65,28 @@ class MediaState {
                 }
             )
         }
+
+        let newModelSimRadioMedia = newModelSimRadio.series.values.map { series in
+            MediaList(
+                id: .newModelSimRadioSeries(series.id),
+                meta: .init(artwork: nil, title: "new", subtitle: nil),
+                items: series.stationsIDs.compactMap {
+                    guard let station: NewModelSimStation = newModelSimRadio.stations[$0] else { return nil }
+                    return Media(
+                        id: .newModelSimRadio(station.id),
+                        meta: .init(
+                            artwork: nil,
+                            title: station.id.value,
+                            listSubtitle: "station.meta.genre",
+                            detailsSubtitle: "station.meta.detailsSubtitle",
+                            isLiveStream: true
+                        )
+                    )
+                }
+            )
+        }
+
+        return simRadioMedia + newModelSimRadioMedia
     }
 
     func load() async {
@@ -69,6 +104,8 @@ class MediaState {
         switch mediaID {
         case let .simRadio(stationID):
             await simRadioLibrary.downloadStation(stationID)
+        case let .newModelSimRadio(stationID):
+            await simRadioLibrary.downloadStation(stationID)
         }
     }
 
@@ -77,6 +114,8 @@ class MediaState {
 
         switch mediaID {
         case let .simRadio(stationID):
+            await simRadioLibrary.removeDownload(stationID)
+        case let .newModelSimRadio(stationID):
             await simRadioLibrary.removeDownload(stationID)
         }
     }
@@ -87,20 +126,37 @@ class MediaState {
         switch mediaID {
         case let .simRadio(stationID):
             await simRadioLibrary.pauseDownload(stationID)
+        case let .newModelSimRadio(stationID):
+            await simRadioLibrary.pauseDownload(stationID)
         }
     }
 }
 
 extension MediaState: SimRadioLibraryDelegate {
     func simRadioLibrary(
-        _: SimRadioLibrary,
+        _: any SimRadioLibrary,
+        didChangeDownloadStatus status: MediaDownloadStatus?,
+        for stationID: NewModelSimStation.ID
+    ) {
+        downloadStatus[.newModelSimRadio(stationID)] = status
+    }
+
+    func simRadioLibrary(
+        _: any SimRadioLibrary,
+        didChange media: NewModelSimRadioMedia
+    ) {
+        newModelSimRadio = media
+    }
+
+    func simRadioLibrary(
+        _: any SimRadioLibrary,
         didChange media: SimRadioMedia
     ) {
         simRadio = media
     }
 
     func simRadioLibrary(
-        _: SimRadioLibrary,
+        _: any SimRadioLibrary,
         didChangeDownloadStatus status: MediaDownloadStatus?,
         for stationID: SimStation.ID
     ) {

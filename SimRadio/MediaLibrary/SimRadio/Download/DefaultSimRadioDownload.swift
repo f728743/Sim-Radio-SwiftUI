@@ -5,7 +5,7 @@
 //  Created by Alexey Vorobyov on 25.06.2025.
 //
 
-// swiftlint:disable file_length function_body_length
+// swiftlint:disable file_length function_body_length cyclomatic_complexity
 
 import Foundation
 
@@ -39,8 +39,7 @@ actor DefaultSimRadioDownload {
     }
 
     struct FileDownloadInfo: Equatable {
-        let url: URL
-        let destinationDirectoryPath: String
+        let request: DownloadQueue.DownloadRequest
         var status: SimRadioDownloadStatus
     }
 
@@ -114,60 +113,55 @@ private extension DefaultSimRadioDownload {
     func download(station: SimStation, missing: [TrackList.ID: [URL]]?) async {
         guard let mediaState = await mediaState else { return }
         let allTrackLists = await mediaState.simRadio.trackLists
-        let trackListsToSkip = await alreadyDownloaded(of: station.trackLists)
         let usedTrackLists = allTrackLists.findAllUsedTrackLists(usedIDs: station.trackLists)
+        let trackListsToSkip = await alreadyDownloaded(of: usedTrackLists.map(\.id))
+        let trackListsToDownload = usedTrackLists.filter { !trackListsToSkip.contains($0.id) }
         let isPartialDownload = missing != nil
-
         stationDownloads[station.id] = StationDownloadInfo(
             status: .initial,
             trackListIDs: usedTrackLists.map(\.id)
         )
         var stationDownloadedFiles: [TrackList.ID: [FileDownloadInfo]] = [:]
-        for trackList in usedTrackLists {
-            guard !trackListsToSkip.contains(trackList.id) else { continue }
+        for trackList in trackListsToDownload {
             let tracks = trackList.tracks.filter { $0.path != nil }
             let missingFiles = Set(missing?[trackList.id] ?? [])
             let files = tracks.map {
-                guard let url = $0.url, let localPath = $0.localFilePath else { fatalError() }
+                guard let url = $0.url, let destinationDirectoryPath = $0.destinationDirectoryPath else { fatalError() }
                 return FileDownloadInfo(
-                    url: url,
-                    destinationDirectoryPath: localPath.split(separator: "/").dropLast().joined(separator: "/"),
+                    request: .init(sourceURL: url, destinationDirectoryPath: destinationDirectoryPath),
                     status: isPartialDownload
                         ? missingFiles.contains(url) ? .initial : .init(state: .completed)
                         : .initial
                 )
             }
-            let groupInfo = TrackListDownloadInfo(
+            let trackListDownload = TrackListDownloadInfo(
                 id: trackList.id,
                 status: isPartialDownload ? .init(
                     state: missing?.keys.contains(trackList.id) == true ? .downloading : .completed
                 ) : .initial,
                 files: files
             )
-            trackListDownloads[trackList.id] = groupInfo
+            trackListDownloads[trackList.id] = trackListDownload
             stationDownloadedFiles[trackList.id] = files
         }
 
         for (trackListID, files) in stationDownloadedFiles {
-            log(info: "Queuing group \(trackListID) with \(files.count) files for station \(station.id.value)")
+            log(info: "Queuing trackList \(trackListID) with \(files.count) files for station \(station.id.value)")
             Task {
-                await updateFileSizes(for: files.map(\.url), trackListID: trackListID)
+                await updateFileSizes(for: files.map(\.request.sourceURL), trackListID: trackListID)
             }
         }
 
-        let downloadRequest: [DownloadQueue.DownloadRequest] = stationDownloadedFiles.flatMap { trackListID, files in
+        let downloadRequest = stationDownloadedFiles.flatMap { trackListID, fileDownloads in
             let missingFilesInGroup = Set(missing?[trackListID] ?? [])
-            let groupRequests: [DownloadQueue.DownloadRequest] = files.compactMap {
-                let request = DownloadQueue.DownloadRequest(
-                    sourceURL: $0.url,
-                    destinationDirectoryPath: $0.destinationDirectoryPath
-                )
+            let requests: [DownloadQueue.DownloadRequest] = fileDownloads.compactMap { fileDownload in
+                let request = fileDownload.request
                 return isPartialDownload
-                    ? missingFilesInGroup.contains($0.url) ? request : nil
+                ? missingFilesInGroup.contains(fileDownload.request.localFileURL) ? request : nil
                     : request
             }
-            groupRequests.forEach { trackListIDByURL[$0.sourceURL] = trackListID }
-            return groupRequests
+            requests.forEach { trackListIDByURL[$0.sourceURL] = trackListID }
+            return requests
         }
         eventContinuation?.yield(.init(id: station.id, status: .initial))
         await downloadQueue.append(downloadRequest)
@@ -175,15 +169,18 @@ private extension DefaultSimRadioDownload {
 
     func alreadyDownloaded(of groupIDs: [TrackList.ID]) async -> [TrackList.ID] {
         let allStations = await mediaState?.simRadio.stations ?? [:]
+        let allTrackLists = await mediaState?.simRadio.trackLists ?? [:]
         let downloadStatus = await mediaState?.simDownloadStatus ?? [:]
-
-        let downloadedGroups = Set(
+        let downloadedTrackLists = Set(
             downloadStatus
                 .filter { $0.value.state == .completed }
-                .compactMap { allStations[$0.key]?.trackLists }
+                .map {
+                    let stationTrackLists = allStations[$0.key]?.trackLists ?? []
+                    return allTrackLists.findAllUsedTrackLists(usedIDs: stationTrackLists).map(\.id)
+                }
                 .flatMap(\.self)
         )
-        return groupIDs.filter { trackListDownloads.keys.contains($0) || downloadedGroups.contains($0) }
+        return groupIDs.filter { trackListDownloads.keys.contains($0) || downloadedTrackLists.contains($0) }
     }
 
     func requestsOnlyForStation(withID id: SimStation.ID) -> [DownloadQueue.DownloadRequest]? {
@@ -193,37 +190,35 @@ private extension DefaultSimRadioDownload {
         }
 
         let otherGroupIDs = Set(stationDownloads.values.flatMap(\.trackListIDs))
-        let stationOnlyGroupIDs = stationInfo.trackListIDs.filter { !otherGroupIDs.contains($0) }
+        let stationOnlyTrackListIDs = stationInfo.trackListIDs.filter { !otherGroupIDs.contains($0) }
 
-        return stationOnlyGroupIDs.flatMap { groupID in
-            downloadRequestInProgressForGroup(withID: groupID)
+        return stationOnlyTrackListIDs.flatMap { trackListID in
+            downloadRequestInProgressForTrackList(withID: trackListID)
         }
     }
 
-    func downloadRequestInProgressForGroup(withID groupID: TrackList.ID) -> [DownloadQueue.DownloadRequest] {
-        (trackListDownloads[groupID]?.files ?? []).compactMap {
+    func downloadRequestInProgressForTrackList(withID trackListID: TrackList.ID) -> [DownloadQueue.DownloadRequest] {
+        (trackListDownloads[trackListID]?.files ?? []).compactMap {
             guard $0.status.state.isInProgress else { return nil }
-            return .init(sourceURL: $0.url, destinationDirectoryPath: groupID.value)
+            return $0.request
         }
     }
 
     func handleDownloaderEvent(_ event: DownloadQueue.Event) async {
-        guard let trackListID = trackListIDByURL[event.downloadRequest.sourceURL],
-              let trackListDownload = trackListDownloads[trackListID]
-        else {
+        guard let trackListID = trackListIDByURL[event.downloadRequest.sourceURL] else {
             log(warning: "Missing trackListID for event: \(event)")
-            return
-        }
-
-        guard let fileIndex = trackListDownload.files
-            .firstIndex(where: { $0.url == event.downloadRequest.sourceURL })
-        else {
-            log(warning: "fileIndex for event: \(event)")
             return
         }
 
         guard var trackListDownload = trackListDownloads[trackListID] else {
             log(warning: "Group \(trackListID) not found for event: \(event)")
+            return
+        }
+
+        guard let fileIndex = trackListDownload.files
+            .firstIndex(where: { $0.request == event.downloadRequest })
+        else {
+            log(warning: "fileIndex for event: \(event)")
             return
         }
 
@@ -240,6 +235,10 @@ private extension DefaultSimRadioDownload {
             log(warning: "Could not find station for trackListID \(trackListID)")
         }
 
+        if event.state.isFinished || event.state.isFailed {
+            trackListIDByURL[event.downloadRequest.sourceURL] = nil
+        }
+
         for stationID in trackListStations {
             guard let stationInfo = stationDownloads[stationID] else {
                 log(error: "Station \(stationID) not found during status calculation.")
@@ -250,7 +249,7 @@ private extension DefaultSimRadioDownload {
                 log(warning: "nil ftatus for station with id \(stationID)")
                 continue
             }
-            if newStationStatus.state.isDone {
+            if newStationStatus.state.isFinished {
                 cleanupDownloadTracking(for: stationID)
                 stationDownloads[stationID] = nil
             } else {
@@ -276,9 +275,13 @@ private extension DefaultSimRadioDownload {
     }
 
     func findStationIDs(for trackListID: TrackList.ID) -> [SimStation.ID] {
-        stationDownloads.compactMap { id, download in
+        let result = stationDownloads.compactMap { id, download in
             download.trackListIDs.contains(trackListID) ? id : nil
         }
+        if result.isEmpty {
+            print("")
+        }
+        return result
     }
 
     func calculateStationStatus(stationInfo: StationDownloadInfo) async -> SimRadioDownloadStatus? {
@@ -329,7 +332,7 @@ private extension DefaultSimRadioDownload {
     /// Updates the total size for a specific file within a group.
     func update(fileURL: URL, trackListID: TrackList.ID, size: Int64) async {
         guard var trackList = trackListDownloads[trackListID],
-              let fileIndex = trackList.files.firstIndex(where: { $0.url == fileURL })
+              let fileIndex = trackList.files.firstIndex(where: { $0.request.sourceURL == fileURL })
         else {
             log(error: "File \(fileURL.lastPathComponent) " +
                 "or trackList \(trackListID) not found for size update.")
@@ -338,8 +341,7 @@ private extension DefaultSimRadioDownload {
 
         let downloadInfo = trackList.files[fileIndex]
         trackList.files[fileIndex] = .init(
-            url: downloadInfo.url,
-            destinationDirectoryPath: downloadInfo.destinationDirectoryPath,
+            request: downloadInfo.request,
             status: .init(
                 state: downloadInfo.status.state,
                 downloadedBytes: downloadInfo.status.state == .completed ? size : downloadInfo.downloadedBytes,
@@ -371,7 +373,7 @@ private extension DefaultSimRadioDownload {
                     // Optional: Print individual file status within group for detailed debug
                     if logSettings.logVerboseInfo, let group = trackListDownloads[groupID] {
                         for file in group.files {
-                            let fileName = file.url.lastPathComponent
+                            let fileName = file.request.sourceURL.lastPathComponent
                             log(verboseInfo: "      File \(fileName): \(file.status.state) " +
                                 "- \(file.status.progressString)")
                         }
@@ -412,12 +414,15 @@ extension DefaultSimRadioDownload.FileDownloadInfo {
             )
         case .failed:
             .init(
-                state: .failed([url]),
+                state: .failed([request.sourceURL]),
                 downloadedBytes: status.downloadedBytes,
                 totalBytes: status.totalBytes
             )
         }
-        return .init(url: url, destinationDirectoryPath: destinationDirectoryPath, status: newStatus)
+        return .init(
+            request: request,
+            status: newStatus
+        )
     }
 }
 
@@ -458,7 +463,7 @@ extension Collection where Element: SimRadioDownloadStatusProtocol {
                 return .canceled
             }
 
-            if incomplete.contains(where: \.state.isDone) {
+            if incomplete.contains(where: \.state.isFailed) {
                 return .failed(flatMap(\.state.failedURLs))
             }
             return isEmpty ? nil : .scheduled
@@ -546,4 +551,4 @@ extension Collection<DownloadLog> {
     }
 }
 
-// swiftlint:enable file_length function_body_length
+// swiftlint:enable file_length function_body_length cyclomatic_complexity

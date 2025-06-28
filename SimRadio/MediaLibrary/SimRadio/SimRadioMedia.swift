@@ -31,6 +31,13 @@ struct SimGameSeries {
     let stationsIDs: [SimStation.ID]
 }
 
+struct SimStationMeta: Codable {
+    let title: String
+    let artwork: URL?
+    let genre: String
+    let host: String?
+}
+
 struct SimStation {
     struct ID: Hashable {
         let series: SimGameSeries.ID
@@ -38,7 +45,7 @@ struct SimStation {
     }
 
     let id: ID
-//    let meta: MediaList.Meta
+    let meta: SimStationMeta
     let trackLists: [TrackList.ID]
 }
 
@@ -66,6 +73,12 @@ struct Track: Hashable {
     let trackList: TrackList.ID?
 }
 
+extension SimStationMeta {
+    var detailsSubtitle: String {
+        host.map { "Hosted by \($0) – \(genre)" } ?? genre
+    }
+}
+
 extension Track {
     enum Const {
         static let mediaExtension = ".m4a"
@@ -86,10 +99,14 @@ extension Track {
     var localFilePath: String? {
         filePath.map { ["\(id.series.origin.nonCryptoHash)", $0].joined(separator: "/") }
     }
+    var destinationDirectoryPath: String? {
+        localFilePath?.deletingLastPathComponent()
+    }
 
     var localFileURL: URL? {
-        // TODO:
-        nil
+        localFilePath.map {
+            URL.documentsDirectory.appending(path: $0, directoryHint: .notDirectory)
+        }
     }
 }
 
@@ -120,9 +137,10 @@ extension SimRadioMedia {
                 }
             )
         }
-        let stations: [SimStation] = dto.stations.map {
+        let stations: [SimStation] = dto.stations.filter { $0.isHidden != true }.map {
             .init(
                 id: .init(series: .init(origin: origin), value: $0.id.value),
+                meta: .init(origin: origin, data: $0.meta),
                 trackLists: $0.trackLists.map {
                     .init(series: .init(origin: origin), value: $0.value)
                 }
@@ -137,7 +155,7 @@ extension SimRadioMedia {
     }
 
     func stationTrackLists(_ id: SimStation.ID) -> [TrackList] {
-        stations[id]?.trackLists.compactMap { self.trackLists[$0] } ?? []
+        trackLists.findAllUsedTrackLists(usedIDs: stations[id]?.trackLists ?? [])
     }
 
     func calculateStationLocalStatus(_ id: SimStation.ID) async throws -> StationLocalStatus {
@@ -169,26 +187,26 @@ extension SimRadioMedia {
         guard let station = stations[stationID] else { return [] }
         return trackLists.findAllUsedTrackLists(usedIDs: station.trackLists)
     }
-    
+
     func commonTrackLists(
         of stationID: SimStation.ID,
         among stationIDs: [SimStation.ID]
     ) -> [TrackList.ID] {
-        // Получаем все трек-листы для целевой станции
-        let targetTrackLists = findAllUsedTrackLists(stationID: stationID).map { $0.id }
-        
-        // Если нет трек-листов или станций для сравнения, возвращаем пустой массив
+        // Get all track lists for the target station (including nested ones)
+        let targetTrackLists = findAllUsedTrackLists(stationID: stationID).map(\.id)
+
+        // Return empty array if no track lists or comparison stations provided
         guard !targetTrackLists.isEmpty, !stationIDs.isEmpty else { return [] }
-        
-        // Собираем все трек-листы для каждой из станций в among
+
+        // Collect all track lists from stations in 'among' parameter
         let otherStationsTrackLists = stationIDs.reduce(into: Set<TrackList.ID>()) { result, id in
-            let lists = findAllUsedTrackLists(stationID: id).map { $0.id }
+            let lists = findAllUsedTrackLists(stationID: id).map(\.id)
             result.formUnion(lists)
         }
-        
-        // Находим пересечение трек-листов целевой станции и других станций
+
+        // Find intersection between target station's track lists and other stations'
         let intersection = targetTrackLists.filter { otherStationsTrackLists.contains($0) }
-        
+
         return intersection
     }
 }
@@ -210,7 +228,7 @@ extension SimGameSeries.ID {
     }
 
     var jsonFileURL: URL {
-        directoryURL.appending(path: LegacySimGameSeries.defaultFileName)
+        directoryURL.appending(path: SimGameSeries.defaultFileName)
     }
 
     var path: String {

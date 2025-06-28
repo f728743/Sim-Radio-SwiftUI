@@ -33,17 +33,10 @@ struct LegacySimFile: Sendable {
     let attaches: [LegacySimFile]
 }
 
-struct LegacySimStationMeta: Codable {
-    let title: String
-    let artwork: URL?
-    let genre: String
-    let host: String?
-}
-
 struct LegacySimStation {
     struct ID: Hashable { let value: String }
     var id: ID
-    let meta: LegacySimStationMeta
+    let meta: SimStationMeta
     let fileGroupIDs: [LegacySimFileGroup.ID]
     let playlistRules: LegacySimRadioDTO.Playlist
 }
@@ -56,14 +49,8 @@ extension LegacySimRadioMedia {
     )
 }
 
-extension LegacySimStationMeta {
-    var detailsSubtitle: String {
-        host.map { "Hosted by \($0) – \(genre)" } ?? genre
-    }
-}
-
 extension Media.Meta {
-    init(_ meta: LegacySimStationMeta) {
+    init(_ meta: SimStationMeta) {
         self.init(
             artwork: meta.artwork,
             title: meta.title,
@@ -125,7 +112,7 @@ extension LegacySimRadioDTO.GameSeries {
 }
 
 extension LegacySimRadioMedia {
-    init(dto: LegacySimRadioDTO.GameSeries, origin: URL) {
+    init(origin: URL, dto: LegacySimRadioDTO.GameSeries) {
         let series = LegacySimGameSeries(dto: dto, origin: origin)
         let stations = dto.stations.map {
             LegacySimStation(dto: $0, common: dto.common, origin: origin)

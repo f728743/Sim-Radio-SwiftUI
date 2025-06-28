@@ -55,3 +55,16 @@ extension DownloadProgressProtocol {
     var percentString: String { String(format: "%.1f%%", percent) }
     var progressString: String { "\(percentString) (\(downloadedBytes) / \(totalBytes))" }
 }
+
+extension MediaDownloadStatus.DownloadState {
+    init?(_ state: SimRadioDownloadState) {
+        switch state {
+        case .completed: self = .completed
+        case .scheduled: self = .scheduled
+        case .downloading: self = .downloading
+        case .failed: self = .paused
+        case .canceled:
+            return nil
+        }
+    }
+}

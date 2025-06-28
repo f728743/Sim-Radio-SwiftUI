@@ -241,7 +241,7 @@ private extension DefaultLegacySimRadioDownload {
                 log(warning: "nil ftatus for station with id \(stationID)")
                 continue
             }
-            if newStationStatus.state.isDone {
+            if newStationStatus.state.isFinished {
                 cleanupDownloadTracking(for: stationID)
                 stationDownloads[stationID] = nil
             } else {
@@ -466,7 +466,7 @@ extension Collection where Element: SimRadioDownloadStatusProtocol {
                 return .canceled
             }
 
-            if incomplete.contains(where: \.state.isDone) {
+            if incomplete.contains(where: \.state.isFinished) {
                 return .failed(flatMap(\.state.failedURLs))
             }
             return isEmpty ? nil : .scheduled

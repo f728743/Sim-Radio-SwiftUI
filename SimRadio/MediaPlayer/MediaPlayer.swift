@@ -252,8 +252,7 @@ extension SimRadioMediaState {
         case let .legacySimRadio(id):
             await legacySimRadio.stations[id]?.meta.nowPlayingMeta
         case let .simRadio(id):
-            nil
-//            return await simRadio.stations[id]?.meta.nowPlayingMeta
+            await simRadio.stations[id]?.meta.nowPlayingMeta
         }
     }
 }
@@ -267,7 +266,7 @@ extension SimRadioMediaState {
     }
 }
 
-extension LegacySimStationMeta {
+extension SimStationMeta {
     var nowPlayingMeta: NowPlayingInfo.Meta {
         get async {
             let image: UIImage = await artwork?.image ?? UIImage()

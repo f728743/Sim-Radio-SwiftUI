@@ -50,7 +50,7 @@ extension SimRadioDownloadState {
         }
     }
 
-    var isDone: Bool {
+    var isFinished: Bool {
         switch self {
         case .completed, .canceled:
             true

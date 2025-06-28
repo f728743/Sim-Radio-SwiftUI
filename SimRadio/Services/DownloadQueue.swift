@@ -195,3 +195,39 @@ extension DownloadQueue.QueueElement {
         return false
     }
 }
+
+extension DownloadQueue.DownloadState {
+    var isFinished: Bool {
+        switch self {
+        case .completed, .canceled:
+            true
+        default:
+            false
+        }
+    }
+
+    var isFailed: Bool {
+        switch self {
+        case .failed:
+            true
+        default:
+            false
+        }
+    }
+}
+
+extension DownloadQueue.DownloadRequest {
+    var localDirectoryURL: URL {
+        .documentsDirectory.appending(
+            path: destinationDirectoryPath,
+            directoryHint: .isDirectory
+        )
+    }
+    
+    var localFileURL: URL {
+        localDirectoryURL.appending(
+            path: sourceURL.lastPathComponent,
+            directoryHint: .notDirectory
+        )
+    }
+}

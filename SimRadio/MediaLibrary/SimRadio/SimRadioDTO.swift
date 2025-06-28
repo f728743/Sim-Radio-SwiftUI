@@ -5,6 +5,8 @@
 //  Created by Alexey Vorobyov on 14.06.2025.
 //
 
+import Foundation
+
 enum SimRadioDTO {
     struct GameSeries: Codable {
         let origin: String?
@@ -60,9 +62,18 @@ enum SimRadioDTO {
     }
 
     struct Station: Codable {
+        let isHidden: Bool?
         let id: ID
-        let genre: String
+        let meta: StationMeta
         let trackLists: [TrackList.ID]
+    }
+
+    struct StationMeta: Codable {
+        let title: String
+        let artwork: String
+        let host: String?
+        let genre: String
+        let genreCode: String
     }
 
     enum StationFlag: String, Codable {
@@ -211,6 +222,27 @@ enum SimRadioDTO {
         case groupAnd
         case groupOr
         case timeInterval
+    }
+}
+
+extension SimRadioDTO.StationMeta {
+    enum Const {
+        static let mediaExtension = ".png"
+    }
+}
+
+extension SimStationMeta {
+    init(origin: URL, data: SimRadioDTO.StationMeta) {
+        let artwork = origin
+            .deletingLastPathComponent()
+            .appendingPathComponent(data.artwork + SimRadioDTO.StationMeta.Const.mediaExtension)
+
+        self.init(
+            title: data.title,
+            artwork: artwork,
+            genre: data.genre,
+            host: data.host
+        )
     }
 }
 

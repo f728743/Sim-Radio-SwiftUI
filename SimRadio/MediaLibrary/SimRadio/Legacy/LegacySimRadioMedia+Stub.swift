@@ -1,5 +1,5 @@
 //
-//  SimRadioMedia+Stub.swift
+//  LegacySimRadioMedia+Stub.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 23.04.2025.
@@ -7,9 +7,9 @@
 
 import Foundation
 
-extension SimRadioMedia {
-    static var stub: SimRadioMedia {
-        let stations: [SimStation] = gta5stations.map {
+extension LegacySimRadioMedia {
+    static var stub: LegacySimRadioMedia {
+        let stations: [LegacySimStation] = gta5stations.map {
             .init(
                 id: .init(value: $0.title),
                 meta: .init(
@@ -28,7 +28,7 @@ extension SimRadioMedia {
 
         return .init(
             series: [
-                .init(value: "sample-gta5"): SimGameSeries(
+                .init(value: "sample-gta5"): LegacySimGameSeries(
                     id: .init(value: "sample-gta5"),
                     meta: .init(
                         artwork: stationGroupImageUrl(),
@@ -47,7 +47,7 @@ extension SimRadioMedia {
 extension MediaList {
     static var mockGta5: Self {
         MediaList(
-            id: .simRadioSeries(.init(value: "sample-gta5")),
+            id: .legacySimRadioSeries(.init(value: "sample-gta5")),
             meta: .init(
                 artwork: stationGroupImageUrl(),
                 title: "GTA V Radio",
@@ -55,7 +55,7 @@ extension MediaList {
             ),
             items: gta5stations.map {
                 Media(
-                    id: .simRadio(.init(value: $0.title)),
+                    id: .legacySimRadio(.init(value: $0.title)),
                     meta: .init(
                         artwork: stationImageUrl(String($0.logo.split(separator: ".")[0])),
                         title: $0.title,

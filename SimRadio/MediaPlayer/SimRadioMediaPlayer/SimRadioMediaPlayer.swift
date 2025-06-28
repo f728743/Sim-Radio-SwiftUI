@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 protocol SimRadioMediaPlayer {
-    func playStation(withID stationID: SimStation.ID)
+    func playStation(withID stationID: LegacySimStation.ID)
     func stop()
 }
 

@@ -27,7 +27,7 @@ class DefaultSimRadioMediaPlayer {
 }
 
 extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
-    func playStation(withID stationID: SimStation.ID) {
+    func playStation(withID stationID: LegacySimStation.ID) {
         Task {
             do {
                 try await doPlayStation(withID: stationID)
@@ -59,7 +59,7 @@ extension DefaultSimRadioMediaPlayer: AudioTapProcessorDelegate {
 private extension DefaultSimRadioMediaPlayer {
     /// Represents the next media item to be queued for playback
     struct NextPlayableItem {
-        let stationID: SimStation.ID
+        let stationID: LegacySimStation.ID
         let item: AVPlayerItem
         /// Reference date used to calculate the day boundary for playback scheduling
         /// - Important: Calendar operations should use this date's startOfDay
@@ -70,7 +70,7 @@ private extension DefaultSimRadioMediaPlayer {
         let startTimeInDay: CMTime
     }
 
-    func doPlayStation(withID stationID: SimStation.ID) async throws {
+    func doPlayStation(withID stationID: LegacySimStation.ID) async throws {
         guard let mediaState else { return }
 
         guard let stationData = mediaState.stationData(for: stationID) else { return }
@@ -134,7 +134,7 @@ private extension DefaultSimRadioMediaPlayer {
     }
 
     func makeNextPlayableItem(
-        stationID: SimStation.ID,
+        stationID: LegacySimStation.ID,
         date: Date,
         time: CMTime
     ) async throws -> NextPlayableItem? {

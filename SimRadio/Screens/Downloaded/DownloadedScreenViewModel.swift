@@ -22,10 +22,10 @@ private extension MediaState {
             .map(\.self)
             .filter { $0.value.state == .completed }
             .compactMap {
-                guard case let .simRadio(id) = $0.key,
-                      let station = simRadio.stations[id] else { return nil }
+                guard case let .legacySimRadio(id) = $0.key,
+                      let station = legacySimRadio.stations[id] else { return nil }
                 return Media(
-                    id: .simRadio(station.id),
+                    id: .legacySimRadio(station.id),
                     meta: .init(station.meta)
                 )
             }

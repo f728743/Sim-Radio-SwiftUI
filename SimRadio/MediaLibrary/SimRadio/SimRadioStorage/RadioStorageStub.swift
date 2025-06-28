@@ -7,8 +7,36 @@
 
 @MainActor
 class RadioStorageStub: SimRadioStorage {
+    var addedLegacySeriesIDs: [LegacySimGameSeries.ID] {
+        []
+    }
+
+    func addSeries(id _: LegacySimGameSeries.ID) {}
+
+    func removeSeries(id _: LegacySimGameSeries.ID) {}
+
+    func containsSeries(id _: LegacySimGameSeries.ID) -> Bool {
+        false
+    }
+
+    func setStorageState(_: StationStorageState, for _: LegacySimStation.ID) {}
+
+    func getStorageState(for _: LegacySimStation.ID) -> StationStorageState? {
+        nil
+    }
+
+    func removeStorageState(for _: LegacySimStation.ID) {}
+
+    var allStoredLegacyStationStates: [LegacySimStation.ID: StationStorageState] {
+        [:]
+    }
+
     var addedSeriesIDs: [SimGameSeries.ID] {
         []
+    }
+
+    var allStoredStationStates: [SimStation.ID: StationStorageState] {
+        [:]
     }
 
     func addSeries(id _: SimGameSeries.ID) {}
@@ -26,32 +54,4 @@ class RadioStorageStub: SimRadioStorage {
     }
 
     func removeStorageState(for _: SimStation.ID) {}
-
-    var allStoredStationStates: [SimStation.ID: StationStorageState] {
-        [:]
-    }
-
-    var addedNewModelSeriesIDs: [NewModelSimGameSeries.ID] {
-        []
-    }
-
-    var allStoredNewModelStationStates: [NewModelSimStation.ID: StationStorageState] {
-        [:]
-    }
-
-    func addSeries(id _: NewModelSimGameSeries.ID) {}
-
-    func removeSeries(id _: NewModelSimGameSeries.ID) {}
-
-    func containsSeries(id _: NewModelSimGameSeries.ID) -> Bool {
-        false
-    }
-
-    func setStorageState(_: StationStorageState, for _: NewModelSimStation.ID) {}
-
-    func getStorageState(for _: NewModelSimStation.ID) -> StationStorageState? {
-        nil
-    }
-
-    func removeStorageState(for _: NewModelSimStation.ID) {}
 }

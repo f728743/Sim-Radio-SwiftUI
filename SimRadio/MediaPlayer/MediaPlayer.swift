@@ -138,9 +138,9 @@ private extension MediaPlayer {
         }
 
         switch mediaID {
-        case let .simRadio(stationID):
+        case let .legacySimRadio(stationID):
             simRadio?.playStation(withID: stationID)
-        case let .newModelSimRadio(stationID):
+        case let .simRadio(stationID):
             print("paly", stationID.value)
         }
         state = .playing(mediaID)
@@ -152,9 +152,9 @@ private extension MediaPlayer {
     func stopCurrentPlayerActivity() {
         if state.isPlaying, let mediaID = state.currentMediaID {
             switch mediaID {
-            case .simRadio:
+            case .legacySimRadio:
                 simRadio?.stop()
-            case let .newModelSimRadio(stationID):
+            case let .simRadio(stationID):
                 print("stop", stationID.value)
             }
         }
@@ -249,25 +249,25 @@ extension MediaPlayer: SimRadioMediaPlayerDelegate {
 extension SimRadioMediaState {
     func nowPlayingMetaOfMedia(withID id: MediaID) async -> NowPlayingInfo.Meta? {
         switch id {
+        case let .legacySimRadio(id):
+            await legacySimRadio.stations[id]?.meta.nowPlayingMeta
         case let .simRadio(id):
-            await simRadio.stations[id]?.meta.nowPlayingMeta
-        case let .newModelSimRadio(id):
             nil
-//            return await newModelSimRadio.stations[id]?.meta.nowPlayingMeta
+//            return await simRadio.stations[id]?.meta.nowPlayingMeta
         }
     }
 }
 
 extension SimRadioMediaState {
     var defaultPlayItems: (media: MediaID, items: [MediaID])? {
-        let items = simRadio.stations.keys.map { MediaID.simRadio($0) }
+        let items = legacySimRadio.stations.keys.map { MediaID.legacySimRadio($0) }
         guard !items.isEmpty,
               let media = items.randomElement() else { return nil }
         return (media, items)
     }
 }
 
-extension SimStationMeta {
+extension LegacySimStationMeta {
     var nowPlayingMeta: NowPlayingInfo.Meta {
         get async {
             let image: UIImage = await artwork?.image ?? UIImage()

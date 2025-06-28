@@ -15,7 +15,7 @@ protocol MixPlayingCondition {
     ) -> Bool?
 }
 
-extension SimRadioDTO.Condition: MixPlayingCondition {
+extension LegacySimRadioDTO.Condition: MixPlayingCondition {
     func isSatisfied(
         forNextFragment tag: String,
         startingFrom second: CMTime,

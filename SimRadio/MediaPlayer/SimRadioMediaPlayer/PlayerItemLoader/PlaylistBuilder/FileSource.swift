@@ -8,8 +8,8 @@
 import Foundation
 
 struct FileFromGroup {
-    let groupID: SimFileGroup.ID
-    let file: SimFile
+    let groupID: LegacySimFileGroup.ID
+    let file: LegacySimFile
 }
 
 extension FileFromGroup {
@@ -33,13 +33,13 @@ struct ParticularFileSource: FileSource {
 struct AttachedFileSource: FileSource {
     func next(parentFile: FileFromGroup?, rnd: inout RandomNumberGenerator) -> FileFromGroup? {
         if let parentFile, parentFile.file.attaches.count > 0 {
-            let attachGroupID: SimFileGroup.ID = .init(
+            let attachGroupID: LegacySimFileGroup.ID = .init(
                 value: parentFile
                     .groupID
                     .value
                     .split(separator: "/")
                     .dropLast()
-                    .joined(separator: "/") + "/\(SimRadioMedia.attachesGroupTag)"
+                    .joined(separator: "/") + "/\(LegacySimRadioMedia.attachesGroupTag)"
             )
             return FileFromGroup(
                 groupID: attachGroupID,
@@ -54,8 +54,8 @@ struct AttachedFileSource: FileSource {
 
 struct GroupFileSource: FileSource {
     var randomFiles: RandomFilePicker
-    let groupID: SimFileGroup.ID
-    init?(fileGroup: SimFileGroup, rnd: RandomNumberGenerator) {
+    let groupID: LegacySimFileGroup.ID
+    init?(fileGroup: LegacySimFileGroup, rnd: RandomNumberGenerator) {
         guard let files = RandomFilePicker(
             from: fileGroup.files,
             withDontRepeatRatio: 3.0 / 7.0,
@@ -73,13 +73,13 @@ struct GroupFileSource: FileSource {
 }
 
 class RandomFilePicker {
-    private var discardPile: [SimFile] = []
-    private var draw: [SimFile] = []
+    private var discardPile: [LegacySimFile] = []
+    private var draw: [LegacySimFile] = []
     private let maxDiscardPileCount: Int
     private var rnd: RandomNumberGenerator
 
     init?(
-        from: [SimFile],
+        from: [LegacySimFile],
         withDontRepeatRatio: Double,
         rnd: RandomNumberGenerator
     ) {
@@ -91,7 +91,7 @@ class RandomFilePicker {
         self.rnd = rnd
     }
 
-    func next() -> SimFile {
+    func next() -> LegacySimFile {
         let index = Int(Double(draw.count) * Double.random(in: 0 ... 1, using: &rnd))
         let res = draw[index]
 
@@ -106,24 +106,24 @@ class RandomFilePicker {
     }
 }
 
-extension SimFileGroup.ID {
+extension LegacySimFileGroup.ID {
     init(tag: String, prefix: String) {
         self.init(value: "\(prefix)/\(tag)")
     }
 }
 
-extension Dictionary where Iterator.Element == (key: SimFileGroup.ID, value: SimFileGroup) {
-    func fileGroup(tag: String, stationID: SimStation.ID) -> SimFileGroup? {
-        let stationFiles = self[SimFileGroup.ID(tag: tag, prefix: stationID.value)]
-        let seriesFiles = self[SimFileGroup.ID(tag: tag, prefix: stationID.seriesID.value)]
+extension Dictionary where Iterator.Element == (key: LegacySimFileGroup.ID, value: LegacySimFileGroup) {
+    func fileGroup(tag: String, stationID: LegacySimStation.ID) -> LegacySimFileGroup? {
+        let stationFiles = self[LegacySimFileGroup.ID(tag: tag, prefix: stationID.value)]
+        let seriesFiles = self[LegacySimFileGroup.ID(tag: tag, prefix: stationID.seriesID.value)]
         return stationFiles ?? seriesFiles
     }
 }
 
 func makeFileSource(
-    stationID: SimStation.ID,
-    model: SimRadioDTO.Source,
-    fileGroups: [SimFileGroup.ID: SimFileGroup],
+    stationID: LegacySimStation.ID,
+    model: LegacySimRadioDTO.Source,
+    fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup],
     rnd: RandomNumberGenerator
 ) -> FileSource? {
     switch model.type {

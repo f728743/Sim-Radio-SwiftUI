@@ -13,6 +13,17 @@ protocol SimRadioLibraryDelegate: AnyObject {
     func simRadioLibrary(
         _ library: SimRadioLibrary,
         didChangeDownloadStatus status: MediaDownloadStatus?,
+        for stationID: LegacySimStation.ID
+    )
+
+    func simRadioLibrary(
+        _ library: SimRadioLibrary,
+        didChange media: LegacySimRadioMedia
+    )
+
+    func simRadioLibrary(
+        _ library: SimRadioLibrary,
+        didChangeDownloadStatus status: MediaDownloadStatus?,
         for stationID: SimStation.ID
     )
 
@@ -20,23 +31,12 @@ protocol SimRadioLibraryDelegate: AnyObject {
         _ library: SimRadioLibrary,
         didChange media: SimRadioMedia
     )
-
-    func simRadioLibrary(
-        _ library: SimRadioLibrary,
-        didChangeDownloadStatus status: MediaDownloadStatus?,
-        for stationID: NewModelSimStation.ID
-    )
-
-    func simRadioLibrary(
-        _ library: SimRadioLibrary,
-        didChange media: NewModelSimRadioMedia
-    )
 }
 
 @Observable @MainActor
 class MediaState {
+    var legacySimRadio: LegacySimRadioMedia = .empty
     var simRadio: SimRadioMedia = .empty
-    var newModelSimRadio: NewModelSimRadioMedia = .empty
 
     private(set) var downloadStatus: [MediaID: MediaDownloadStatus] = [:]
     var simRadioLibrary: any SimRadioLibrary
@@ -46,14 +46,14 @@ class MediaState {
     }
 
     var mediaList: [MediaList] {
-        let simRadioMedia = simRadio.series.values.map { series in
+        let legacySimRadioMedia = legacySimRadio.series.values.map { series in
             MediaList(
-                id: .simRadioSeries(series.id),
+                id: .legacySimRadioSeries(series.id),
                 meta: series.meta,
                 items: series.stationsIDs.compactMap {
-                    guard let station = simRadio.stations[$0] else { return nil }
+                    guard let station = legacySimRadio.stations[$0] else { return nil }
                     return Media(
-                        id: .simRadio(station.id),
+                        id: .legacySimRadio(station.id),
                         meta: .init(
                             artwork: station.meta.artwork,
                             title: station.meta.title,
@@ -66,14 +66,14 @@ class MediaState {
             )
         }
 
-        let newModelSimRadioMedia = newModelSimRadio.series.values.map { series in
+        let simRadioMedia = simRadio.series.values.map { series in
             MediaList(
-                id: .newModelSimRadioSeries(series.id),
+                id: .simRadioSeries(series.id),
                 meta: .init(artwork: nil, title: "new", subtitle: nil),
                 items: series.stationsIDs.compactMap {
-                    guard let station: NewModelSimStation = newModelSimRadio.stations[$0] else { return nil }
+                    guard let station: SimStation = simRadio.stations[$0] else { return nil }
                     return Media(
-                        id: .newModelSimRadio(station.id),
+                        id: .simRadio(station.id),
                         meta: .init(
                             artwork: nil,
                             title: station.id.value,
@@ -86,7 +86,7 @@ class MediaState {
             )
         }
 
-        return simRadioMedia + newModelSimRadioMedia
+        return legacySimRadioMedia + simRadioMedia
     }
 
     func load() async {
@@ -102,9 +102,9 @@ class MediaState {
         guard current == nil || current?.state == .paused else { return }
 
         switch mediaID {
-        case let .simRadio(stationID):
+        case let .legacySimRadio(stationID):
             await simRadioLibrary.downloadStation(stationID)
-        case let .newModelSimRadio(stationID):
+        case let .simRadio(stationID):
             await simRadioLibrary.downloadStation(stationID)
         }
     }
@@ -113,9 +113,9 @@ class MediaState {
         guard downloadStatus.keys.contains(mediaID) else { return }
 
         switch mediaID {
-        case let .simRadio(stationID):
+        case let .legacySimRadio(stationID):
             await simRadioLibrary.removeDownload(stationID)
-        case let .newModelSimRadio(stationID):
+        case let .simRadio(stationID):
             await simRadioLibrary.removeDownload(stationID)
         }
     }
@@ -124,9 +124,9 @@ class MediaState {
         guard downloadStatus.keys.contains(mediaID) else { return }
 
         switch mediaID {
-        case let .simRadio(stationID):
+        case let .legacySimRadio(stationID):
             await simRadioLibrary.pauseDownload(stationID)
-        case let .newModelSimRadio(stationID):
+        case let .simRadio(stationID):
             await simRadioLibrary.pauseDownload(stationID)
         }
     }
@@ -136,16 +136,9 @@ extension MediaState: SimRadioLibraryDelegate {
     func simRadioLibrary(
         _: any SimRadioLibrary,
         didChangeDownloadStatus status: MediaDownloadStatus?,
-        for stationID: NewModelSimStation.ID
+        for stationID: SimStation.ID
     ) {
-        downloadStatus[.newModelSimRadio(stationID)] = status
-    }
-
-    func simRadioLibrary(
-        _: any SimRadioLibrary,
-        didChange media: NewModelSimRadioMedia
-    ) {
-        newModelSimRadio = media
+        downloadStatus[.simRadio(stationID)] = status
     }
 
     func simRadioLibrary(
@@ -157,9 +150,16 @@ extension MediaState: SimRadioLibraryDelegate {
 
     func simRadioLibrary(
         _: any SimRadioLibrary,
-        didChangeDownloadStatus status: MediaDownloadStatus?,
-        for stationID: SimStation.ID
+        didChange media: LegacySimRadioMedia
     ) {
-        downloadStatus[.simRadio(stationID)] = status
+        legacySimRadio = media
+    }
+
+    func simRadioLibrary(
+        _: any SimRadioLibrary,
+        didChangeDownloadStatus status: MediaDownloadStatus?,
+        for stationID: LegacySimStation.ID
+    ) {
+        downloadStatus[.legacySimRadio(stationID)] = status
     }
 }

@@ -209,8 +209,8 @@ class PlaylistBuilder {
 }
 
 private extension PlaylistBuilder {
-    var station: SimStation { stationData.station }
-    var fileGroups: [SimFileGroup] { stationData.fileGroups }
+    var station: LegacySimStation { stationData.station }
+    var fileGroups: [LegacySimFileGroup] { stationData.fileGroups }
 
     func makeDailyPlaylist(
         for date: Date

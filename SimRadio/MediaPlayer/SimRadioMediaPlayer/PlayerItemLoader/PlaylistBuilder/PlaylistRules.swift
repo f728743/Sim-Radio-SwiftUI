@@ -8,14 +8,14 @@
 import Foundation
 
 class PlaylistRules {
-    let fileGroups: [SimFileGroup.ID: SimFileGroup]
+    let fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup]
     let firstFragmentTag: String
     let fragments: [String: Fragment]
 
     init(
-        stationID: SimStation.ID,
-        model: SimRadioDTO.Playlist,
-        fileGroups: [SimFileGroup.ID: SimFileGroup],
+        stationID: LegacySimStation.ID,
+        model: LegacySimRadioDTO.Playlist,
+        fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup],
         rnd: RandomNumberGenerator
     ) throws {
         firstFragmentTag = model.firstFragment.fragmentTag
@@ -27,13 +27,13 @@ class PlaylistRules {
 
     struct Mix {
         var src: FileSource
-        let condition: SimRadioDTO.Condition
+        let condition: LegacySimRadioDTO.Condition
         var positions: [String]
 
         init(
-            stationID: SimStation.ID,
-            model: SimRadioDTO.Mix,
-            fileGroups: [SimFileGroup.ID: SimFileGroup],
+            stationID: LegacySimStation.ID,
+            model: LegacySimRadioDTO.Mix,
+            fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup],
             rnd: RandomNumberGenerator
         ) throws {
             guard let src = makeFileSource(
@@ -52,14 +52,14 @@ class PlaylistRules {
 
     struct Fragment {
         let src: FileSource
-        let nextFragment: [SimRadioDTO.FragmentRef]
+        let nextFragment: [LegacySimRadioDTO.FragmentRef]
         let mixPositions: [String: Double]
         let mixins: [Mix]
 
         init(
-            stationID: SimStation.ID,
-            model: SimRadioDTO.Fragment,
-            fileGroups: [SimFileGroup.ID: SimFileGroup],
+            stationID: LegacySimStation.ID,
+            model: LegacySimRadioDTO.Fragment,
+            fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup],
             rnd: RandomNumberGenerator
         ) throws {
             guard let src = makeFileSource(

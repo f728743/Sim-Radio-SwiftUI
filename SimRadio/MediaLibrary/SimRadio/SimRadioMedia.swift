@@ -2,159 +2,158 @@
 //  SimRadioMedia.swift
 //  SimRadio
 //
-//  Created by Alexey Vorobyov on 26.03.2025.
+//  Created by Alexey Vorobyov on 24.06.2025.
 //
 
 import Foundation
 
 struct SimRadioMedia {
     let series: [SimGameSeries.ID: SimGameSeries]
-    let fileGroups: [SimFileGroup.ID: SimFileGroup]
+    let trackLists: [TrackList.ID: TrackList]
     let stations: [SimStation.ID: SimStation]
-}
-
-struct SimGameSeries {
-    struct ID: Hashable { let value: String }
-    var id: ID
-    let meta: MediaList.Meta
-    let stationsIDs: [SimStation.ID]
-}
-
-struct SimFileGroup {
-    struct ID: Hashable { let value: String }
-    let id: ID
-    let files: [SimFile]
-}
-
-struct SimFile: Sendable {
-    let url: URL
-    let tag: String?
-    let duration: Double
-    let attaches: [SimFile]
-}
-
-struct SimStationMeta: Codable {
-    let title: String
-    let artwork: URL?
-    let genre: String
-    let host: String?
-}
-
-struct SimStation {
-    struct ID: Hashable { let value: String }
-    var id: ID
-    let meta: SimStationMeta
-    let fileGroupIDs: [SimFileGroup.ID]
-    let playlistRules: SimRadioDTO.Playlist
 }
 
 extension SimRadioMedia {
     static let empty: SimRadioMedia = .init(
         series: [:],
-        fileGroups: [:],
+        trackLists: [:],
         stations: [:]
     )
 }
 
-extension SimStationMeta {
-    var detailsSubtitle: String {
-        host.map { "Hosted by \($0) – \(genre)" } ?? genre
+struct SimGameSeries {
+    struct ID: Codable, Hashable {
+        let origin: URL
     }
+
+    let id: ID
+//    let meta: MediaList.Meta
+    let stationsIDs: [SimStation.ID]
 }
 
-extension Media.Meta {
-    init(_ meta: SimStationMeta) {
-        self.init(
-            artwork: meta.artwork,
-            title: meta.title,
-            listSubtitle: meta.genre,
-            detailsSubtitle: meta.detailsSubtitle,
-            isLiveStream: true
-        )
+struct SimStation {
+    struct ID: Hashable {
+        let series: SimGameSeries.ID
+        let value: String
     }
+
+    let id: ID
+//    let meta: MediaList.Meta
+    let trackLists: [TrackList.ID]
 }
 
-private extension URL {
-    var simRadioBaseURL: URL {
-        deletingLastPathComponent()
+struct TrackList {
+    struct ID: Hashable {
+        let series: SimGameSeries.ID
+        let value: String
     }
+
+    let id: ID
+    let tracks: [Track]
 }
 
-extension URL {
-    var nonCryptoHash: UInt64 {
-        absoluteString.nonCryptoHash
+struct Track: Hashable {
+    struct ID: Hashable {
+        let series: SimGameSeries.ID
+        let value: String
     }
+
+    let id: ID
+    let path: String?
+    let duration: Double?
+    let intro: [Track.ID]?
+    let markers: SimRadioDTO.TrackMarkers?
+    let trackList: TrackList.ID?
 }
 
-extension SimRadioDTO.GameSeries {
-    func simFileGroups(origin: URL) -> [SimFileGroup.ID: SimFileGroup] {
-        let shared = gameSeriesShared.fileGroups.map { SimFileGroup(dto: $0, origin: origin) }
-        let stations: [SimFileGroup] = stations.flatMap { station in
-            let stationGroups: [SimFileGroup] = station.fileGroups.flatMap {
-                let groups: [SimFileGroup] = [
-                    SimFileGroup(dto: $0, origin: origin, pathTag: station.tag),
-                    attachesGroup(
-                        origin: origin,
-                        files: $0.files
-                            .flatMap { $0.attaches?.files ?? [] }
-                            .map {
-                                .init(dto: $0, baseUrl: origin.simRadioBaseURL, pathTag: "\(station.tag)")
-                            },
-                        pathTag: station.tag,
-                        groupTag: SimRadioMedia.attachesGroupTag
-                    )
-                ].compactMap(\.self)
-                return groups
-            }
-            return stationGroups
-        }
-        return Dictionary(
-            uniqueKeysWithValues: (shared + stations).map { ($0.id, $0) }
-        )
+extension Track {
+    enum Const {
+        static let mediaExtension = ".m4a"
     }
 
-    func attachesGroup(origin: URL, files: [SimFile], pathTag: String? = nil, groupTag: String) -> SimFileGroup? {
-        guard !files.isEmpty else { return nil }
-        return .init(id: .init(origin: origin, pathTag: pathTag, groupTag: groupTag), files: files)
+    var filePath: String? {
+        path.map { $0 + Const.mediaExtension }
+    }
+
+    var url: URL? {
+        guard let filePath else { return nil }
+        return id.series
+            .origin
+            .deletingLastPathComponent()
+            .appendingPathComponent(filePath)
+    }
+
+    var localFilePath: String? {
+        filePath.map { ["\(id.series.origin.nonCryptoHash)", $0].joined(separator: "/") }
+    }
+
+    var localFileURL: URL? {
+        // TODO:
+        nil
     }
 }
 
 extension SimRadioMedia {
-    init(dto: SimRadioDTO.GameSeries, origin: URL) {
-        let series = SimGameSeries(dto: dto, origin: origin)
-        let stations = dto.stations.map { SimStation(dto: $0, gameSeriesShared: dto.gameSeriesShared, origin: origin) }
+    enum StationLocalStatus {
+        case completed
+        case partial(missing: [TrackList.ID: [URL]])
+        case missing
+    }
+
+    init(origin: URL, dto: SimRadioDTO.GameSeries) {
+        let series = SimGameSeries(origin: origin, dto: dto)
+        let trackLists: [TrackList] = dto.trackLists.map { trackListDTO in
+            .init(
+                id: .init(series: .init(origin: origin), value: trackListDTO.id.value),
+                tracks: trackListDTO.tracks.map { trackDTO in
+                    let intro: [Track.ID]? = trackDTO.intro.map {
+                        $0.map { .init(series: .init(origin: origin), value: $0.value) }
+                    }
+                    return .init(
+                        id: .init(series: .init(origin: origin), value: trackDTO.id.value),
+                        path: trackDTO.path,
+                        duration: trackDTO.duration,
+                        intro: intro,
+                        markers: trackDTO.markers,
+                        trackList: trackDTO.trackList.map { .init(series: .init(origin: origin), value: $0.value) }
+                    )
+                }
+            )
+        }
+        let stations: [SimStation] = dto.stations.map {
+            .init(
+                id: .init(series: .init(origin: origin), value: $0.id.value),
+                trackLists: $0.trackLists.map {
+                    .init(series: .init(origin: origin), value: $0.value)
+                }
+            )
+        }
+
         self.init(
             series: Dictionary(uniqueKeysWithValues: [(series.id, series)]),
-            fileGroups: dto.simFileGroups(origin: origin),
+            trackLists: Dictionary(uniqueKeysWithValues: trackLists.map { ($0.id, $0) }),
             stations: Dictionary(uniqueKeysWithValues: stations.map { ($0.id, $0) })
         )
     }
 
-    static let attachesGroupTag: String = "intro"
-
-    enum StationLocalStatus {
-        case completed
-        case partial(missing: [SimFileGroup.ID: [URL]])
-        case missing
-    }
-
-    func stationFileGroups(_ id: SimStation.ID) -> [SimFileGroup] {
-        stations[id]?.fileGroupIDs.compactMap { fileGroups[$0] } ?? []
+    func stationTrackLists(_ id: SimStation.ID) -> [TrackList] {
+        stations[id]?.trackLists.compactMap { self.trackLists[$0] } ?? []
     }
 
     func calculateStationLocalStatus(_ id: SimStation.ID) async throws -> StationLocalStatus {
-        var missing: [SimFileGroup.ID: [URL]] = [:]
+        var missing: [TrackList.ID: [URL]] = [:]
         var haveAny = false
-        for fileGroup in stationFileGroups(id) {
-            let missingFiles = fileGroup
-                .files
-                .map(\.url)
-                .filter { !fileGroup.id.localFileURL(for: $0).isFileExists }
-            if fileGroup.files.count > missingFiles.count {
+        for trackList in stationTrackLists(id) {
+            let missingTracks = trackList
+                .tracks
+                .compactMap(\.localFileURL)
+                .filter { !$0.isFileExists }
+
+            if trackList.tracks.count > missingTracks.count {
                 haveAny = true
             }
-            if !missingFiles.isEmpty {
-                missing[fileGroup.id] = missingFiles
+            if !missingTracks.isEmpty {
+                missing[trackList.id] = missingTracks
             }
         }
 
@@ -163,165 +162,79 @@ extension SimRadioMedia {
         }
         return .missing
     }
-
-    func sharedFileGroups(of stationID: SimStation.ID, among stationIDs: [SimStation.ID]? = nil) -> [SimFileGroup.ID] {
-        guard let targetStation = stations[stationID], !targetStation.fileGroupIDs.isEmpty else {
-            return []
-        }
-
-        let frequencyPairs = stations
-            .filter { stationIDs?.contains($0.key) ?? true }
-            .values
-            .flatMap(\.fileGroupIDs).map { ($0, 1) }
-        let allFileGroupCounts = Dictionary(frequencyPairs, uniquingKeysWith: +)
-        let sharedGroupsForTarget = targetStation.fileGroupIDs.filter { fileGroupID in
-            (allFileGroupCounts[fileGroupID] ?? 0) > 0
-        }
-        return Array(sharedGroupsForTarget)
-    }
 }
 
-extension NewModelSimRadioMedia {
-    func sharedTrackLists(
-        of _: NewModelSimStation.ID,
-        among _: [NewModelSimStation.ID]? = nil
-    ) -> [NewModelTrackList.ID] {
-        // TODO:
-        []
-//        guard let targetStation = stations[stationID], !targetStation.fileGroupIDs.isEmpty else {
-//            return []
-//        }
-//
-//        let frequencyPairs = stations
-//            .filter { stationIDs?.contains($0.key) ?? true }
-//            .values
-//            .flatMap(\.fileGroupIDs).map { ($0, 1) }
-//        let allFileGroupCounts = Dictionary(frequencyPairs, uniquingKeysWith: +)
-//        let sharedGroupsForTarget = targetStation.fileGroupIDs.filter { fileGroupID in
-//            (allFileGroupCounts[fileGroupID] ?? 0) > 0
-//        }
-//        return Array(sharedGroupsForTarget)
+extension SimRadioMedia {
+    func findAllUsedTrackLists(stationID: SimStation.ID) -> [TrackList] {
+        guard let station = stations[stationID] else { return [] }
+        return trackLists.findAllUsedTrackLists(usedIDs: station.trackLists)
+    }
+    
+    func commonTrackLists(
+        of stationID: SimStation.ID,
+        among stationIDs: [SimStation.ID]
+    ) -> [TrackList.ID] {
+        // Получаем все трек-листы для целевой станции
+        let targetTrackLists = findAllUsedTrackLists(stationID: stationID).map { $0.id }
+        
+        // Если нет трек-листов или станций для сравнения, возвращаем пустой массив
+        guard !targetTrackLists.isEmpty, !stationIDs.isEmpty else { return [] }
+        
+        // Собираем все трек-листы для каждой из станций в among
+        let otherStationsTrackLists = stationIDs.reduce(into: Set<TrackList.ID>()) { result, id in
+            let lists = findAllUsedTrackLists(stationID: id).map { $0.id }
+            result.formUnion(lists)
+        }
+        
+        // Находим пересечение трек-листов целевой станции и других станций
+        let intersection = targetTrackLists.filter { otherStationsTrackLists.contains($0) }
+        
+        return intersection
     }
 }
-
-extension Collection<URL> {} // TODO: ?
 
 extension SimGameSeries {
-    init(dto: SimRadioDTO.GameSeries, origin: URL) {
+    init(origin: URL, dto: SimRadioDTO.GameSeries) {
         self.init(
             id: .init(origin: origin),
-            meta: .init(
-                artwork: origin.simRadioBaseURL.appendingPathComponent(dto.info.logo),
-                title: dto.info.title,
-                subtitle: nil
-            ),
-            stationsIDs: dto.stations.map { .init(origin: origin, stationTag: $0.tag) }
+            stationsIDs: dto.stations.map { .init(series: .init(origin: origin), value: $0.id.value) }
         )
     }
 
-    static let defaultFileName: String = "sim_radio_stations.json"
-    static let userDefaultsKey: String = "sim_series_ids"
-}
-
-extension SimStation {
-    init(dto: SimRadioDTO.Station, gameSeriesShared: SimRadioDTO.GameSeriesShared, origin: URL) {
-        let artwork = origin.simRadioBaseURL
-            .appendingPathComponent(dto.tag)
-            .appendingPathComponent(dto.info.logo)
-        let fullFileGroupSet = Set(dto.playlist.fileGroupTags)
-        let gameSeriesSharedFileGroupSet = Set(gameSeriesShared.fileGroups.map(\.tag))
-        let stationFileGroupIDs = fullFileGroupSet
-            .subtracting(gameSeriesSharedFileGroupSet)
-            .map { SimFileGroup.ID(origin: origin, pathTag: dto.tag, groupTag: $0) }
-        let usedGameSeriesSharedFileGroupSet = fullFileGroupSet.intersection(gameSeriesSharedFileGroupSet)
-        let usedGameSeriesSharedFileGroupIDs = usedGameSeriesSharedFileGroupSet.map {
-            SimFileGroup.ID(origin: origin, groupTag: $0)
-        }
-        self.init(
-            id: .init(origin: origin, stationTag: dto.tag),
-            meta: .init(
-                title: dto.info.title,
-                artwork: artwork,
-                genre: dto.info.genre,
-                host: dto.info.dj
-            ),
-            fileGroupIDs: stationFileGroupIDs + usedGameSeriesSharedFileGroupIDs,
-            playlistRules: dto.playlist
-        )
-    }
+    static let defaultFileName: String = "new_sim_radio_stations.json"
 }
 
 extension SimGameSeries.ID {
     var directoryURL: URL {
-        .documentsDirectory.appending(path: value, directoryHint: .isDirectory)
+        .documentsDirectory.appending(path: path, directoryHint: .isDirectory)
     }
 
     var jsonFileURL: URL {
-        directoryURL.appending(path: SimGameSeries.defaultFileName)
+        directoryURL.appending(path: LegacySimGameSeries.defaultFileName)
     }
 
-    init(origin: URL) {
-        self.init(value: "\(origin.nonCryptoHash)")
-    }
-}
-
-extension SimRadioDTO.Playlist {
-    var fileGroupTags: [String] {
-        let sources = fragments.flatMap { [$0.src] + ($0.mixins?.mix ?? []).map(\.src) }
-        let attachGroupTags: [String] = sources.contains { $0.type == .attach } ? [SimRadioMedia.attachesGroupTag] : []
-        return sources
-            .filter { $0.type == .group || $0.type == .file }
-            .compactMap(\.groupTag)
-            + attachGroupTags
+    var path: String {
+        "\(origin.nonCryptoHash)"
     }
 }
 
-extension SimStation.ID {
-    init(origin: URL, stationTag: String) {
-        self.init(value: "\(SimGameSeries.ID(origin: origin).value)/\(stationTag)")
-    }
+extension [TrackList.ID: TrackList] {
+    func findAllUsedTrackLists(usedIDs: [TrackList.ID]) -> [TrackList] {
+        var result = [TrackList]()
+        var idsToProcess = usedIDs
+        var processedIDs = Set<TrackList.ID>()
 
-    var directoryURL: URL {
-        .documentsDirectory.appending(path: value, directoryHint: .isDirectory)
-    }
+        while let id = idsToProcess.popLast() {
+            // Skip if already processed or if the tracklist doesn't exist
+            guard !processedIDs.contains(id), let trackList = self[id] else { continue }
 
-    var seriesID: SimGameSeries.ID {
-        .init(value: String(value.split(separator: "/").first ?? ""))
-    }
-}
+            processedIDs.insert(id)
+            result.append(trackList)
 
-extension SimFileGroup.ID {
-    init(origin: URL, pathTag: String? = nil, groupTag: String) {
-        let path = pathTag.map { "/\($0)" } ?? ""
-        self.init(value: "\(origin.nonCryptoHash)\(path)/\(groupTag)")
-    }
-
-    var directoryURL: URL {
-        .documentsDirectory.appending(path: value, directoryHint: .isDirectory)
-    }
-
-    func localFileURL(for url: URL) -> URL {
-        directoryURL.appending(path: url.lastPathComponent, directoryHint: .notDirectory)
-    }
-}
-
-extension SimFileGroup {
-    init(dto: SimRadioDTO.FileGroup, origin: URL, pathTag: String? = nil) {
-        self.init(
-            id: .init(origin: origin, pathTag: pathTag, groupTag: dto.tag),
-            files: dto.files.map { .init(dto: $0, baseUrl: origin.simRadioBaseURL, pathTag: pathTag) }
-        )
-    }
-}
-
-extension SimFile {
-    init(dto: SimRadioDTO.File, baseUrl: URL, pathTag: String?) {
-        let url = [pathTag, dto.path].compactMap(\.self).reduce(baseUrl) { $0.appendingPathComponent($1) }
-        self.init(
-            url: url,
-            tag: dto.tag,
-            duration: dto.audibleDuration ?? dto.duration,
-            attaches: (dto.attaches?.files ?? []).map { .init(dto: $0, baseUrl: baseUrl, pathTag: pathTag) }
-        )
+            // Find all references to other tracklists in the current tracklist's tracks
+            let referencedTrackListIDs = trackList.tracks.compactMap(\.trackList)
+            idsToProcess.append(contentsOf: referencedTrackListIDs.filter { !processedIDs.contains($0) })
+        }
+        return result
     }
 }

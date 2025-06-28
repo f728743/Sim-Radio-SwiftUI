@@ -34,13 +34,13 @@ struct Media: Identifiable, Hashable, Equatable {
 
 enum MediaListID: Hashable, Equatable {
     case emptyMediaListID
+    case legacySimRadioSeries(LegacySimGameSeries.ID)
     case simRadioSeries(SimGameSeries.ID)
-    case newModelSimRadioSeries(NewModelSimGameSeries.ID)
 }
 
 enum MediaID: Hashable {
+    case legacySimRadio(LegacySimStation.ID)
     case simRadio(SimStation.ID)
-    case newModelSimRadio(NewModelSimStation.ID)
 }
 
 extension MediaList {

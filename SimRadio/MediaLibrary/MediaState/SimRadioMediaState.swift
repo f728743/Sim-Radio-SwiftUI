@@ -7,38 +7,31 @@
 
 @MainActor
 protocol SimRadioMediaState: AnyObject, Sendable {
+    var legacySimRadio: LegacySimRadioMedia { get }
+    var legacySimDownloadStatus: [LegacySimStation.ID: MediaDownloadStatus] { get }
+
     var simRadio: SimRadioMedia { get }
     var simDownloadStatus: [SimStation.ID: MediaDownloadStatus] { get }
-
-    var newModelSimRadio: NewModelSimRadioMedia { get }
-    var newModelSimDownloadStatus: [NewModelSimStation.ID: MediaDownloadStatus] { get }
 }
 
 struct SimRadioStationData {
-    let station: SimStation
-    let fileGroups: [SimFileGroup]
+    let station: LegacySimStation
+    let fileGroups: [LegacySimFileGroup]
     let isDownloaded: Bool
 }
 
-extension SimRadioMedia {
-    func stationData(for stationID: SimStation.ID) -> (station: SimStation, fileGroups: [SimFileGroup])? {
+extension LegacySimRadioMedia {
+    func stationData(
+        for stationID: LegacySimStation.ID
+    ) -> (station: LegacySimStation, fileGroups: [LegacySimFileGroup])? {
         guard let station = stations[stationID] else { return nil }
-        let fileGroups: [SimFileGroup] = station.fileGroupIDs.compactMap { self.fileGroups[$0] }
+        let fileGroups: [LegacySimFileGroup] = station.fileGroupIDs.compactMap { self.fileGroups[$0] }
         guard fileGroups.count == station.fileGroupIDs.count else { return nil }
         return (station, fileGroups)
     }
 }
 
 extension MediaState: SimRadioMediaState {
-    var newModelSimDownloadStatus: [NewModelSimStation.ID: MediaDownloadStatus] {
-        Dictionary(uniqueKeysWithValues: downloadStatus.compactMap {
-            if case let .newModelSimRadio(id) = $0.key {
-                return (id, $0.value)
-            }
-            return nil
-        })
-    }
-
     var simDownloadStatus: [SimStation.ID: MediaDownloadStatus] {
         Dictionary(uniqueKeysWithValues: downloadStatus.compactMap {
             if case let .simRadio(id) = $0.key {
@@ -47,15 +40,24 @@ extension MediaState: SimRadioMediaState {
             return nil
         })
     }
+
+    var legacySimDownloadStatus: [LegacySimStation.ID: MediaDownloadStatus] {
+        Dictionary(uniqueKeysWithValues: downloadStatus.compactMap {
+            if case let .legacySimRadio(id) = $0.key {
+                return (id, $0.value)
+            }
+            return nil
+        })
+    }
 }
 
 extension SimRadioMediaState {
-    func stationData(for stationID: SimStation.ID) -> SimRadioStationData? {
-        guard let stationData = simRadio.stationData(for: stationID) else { return nil }
+    func stationData(for stationID: LegacySimStation.ID) -> SimRadioStationData? {
+        guard let stationData = legacySimRadio.stationData(for: stationID) else { return nil }
         return .init(
             station: stationData.station,
             fileGroups: stationData.fileGroups,
-            isDownloaded: simDownloadStatus[stationID]?.state == .completed
+            isDownloaded: legacySimDownloadStatus[stationID]?.state == .completed
         )
     }
 }

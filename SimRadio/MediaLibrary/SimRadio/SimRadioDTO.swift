@@ -2,58 +2,138 @@
 //  SimRadioDTO.swift
 //  SimRadio
 //
-//  Created by Alexey Vorobyov on 26.03.2025.
+//  Created by Alexey Vorobyov on 14.06.2025.
 //
 
-import Foundation
-
 enum SimRadioDTO {
-    struct GameSeries: Codable, Sendable {
+    struct GameSeries: Codable {
         let origin: String?
-        let info: SeriesInfo
-        let common: GameSeriesShared
+        let trackLists: [TrackList]
         let stations: [Station]
     }
 
-    struct SeriesInfo: Codable {
-        let title: String
-        let logo: String
+    struct TrackList: Codable {
+        let id: ID
+        let tracks: [Track]
     }
 
-    struct GameSeriesShared: Codable, Sendable {
-        let fileGroups: [FileGroup]
+    struct Track: Codable, Hashable {
+        let id: ID
+        let path: String?
+        let duration: Double?
+        let intro: [Track.ID]?
+        let markers: TrackMarkers?
+        let trackList: TrackList.ID?
+    }
+
+    struct TrackMarker: Codable, Hashable {
+        let offset: Double
+        let id: Int
+        let title: String?
+        let artist: String?
+    }
+
+    struct TrackMarkers: Codable, Hashable {
+        let track: [TrackMarker]?
+        let dj: [TypeMarker]?
+        let rockout: [TypeMarker]?
+        let beat: [ValueMarker]?
+    }
+
+    struct ValueMarker: Codable, Hashable {
+        let offset: Double
+        let value: Int
+    }
+
+    enum MarkerType: String, Codable, Hashable {
+        case start
+        case end
+        case introStart
+        case introEnd
+        case outroStart
+        case outroEnd
+    }
+
+    struct TypeMarker: Codable, Hashable {
+        let offset: Double
+        let value: MarkerType
     }
 
     struct Station: Codable {
-        let tag: String
-        let info: StationInfo
-        let fileGroups: [FileGroup]
-        let playlist: Playlist
+        let id: ID
+        let genre: String
+        let trackLists: [TrackList.ID]
     }
 
-    struct FileGroup: Codable, Sendable {
-        let tag: String
-        let files: [File]
+    enum StationFlag: String, Codable {
+        case noBack2BackMusic
+        case playNews
+        case playsUsersMusic
+        case isMixStation
+        case back2BackAds
+        case sequentialMusic
+        case identsInsteadOfAds
+        case locked
+        case useRandomizedStrideSelection
+        case playWeather
     }
 
-    struct File: Codable, Sendable {
-        let tag: String?
-        let path: String
-        let duration: Double
-        let audibleDuration: Double?
-        let attaches: Attaches?
-        let markers: [TrackMarker]?
-    }
+    // ===============================================================================================
 
-    struct TrackMarker: Codable {
-        let title: String
-        let artist: String
-        let startTime: TimeInterval
-    }
+//    struct GameSeries: Codable, Sendable {
+//        let origin: String?
+//        let info: SeriesInfo
+//        let stations: [Station]
+//        let common: GameSeriesCommon
+//    }
 
-    struct Attaches: Codable {
-        let files: [File]
-    }
+//    struct SeriesInfo: Codable {
+//        let title: String
+//        let logo: String
+//    }
+
+//    struct GameSeriesCommon: Codable, Sendable {
+//        let fileGroups: [FileGroup]
+//    }
+
+//    struct Station: Codable {
+//        let tag: String
+//        let info: StationInfo
+//        let fileGroups: [FileGroup]
+//        let playlist: Playlist
+//    }
+
+//    struct FileGroup: Codable, Sendable {
+//        let tag: String
+//      let files: [File]
+//    }
+
+    //  struct File: Codable, Sendable {
+//      let tag: String?
+//      let path: String
+//      let duration: Double
+//      let audibleDuration: Double?
+//      let attachments: Attachments?
+//      let markers: TrackMarkers?
+    //  }
+
+    //  struct TrackMarkers: Codable {
+//      let track: [TrackMarker]?
+//      let dj: [TypeMarker]?
+//      let rockout: [TypeMarker]?
+//      let beat: [ValueMarker]?
+    //  }
+
+    //  struct TrackMarker: Codable {
+//      let offset: Int
+//      let id: Int
+//      let title: String?
+//      let artist: String?
+    //  }
+
+    //  struct Attachments: Codable {
+//      let files: [File]
+    //  }
 
     struct StationInfo: Codable {
         let title: String
@@ -134,24 +214,62 @@ enum SimRadioDTO {
     }
 }
 
-extension SimRadioDTO.GameSeries {
-    // alias
-    var gameSeriesShared: SimRadioDTO.GameSeriesShared {
-        common
+extension SimRadioDTO.TrackList {
+    struct ID: Codable, Hashable { let value: String }
+}
+
+extension SimRadioDTO.TrackList.ID {
+    init(_ value: String) {
+        self.value = value
     }
 
-    init(
-        origin: String?,
-        info: SimRadioDTO.SeriesInfo,
-        gameSeriesShared: SimRadioDTO.GameSeriesShared,
-        stations: [SimRadioDTO.Station]
-    ) {
-        self.init(
-            origin: origin,
-            info: info,
-            common: gameSeriesShared,
-            stations:
-            stations
-        )
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        value = try container.decode(String.self)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
+    }
+}
+
+extension SimRadioDTO.Track {
+    struct ID: Codable, Hashable { let value: String }
+}
+
+extension SimRadioDTO.Track.ID {
+    init(_ value: String) {
+        self.value = value
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        value = try container.decode(String.self)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
+    }
+}
+
+extension SimRadioDTO.Station {
+    struct ID: Codable, Hashable { let value: String }
+}
+
+extension SimRadioDTO.Station.ID {
+    init(_ value: String) {
+        self.value = value
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        value = try container.decode(String.self)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(value)
     }
 }

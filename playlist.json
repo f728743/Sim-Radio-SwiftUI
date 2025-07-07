@@ -1,0 +1,162 @@
+{
+  "playlist": {
+    "firstFragment": "fragment_radio_01_class_rock_ident",
+    "positions": [
+      {
+        "id": "track_start",
+        "relativeOffset": 0.03
+      },
+      {
+        "id": "track_end",
+        "relativeOffset": 0.97
+      }
+    ],
+    "fragments": [
+      {
+        "id": "fragment_radio_01_class_rock_ident",
+        "src": {
+          "trackLists": ["radio_01_class_rock_idents"]
+        },
+        "next": [
+          {
+            "fragment": "fragment_radio_01_class_rock_music"
+          }
+        ]
+      },
+      {
+        "id": "fragment_radio_01_class_rock_music",
+        "src": {
+          "trackLists": [
+            "radio_01_class_rock_music",
+            "radio_01_class_rock_music_new"
+          ]
+        },
+        "voiceOver": [
+          {
+            "id": "voiceover_radio_01_class_rock_to_news",
+            "condition": {
+              "nextFragment": "fragment_radio_01_class_rock_news"
+            },
+            "positions": ["track_end"],
+            "src": {
+              "trackLists": ["radio_01_class_rock_to_news"]
+            }
+          },
+          {
+            "id": "voiceover_radio_01_class_rock_to_ad",
+            "condition": {
+              "nextFragment": "fragment_radio_01_class_rock_adverts"
+            },
+            "positions": ["track_end"],
+            "src": {
+              "trackLists": ["radio_01_class_rock_to_ad"]
+            }
+          },
+          {
+            "id": "voiceover_radio_01_class_rock_general",
+            "src": {
+              "trackLists": ["radio_01_class_rock_general"]
+            },
+            "condition": {
+              "probability": 0.333
+            },
+            "positions": ["track_start", "track_end"]
+          },
+          {
+            "id": "voiceover_radio_01_class_rock_intro",
+            "src": {
+              "introTrackLists": [
+                "radio_01_class_rock_music_intro",
+                "radio_01_class_rock_music_new_intro"
+              ]
+            },
+            "condition": {
+              "probability": 0.333
+            },
+            "positions": ["track_start", "track_end"]
+          },
+          {
+            "id": "voiceover_radio_01_class_rock_morning",
+            "src": {
+              "trackLists": ["radio_01_class_rock_time_morning"]
+            },
+            "condition": {
+              "probability": 0.333,
+              "timeInterval": { "from": "5:00", "to": "11:00" }
+            },
+            "positions": ["track_start", "track_end"]
+          },
+          {
+            "id": "voiceover_radio_01_class_rock_evening",
+            "src": {
+              "trackLists": ["radio_01_class_rock_time_evening"]
+            },
+            "condition": {
+              "probability": 0.333,
+              "timeInterval": { "from": "18:00", "to": "24:00" }
+            },
+            "positions": ["track_start", "track_end"]
+          }
+        ],
+        "next": [
+          {
+            "fragment": "fragment_radio_01_class_rock_adverts",
+            "probability": 0.357
+          },
+          {
+            "fragment": "fragment_radio_01_class_rock_djsolo",
+            "probability": 0.286
+          },
+          {
+            "fragment": "fragment_radio_01_class_rock_news",
+            "probability": 0.143
+          },
+          {
+            "fragment": "fragment_radio_01_class_rock_music"
+          }
+        ]
+      },
+      {
+        "id": "fragment_radio_01_class_rock_djsolo",
+        "src": {
+          "trackLists": ["radio_01_class_rock_djsolo"]
+        },
+        "next": [
+          {
+            "fragment": "fragment_radio_01_class_rock_news",
+            "probability": 0.4
+          },
+          {
+            "fragment": "fragment_radio_01_class_rock_music"
+          }
+        ]
+      },
+      {
+        "id": "fragment_radio_01_class_rock_news",
+        "src": {
+          "trackLists": ["radio_news"]
+        },
+        "next": [
+          {
+            "fragment": "fragment_radio_01_class_rock_ident",
+            "probability": 0.667
+          },
+          {
+            "fragment": "fragment_radio_01_class_rock_music"
+          }
+        ]
+      },
+      {
+        "id": "fragment_radio_01_class_rock_adverts",
+        "src": {
+          "trackLists": ["general_adverts"]
+        },
+        "next": [
+          {
+            "fragment": "fragment_radio_01_class_rock_music"
+          }
+        ]
+      }
+    ]
+  }
+}

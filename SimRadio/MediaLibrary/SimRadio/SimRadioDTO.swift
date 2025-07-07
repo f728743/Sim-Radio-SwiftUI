@@ -88,140 +88,48 @@ enum SimRadioDTO {
         case useRandomizedStrideSelection
         case playWeather
     }
-
-    // ===============================================================================================
-
-//    struct GameSeries: Codable, Sendable {
-//        let origin: String?
-//        let info: SeriesInfo
-//        let stations: [Station]
-//        let common: GameSeriesCommon
-//    }
-
-//    struct SeriesInfo: Codable {
-//        let title: String
-//        let logo: String
-//    }
-
-//    struct GameSeriesCommon: Codable, Sendable {
-//        let fileGroups: [FileGroup]
-//    }
-
-//    struct Station: Codable {
-//        let tag: String
-//        let info: StationInfo
-//        let fileGroups: [FileGroup]
-//        let playlist: Playlist
-//    }
-
-//    struct FileGroup: Codable, Sendable {
-//        let tag: String
-//      let files: [File]
-//    }
-
-    //  struct File: Codable, Sendable {
-//      let tag: String?
-//      let path: String
-//      let duration: Double
-//      let audibleDuration: Double?
-//      let attachments: Attachments?
-//      let markers: TrackMarkers?
-    //  }
-
-    //  struct TrackMarkers: Codable {
-//      let track: [TrackMarker]?
-//      let dj: [TypeMarker]?
-//      let rockout: [TypeMarker]?
-//      let beat: [ValueMarker]?
-    //  }
-
-    //  struct TrackMarker: Codable {
-//      let offset: Int
-//      let id: Int
-//      let title: String?
-//      let artist: String?
-    //  }
-
-    //  struct Attachments: Codable {
-//      let files: [File]
-    //  }
-
-    struct StationInfo: Codable {
-        let title: String
-        let genre: String
-        let logo: String
-        let dj: String?
+    
+    struct Playlist: Codable {
+        let firstFragment: Fragment.ID
+        let fragments: [Fragment]
+        let positions: [VoiceOverPosition]
     }
-
-    struct FirstFragment: Codable {
-        let tag: String
-    }
-
-    struct FragmentRef: Codable {
-        let fragmentTag: String
+    
+    struct PlaylistTransition: Codable {
+        let fragment: Fragment.ID
         let probability: Double?
     }
-
-    struct Source: Codable {
-        let type: SrcType
-        let groupTag: String?
-        let fileTag: String?
+    
+    struct Fragment: Codable {
+        let id: ID
+        let src: FragmentSource
+        let next: [PlaylistTransition]
     }
-
-    struct Position: Codable {
-        let tag: String
+    
+    struct FragmentSource: Codable {
+        let trackLists: [TrackList.ID]?
+        let introTrackLists: [TrackList.ID]?
+    }
+    
+    struct VoiceOverPosition: Codable {
+        let id: ID
         let relativeOffset: Double
     }
-
-    struct PosVariant: Codable {
-        let posTag: String
+    
+    struct VoiceOver {
+        let id: ID
+        let src: FragmentSource
     }
-
-    struct Condition: Codable {
-        let type: ConditionType
-        let fragmentTag: String?
+    
+    struct Condition {
+        let nextFragment: Fragment.ID?
         let probability: Double?
-        let from: String?
-        let to: String?
-        let condition: [Condition]?
+        let timeInterval: TimeInterval?
     }
-
-    struct Mix: Codable {
-        let tag: String
-        let src: Source
-        let condition: Condition
-        let posVariant: [PosVariant]
-    }
-
-    struct Mixin: Codable {
-        let pos: [Position]
-        let mix: [Mix]
-    }
-
-    struct Fragment: Codable {
-        let tag: String
-        let src: Source
-        let nextFragment: [FragmentRef]
-        let mixins: Mixin?
-    }
-
-    struct Playlist: Codable {
-        let firstFragment: FragmentRef
-        let fragments: [Fragment]
-    }
-
-    enum SrcType: String, Codable {
-        case group
-        case attach
-        case file
-    }
-
-    enum ConditionType: String, Codable {
-        case nextFragment
-        case random
-        case groupAnd
-        case groupOr
-        case timeInterval
+    
+    struct TimeInterval {
+        let from: String
+        let to: String
     }
 }
 
@@ -247,61 +155,25 @@ extension SimStationMeta {
 }
 
 extension SimRadioDTO.TrackList {
-    struct ID: Codable, Hashable { let value: String }
-}
-
-extension SimRadioDTO.TrackList.ID {
-    init(_ value: String) {
-        self.value = value
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        value = try container.decode(String.self)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(value)
-    }
+    struct ID: CodableStringIDProtocol { let value: String }
 }
 
 extension SimRadioDTO.Track {
-    struct ID: Codable, Hashable { let value: String }
-}
-
-extension SimRadioDTO.Track.ID {
-    init(_ value: String) {
-        self.value = value
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        value = try container.decode(String.self)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(value)
-    }
+    struct ID: CodableStringIDProtocol { let value: String }
 }
 
 extension SimRadioDTO.Station {
-    struct ID: Codable, Hashable { let value: String }
+    struct ID: CodableStringIDProtocol { let value: String }
 }
 
-extension SimRadioDTO.Station.ID {
-    init(_ value: String) {
-        self.value = value
-    }
+extension SimRadioDTO.Fragment {
+    struct ID: CodableStringIDProtocol { let value: String }
+}
 
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        value = try container.decode(String.self)
-    }
+extension SimRadioDTO.VoiceOverPosition {
+    struct ID: CodableStringIDProtocol { let value: String }
+}
 
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(value)
-    }
+extension SimRadioDTO.VoiceOver {
+    struct ID: CodableStringIDProtocol { let value: String }
 }

@@ -6,6 +6,10 @@
 //
 
 class SimRadioMediaPlayerStub: SimRadioMediaPlayer {
+    func playStation(withID stationID: SimStation.ID) {
+        print("Play \(stationID)")
+    }
+    
     func playStation(withID stationID: LegacySimStation.ID) {
         print("Play \(stationID)")
     }

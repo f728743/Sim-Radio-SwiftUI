@@ -70,7 +70,7 @@ struct SimRadioTests {
 
     var stationData: SimRadioStationData {
         let series = try! JSONDecoder().decode(LegacySimRadioDTO.GameSeries.self, from: radioJson.data(using: .utf8)!)
-        let media = LegacySimRadioMedia(dto: series, origin: URL(string: "/")!)
+        let media = LegacySimRadioMedia(origin: URL(string: "/")!, dto: series)
         let stationData = media.stationData(for: .init(value: "683434/radio_01_class_rock"))
 
         return .init(

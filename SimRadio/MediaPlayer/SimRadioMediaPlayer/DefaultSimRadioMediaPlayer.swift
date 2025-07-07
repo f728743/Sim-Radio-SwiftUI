@@ -36,7 +36,7 @@ extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
             }
         }
     }
-    
+
     func playStation(withID stationID: LegacySimStation.ID) {
         Task {
             do {
@@ -79,15 +79,14 @@ private extension DefaultSimRadioMediaPlayer {
         /// - Value represents seconds since start of day (00:00)
         let startTimeInDay: CMTime
     }
-    
-    func doPlayStation(withID stationID: SimStation.ID) async throws {
-    }
-    
+
+    func doPlayStation(withID _: SimStation.ID) async throws {}
+
     func doPlayStation(withID stationID: LegacySimStation.ID) async throws {
         guard let mediaState else { return }
 
         guard let stationData = mediaState.stationData(for: stationID) else { return }
-        let playlistBuilder = PlaylistBuilder(stationData: stationData)
+        let playlistBuilder = LegacyPlaylistBuilder(stationData: stationData)
         let startingDate = Date()
         let startingTime = CMTime(seconds: startingDate.currentSecondOfDay)
 
@@ -152,7 +151,7 @@ private extension DefaultSimRadioMediaPlayer {
         time: CMTime
     ) async throws -> NextPlayableItem? {
         guard let stationData = mediaState?.stationData(for: stationID) else { return nil }
-        let playlistBuilder = PlaylistBuilder(stationData: stationData)
+        let playlistBuilder = LegacyPlaylistBuilder(stationData: stationData)
         let playlistItem = try await playlistBuilder.makePlaylistItem(
             startingOn: date,
             at: time

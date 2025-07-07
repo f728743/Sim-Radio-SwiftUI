@@ -223,7 +223,7 @@ extension DownloadQueue.DownloadRequest {
             directoryHint: .isDirectory
         )
     }
-    
+
     var localFileURL: URL {
         localDirectoryURL.appending(
             path: sourceURL.lastPathComponent,

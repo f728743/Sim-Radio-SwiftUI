@@ -1,5 +1,5 @@
 //
-//  PlaylistBuilder.swift
+//  LegacyPlaylistBuilder.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 02.05.2025.
@@ -7,7 +7,7 @@
 
 import AVFoundation
 
-class PlaylistBuilder {
+class LegacyPlaylistBuilder {
     let stationData: SimRadioStationData
     var playlistСache: [Date: [PlaylistItem]] = [:]
 
@@ -208,7 +208,7 @@ class PlaylistBuilder {
     }
 }
 
-private extension PlaylistBuilder {
+private extension LegacyPlaylistBuilder {
     var station: LegacySimStation { stationData.station }
     var fileGroups: [LegacySimFileGroup] { stationData.fileGroups }
 

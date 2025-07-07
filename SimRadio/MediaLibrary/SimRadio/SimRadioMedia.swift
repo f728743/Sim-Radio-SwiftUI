@@ -99,6 +99,7 @@ extension Track {
     var localFilePath: String? {
         filePath.map { ["\(id.series.origin.nonCryptoHash)", $0].joined(separator: "/") }
     }
+
     var destinationDirectoryPath: String? {
         localFilePath?.deletingLastPathComponent()
     }

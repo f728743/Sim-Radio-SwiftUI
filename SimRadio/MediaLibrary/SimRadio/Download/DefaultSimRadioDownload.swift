@@ -157,7 +157,7 @@ private extension DefaultSimRadioDownload {
             let requests: [DownloadQueue.DownloadRequest] = fileDownloads.compactMap { fileDownload in
                 let request = fileDownload.request
                 return isPartialDownload
-                ? missingFilesInGroup.contains(fileDownload.request.localFileURL) ? request : nil
+                    ? missingFilesInGroup.contains(fileDownload.request.localFileURL) ? request : nil
                     : request
             }
             requests.forEach { trackListIDByURL[$0.sourceURL] = trackListID }

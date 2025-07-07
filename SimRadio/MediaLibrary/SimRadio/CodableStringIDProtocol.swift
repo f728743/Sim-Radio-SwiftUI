@@ -16,7 +16,7 @@ extension CodableStringIDProtocol {
         let value = try container.decode(String.self)
         self.init(value: value)
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(value)

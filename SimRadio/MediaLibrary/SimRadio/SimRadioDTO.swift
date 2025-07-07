@@ -88,45 +88,45 @@ enum SimRadioDTO {
         case useRandomizedStrideSelection
         case playWeather
     }
-    
+
     struct Playlist: Codable {
         let firstFragment: Fragment.ID
         let fragments: [Fragment]
         let positions: [VoiceOverPosition]
     }
-    
+
     struct PlaylistTransition: Codable {
         let fragment: Fragment.ID
         let probability: Double?
     }
-    
+
     struct Fragment: Codable {
         let id: ID
         let src: FragmentSource
         let next: [PlaylistTransition]
     }
-    
+
     struct FragmentSource: Codable {
         let trackLists: [TrackList.ID]?
         let introTrackLists: [TrackList.ID]?
     }
-    
+
     struct VoiceOverPosition: Codable {
         let id: ID
         let relativeOffset: Double
     }
-    
+
     struct VoiceOver {
         let id: ID
         let src: FragmentSource
     }
-    
+
     struct Condition {
         let nextFragment: Fragment.ID?
         let probability: Double?
         let timeInterval: TimeInterval?
     }
-    
+
     struct TimeInterval {
         let from: String
         let to: String

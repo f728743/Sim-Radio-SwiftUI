@@ -8,10 +8,10 @@
 import AVFoundation
 
 class LegacyPlaylistBuilder {
-    let stationData: SimRadioStationData
+    let stationData: LegacySimRadioStationData
     var playlistСache: [Date: [PlaylistItem]] = [:]
 
-    init(stationData: SimRadioStationData) {
+    init(stationData: LegacySimRadioStationData) {
         self.stationData = stationData
     }
 
@@ -218,23 +218,23 @@ private extension LegacyPlaylistBuilder {
         if let cached = playlistСache[date] {
             return cached
         }
-        var rnd: any RandomNumberGenerator = SplitMix64(seed: UInt64(date.startOfDay.timeIntervalSince1970))
+        var generator: any RandomNumberGenerator = SplitMix64(seed: UInt64(date.startOfDay.timeIntervalSince1970))
         let playlist = try await makePlaylist(
             duration: .init(seconds: .fullDayDuration),
-            rnd: &rnd
+            generator: &generator
         )
         return playlist
     }
 
     func makePlaylist(
         duration: CMTime,
-        rnd: inout RandomNumberGenerator
+        generator: inout RandomNumberGenerator
     ) async throws -> [PlaylistItem] {
-        let rules = try PlaylistRules(
+        let rules = try LegacyPlaylistRules(
             stationID: stationData.station.id,
             model: station.playlistRules,
             fileGroups: Dictionary(uniqueKeysWithValues: fileGroups.map { ($0.id, $0) }),
-            rnd: rnd
+            generator: &generator
         )
 
         var result: [PlaylistItem] = []
@@ -244,7 +244,7 @@ private extension LegacyPlaylistBuilder {
         var next = try await nextFragmentTag(
             after: fragmentTag,
             rules: rules,
-            rnd: &rnd
+            generator: &generator
         )
 
         while moment < duration {
@@ -253,7 +253,7 @@ private extension LegacyPlaylistBuilder {
                 nextTag: next,
                 starts: moment,
                 rules: rules,
-                rnd: &rnd
+                generator: &generator
             )
             result.append(playlistItem)
             moment += playlistItem.track.playing.duration
@@ -261,7 +261,7 @@ private extension LegacyPlaylistBuilder {
             next = try await nextFragmentTag(
                 after: fragmentTag,
                 rules: rules,
-                rnd: &rnd
+                generator: &generator
             )
         }
         return result
@@ -269,13 +269,13 @@ private extension LegacyPlaylistBuilder {
 
     func nextFragmentTag(
         after fragmentTag: String,
-        rules: PlaylistRules,
-        rnd: inout RandomNumberGenerator
+        rules: LegacyPlaylistRules,
+        generator: inout RandomNumberGenerator
     ) async throws -> String {
         guard let fragment = rules.fragments[fragmentTag] else {
-            throw PlaylistGenerationError.fragmentNotFound(tag: fragmentTag)
+            throw PlaylistGenerationError.legacyFragmentNotFound(tag: fragmentTag)
         }
-        let rnd = Double.random(in: 0 ... 1, using: &rnd)
+        let rnd = Double.random(in: 0 ... 1, using: &generator)
         var p = 0.0
         for next in fragment.nextFragment {
             p += next.probability ?? 1.0
@@ -283,21 +283,21 @@ private extension LegacyPlaylistBuilder {
                 return next.fragmentTag
             }
         }
-        throw PlaylistGenerationError.notExhaustiveFragment(tag: fragmentTag)
+        throw PlaylistGenerationError.notExhaustiveLegacyFragment(tag: fragmentTag)
     }
 
     func makePlaylistItem(
         tag: String,
         nextTag: String,
         starts sec: CMTime,
-        rules: PlaylistRules,
-        rnd: inout RandomNumberGenerator
+        rules: LegacyPlaylistRules,
+        generator: inout RandomNumberGenerator
     ) async throws -> PlaylistItem {
         guard let fragment = rules.fragments[tag] else {
-            throw PlaylistGenerationError.fragmentNotFound(tag: tag)
+            throw PlaylistGenerationError.legacyFragmentNotFound(tag: tag)
         }
 
-        guard let file = fragment.src.next(parentFile: nil, rnd: &rnd) else {
+        guard let file = fragment.src.next(parentFile: nil, generator: &generator) else {
             throw PlaylistGenerationError.wrongSource
         }
         let mixes = try await makeMixesForFragment(
@@ -306,7 +306,7 @@ private extension LegacyPlaylistBuilder {
             at: fragment.mixPositions,
             mixins: fragment.mixins,
             nextTag: nextTag,
-            rnd: &rnd
+            generator: &generator
         )
         return PlaylistItem(
             track: AudioSegment(
@@ -326,16 +326,16 @@ private extension LegacyPlaylistBuilder {
         to file: FileFromGroup,
         starts sec: CMTime,
         at positions: [String: Double],
-        mixins: [PlaylistRules.Mix],
+        mixins: [LegacyPlaylistRules.Mix],
         nextTag: String,
-        rnd: inout RandomNumberGenerator
+        generator: inout RandomNumberGenerator
     ) async throws -> [AudioSegment] {
         var usedPositions: Set<String> = []
         var res: [AudioSegment] = []
         for mix in mixins where mix.condition.isSatisfied(
             forNextFragment: nextTag,
             startingFrom: sec,
-            rnd: &rnd
+            generator: &generator
         ) == true {
             for posTag in mix.positions {
                 if usedPositions.contains(posTag) {
@@ -344,7 +344,7 @@ private extension LegacyPlaylistBuilder {
                 guard let pos = positions[posTag] else {
                     throw PlaylistGenerationError.wrongPositionTag(tag: posTag)
                 }
-                if let mixFile = mix.src.next(parentFile: file, rnd: &rnd) {
+                if let mixFile = mix.src.next(parentFile: file, generator: &generator) {
                     let t = file.file.duration - mixFile.file.duration
                     let mixStartsSec = sec + .init(seconds: t * pos)
                     res.append(AudioSegment(

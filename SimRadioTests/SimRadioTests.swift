@@ -14,7 +14,7 @@ import Testing
 
 struct SimRadioTests {
     @Test func makePlaylistForEndOfDay() async throws {
-        let playlistBuilder = PlaylistBuilder(stationData: stationData)
+        let playlistBuilder = LegacyPlaylistBuilder(stationData: stationData)
         let date = Date("03.05.2025 23:55:29")
         let time: CMTime = .init(seconds: date.currentSecondOfDay)
         let playlist = try await playlistBuilder.makePlaylist(
@@ -40,7 +40,7 @@ struct SimRadioTests {
     }
 
     @Test func makePlaylistForStartOfDay() async throws {
-        let playlistBuilder = PlaylistBuilder(stationData: stationData)
+        let playlistBuilder = LegacyPlaylistBuilder(stationData: stationData)
         let date = Date("03.05.2025 00:1:40")
         let time: CMTime = .init(seconds: date.currentSecondOfDay)
 
@@ -68,7 +68,7 @@ struct SimRadioTests {
         #expect(playlist.description == playlistDescription)
     }
 
-    var stationData: SimRadioStationData {
+    var stationData: LegacySimRadioStationData {
         let series = try! JSONDecoder().decode(LegacySimRadioDTO.GameSeries.self, from: radioJson.data(using: .utf8)!)
         let media = LegacySimRadioMedia(origin: URL(string: "/")!, dto: series)
         let stationData = media.stationData(for: .init(value: "683434/radio_01_class_rock"))

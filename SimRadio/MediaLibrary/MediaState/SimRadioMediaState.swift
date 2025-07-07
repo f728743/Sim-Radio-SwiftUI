@@ -14,9 +14,15 @@ protocol SimRadioMediaState: AnyObject, Sendable {
     var simDownloadStatus: [SimStation.ID: MediaDownloadStatus] { get }
 }
 
-struct SimRadioStationData {
+struct LegacySimRadioStationData {
     let station: LegacySimStation
     let fileGroups: [LegacySimFileGroup]
+    let isDownloaded: Bool
+}
+
+struct SimRadioStationData {
+    let station: SimStation
+    let trackLists: [TrackList]
     let isDownloaded: Bool
 }
 
@@ -28,6 +34,15 @@ extension LegacySimRadioMedia {
         let fileGroups: [LegacySimFileGroup] = station.fileGroupIDs.compactMap { self.fileGroups[$0] }
         guard fileGroups.count == station.fileGroupIDs.count else { return nil }
         return (station, fileGroups)
+    }
+}
+
+extension SimRadioMedia {
+    func stationData(
+        for stationID: SimStation.ID
+    ) -> (station: SimStation, trackLists: [TrackList])? {
+        guard let station = stations[stationID] else { return nil }
+        return (station, stationTrackLists(station.id))
     }
 }
 
@@ -52,12 +67,21 @@ extension MediaState: SimRadioMediaState {
 }
 
 extension SimRadioMediaState {
-    func stationData(for stationID: LegacySimStation.ID) -> SimRadioStationData? {
+    func stationData(for stationID: LegacySimStation.ID) -> LegacySimRadioStationData? {
         guard let stationData = legacySimRadio.stationData(for: stationID) else { return nil }
         return .init(
             station: stationData.station,
             fileGroups: stationData.fileGroups,
             isDownloaded: legacySimDownloadStatus[stationID]?.state == .completed
+        )
+    }
+
+    func stationData(for stationID: SimStation.ID) -> SimRadioStationData? {
+        guard let stationData = simRadio.stationData(for: stationID) else { return nil }
+        return .init(
+            station: stationData.station,
+            trackLists: stationData.trackLists,
+            isDownloaded: simDownloadStatus[stationID]?.state == .completed
         )
     }
 }

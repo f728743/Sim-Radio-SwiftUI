@@ -130,6 +130,7 @@ private extension MediaPlayer {
 
         if case let .playing(currentID) = state, currentID == mediaID {
             print("MediaPlayer: Already playing \(mediaID).")
+            // TODO: check if actualy playing
             return
         }
 
@@ -141,7 +142,7 @@ private extension MediaPlayer {
         case let .legacySimRadio(stationID):
             simRadio?.playStation(withID: stationID)
         case let .simRadio(stationID):
-            print("paly", stationID.value)
+            simRadio?.playStation(withID: stationID)
         }
         state = .playing(mediaID)
         let profile = CommandProfile(isLiveStream: true, isSwitchTrackEnabled: items.count > 1)

@@ -80,7 +80,19 @@ private extension DefaultSimRadioMediaPlayer {
         let startTimeInDay: CMTime
     }
 
-    func doPlayStation(withID _: SimStation.ID) async throws {}
+    func doPlayStation(withID stationID: SimStation.ID) async throws {
+        guard let mediaState else { return }
+
+        guard let stationData = mediaState.stationData(for: stationID) else { return }
+        let playlistBuilder = PlaylistBuilder(stationData: stationData)
+        let startingDate = Date()
+        let startingTime = CMTime(seconds: startingDate.currentSecondOfDay)
+
+        let playlistItem = try await playlistBuilder.makePlaylistItem(
+            startingOn: startingDate,
+            at: .init(seconds: startingDate.currentSecondOfDay)
+        )
+    }
 
     func doPlayStation(withID stationID: LegacySimStation.ID) async throws {
         guard let mediaState else { return }

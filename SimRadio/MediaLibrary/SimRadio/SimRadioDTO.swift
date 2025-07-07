@@ -22,6 +22,7 @@ enum SimRadioDTO {
     struct Track: Codable, Hashable {
         let id: ID
         let path: String?
+        let start: Double?
         let duration: Double?
         let intro: [Track.ID]?
         let markers: TrackMarkers?
@@ -66,6 +67,7 @@ enum SimRadioDTO {
         let id: ID
         let meta: StationMeta
         let trackLists: [TrackList.ID]
+        let playlist: Playlist?
     }
 
     struct StationMeta: Codable {
@@ -92,7 +94,7 @@ enum SimRadioDTO {
     struct Playlist: Codable {
         let firstFragment: Fragment.ID
         let fragments: [Fragment]
-        let positions: [VoiceOverPosition]
+        let positions: [VoiceOverPosition]?
     }
 
     struct PlaylistTransition: Codable {
@@ -103,12 +105,14 @@ enum SimRadioDTO {
     struct Fragment: Codable {
         let id: ID
         let src: FragmentSource
+        let voiceOver: [VoiceOver]?
         let next: [PlaylistTransition]
     }
 
     struct FragmentSource: Codable {
         let trackLists: [TrackList.ID]?
         let introTrackLists: [TrackList.ID]?
+        let track: Track.ID?
     }
 
     struct VoiceOverPosition: Codable {
@@ -116,18 +120,20 @@ enum SimRadioDTO {
         let relativeOffset: Double
     }
 
-    struct VoiceOver {
+    struct VoiceOver: Codable {
         let id: ID
         let src: FragmentSource
+        let condition: Condition
+        let positions: [VoiceOverPosition.ID]
     }
 
-    struct Condition {
+    struct Condition: Codable {
         let nextFragment: Fragment.ID?
         let probability: Double?
         let timeInterval: TimeInterval?
     }
 
-    struct TimeInterval {
+    struct TimeInterval: Codable {
         let from: String
         let to: String
     }

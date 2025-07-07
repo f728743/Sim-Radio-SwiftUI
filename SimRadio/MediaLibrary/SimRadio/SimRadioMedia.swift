@@ -47,6 +47,7 @@ struct SimStation {
     let id: ID
     let meta: SimStationMeta
     let trackLists: [TrackList.ID]
+    let playlistRules: SimRadioDTO.Playlist? // TODO: remove optional
 }
 
 struct TrackList {
@@ -67,10 +68,19 @@ struct Track: Hashable {
 
     let id: ID
     let path: String?
+    let start: Double?
     let duration: Double?
     let intro: [Track.ID]?
     let markers: SimRadioDTO.TrackMarkers?
     let trackList: TrackList.ID?
+}
+
+struct DereferencedTruck {
+    let id: Track.ID
+    let path: String
+    let duration: Double
+    let intro: [Track.ID]?
+    let markers: SimRadioDTO.TrackMarkers?
 }
 
 extension SimStationMeta {
@@ -79,36 +89,95 @@ extension SimStationMeta {
     }
 }
 
+extension DereferencedTruck {
+    var url: URL { Track.url(seriesID: id.series, path: path) }
+    var localFileURL: URL { Track.localFileURL(seriesID: id.series, path: path) }
+    func url(local: Bool) -> URL {
+        local ? localFileURL : url
+    }
+}
+
 extension Track {
+    fileprivate static func filePath(path: String) -> String {
+        path + Const.mediaExtension
+    }
+
+    fileprivate static func url(seriesID: SimGameSeries.ID, path: String) -> URL {
+        seriesID
+            .origin
+            .deletingLastPathComponent()
+            .appendingPathComponent(filePath(path: path))
+    }
+
+    fileprivate static func localFilePath(seriesID: SimGameSeries.ID, path: String) -> String {
+        ["\(seriesID.origin.nonCryptoHash)", filePath(path: path)].joined(separator: "/")
+    }
+
+    fileprivate static func localFileURL(seriesID: SimGameSeries.ID, path: String) -> URL {
+        .documentsDirectory
+            .appending(
+                path: localFilePath(seriesID: seriesID, path: path),
+                directoryHint: .notDirectory
+            )
+    }
+
     enum Const {
         static let mediaExtension = ".m4a"
     }
 
-    var filePath: String? {
-        path.map { $0 + Const.mediaExtension }
-    }
+    var filePath: String? { path.map { Self.filePath(path: $0) } }
 
-    var url: URL? {
-        guard let filePath else { return nil }
-        return id.series
-            .origin
-            .deletingLastPathComponent()
-            .appendingPathComponent(filePath)
-    }
+    var url: URL? { path.map { Self.url(seriesID: id.series, path: $0) } }
 
-    var localFilePath: String? {
-        filePath.map { ["\(id.series.origin.nonCryptoHash)", $0].joined(separator: "/") }
-    }
+    var localFilePath: String? { path.map { Self.localFilePath(seriesID: id.series, path: $0) } }
+
+    var localFileURL: URL? { path.map { Self.localFileURL(seriesID: id.series, path: $0) } }
 
     var destinationDirectoryPath: String? {
         localFilePath?.deletingLastPathComponent()
     }
 
-    var localFileURL: URL? {
-        localFilePath.map {
-            URL.documentsDirectory.appending(path: $0, directoryHint: .notDirectory)
+    func dereference(
+        trackLists: [TrackList.ID: TrackList],
+        referenceIntro: [Track.ID]? = nil
+    ) throws -> DereferencedTruck {
+        // If this is the final track (doesn't reference another track list)
+        guard let nextTrackListID = trackList else {
+            // Validate required fields
+            guard let path, let duration else {
+                throw DereferenceError.missingPathOrDuration(trackID: id)
+            }
+            return DereferencedTruck(
+                id: id,
+                path: path,
+                duration: duration,
+                intro: referenceIntro ?? intro,
+                markers: markers
+            )
         }
+
+        // Find the next track list in the chain
+        guard let nextTrackList = trackLists[nextTrackListID] else {
+            throw DereferenceError.trackListNotFound(nextTrackListID)
+        }
+
+        // Find a track in the next list with matching id.value
+        guard let nextTrack = nextTrackList.tracks.first(where: { $0.id.value == self.id.value }) else {
+            throw DereferenceError.trackNotFoundInTrackList(
+                trackListID: nextTrackListID,
+                trackValue: id.value
+            )
+        }
+
+        // Recursively dereference the found track
+        return try nextTrack.dereference(trackLists: trackLists, referenceIntro: referenceIntro ?? intro)
     }
+}
+
+enum DereferenceError: Error {
+    case trackListNotFound(TrackList.ID)
+    case trackNotFoundInTrackList(trackListID: TrackList.ID, trackValue: String)
+    case missingPathOrDuration(trackID: Track.ID)
 }
 
 extension SimRadioMedia {
@@ -130,6 +199,7 @@ extension SimRadioMedia {
                     return .init(
                         id: .init(series: .init(origin: origin), value: trackDTO.id.value),
                         path: trackDTO.path,
+                        start: trackDTO.start,
                         duration: trackDTO.duration,
                         intro: intro,
                         markers: trackDTO.markers,
@@ -144,7 +214,8 @@ extension SimRadioMedia {
                 meta: .init(origin: origin, data: $0.meta),
                 trackLists: $0.trackLists.map {
                     .init(series: .init(origin: origin), value: $0.value)
-                }
+                },
+                playlistRules: $0.playlist
             )
         }
 

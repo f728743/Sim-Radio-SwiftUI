@@ -1,5 +1,5 @@
 //
-//  PlaylistRules.swift
+//  LegacyPlaylistRules.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 04.05.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-class PlaylistRules {
+class LegacyPlaylistRules {
     let fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup]
     let firstFragmentTag: String
     let fragments: [String: Fragment]
@@ -16,11 +16,11 @@ class PlaylistRules {
         stationID: LegacySimStation.ID,
         model: LegacySimRadioDTO.Playlist,
         fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup],
-        rnd: RandomNumberGenerator
+        generator: inout RandomNumberGenerator
     ) throws {
         firstFragmentTag = model.firstFragment.fragmentTag
         fragments = try Dictionary(uniqueKeysWithValues: model.fragments.map {
-            try ($0.tag, Fragment(stationID: stationID, model: $0, fileGroups: fileGroups, rnd: rnd))
+            try ($0.tag, Fragment(stationID: stationID, model: $0, fileGroups: fileGroups, generator: &generator))
         })
         self.fileGroups = fileGroups
     }
@@ -34,13 +34,13 @@ class PlaylistRules {
             stationID: LegacySimStation.ID,
             model: LegacySimRadioDTO.Mix,
             fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup],
-            rnd: RandomNumberGenerator
+            generator: inout RandomNumberGenerator
         ) throws {
             guard let src = makeFileSource(
                 stationID: stationID,
                 model: model.src,
                 fileGroups: fileGroups,
-                rnd: rnd
+                generator: &generator
             ) else {
                 throw PlaylistGenerationError.wrongSource
             }
@@ -60,13 +60,13 @@ class PlaylistRules {
             stationID: LegacySimStation.ID,
             model: LegacySimRadioDTO.Fragment,
             fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup],
-            rnd: RandomNumberGenerator
+            generator: inout RandomNumberGenerator
         ) throws {
             guard let src = makeFileSource(
                 stationID: stationID,
                 model: model.src,
                 fileGroups: fileGroups,
-                rnd: rnd
+                generator: &generator
             ) else {
                 throw PlaylistGenerationError.wrongSource
             }
@@ -83,7 +83,7 @@ class PlaylistRules {
                         stationID: stationID,
                         model: $0,
                         fileGroups: fileGroups,
-                        rnd: rnd
+                        generator: &generator
                     )
                 }
         }

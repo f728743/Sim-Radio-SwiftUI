@@ -19,19 +19,19 @@ extension FileFromGroup {
 }
 
 protocol FileSource {
-    func next(parentFile: FileFromGroup?, rnd: inout RandomNumberGenerator) -> FileFromGroup?
+    func next(parentFile: FileFromGroup?, generator: inout RandomNumberGenerator) -> FileFromGroup?
 }
 
 struct ParticularFileSource: FileSource {
     let file: FileFromGroup
 
-    func next(parentFile _: FileFromGroup?, rnd _: inout RandomNumberGenerator) -> FileFromGroup? {
+    func next(parentFile _: FileFromGroup?, generator _: inout RandomNumberGenerator) -> FileFromGroup? {
         file
     }
 }
 
-struct AttachedFileSource: FileSource {
-    func next(parentFile: FileFromGroup?, rnd: inout RandomNumberGenerator) -> FileFromGroup? {
+class AttachedFileSource: FileSource {
+    func next(parentFile: FileFromGroup?, generator: inout RandomNumberGenerator) -> FileFromGroup? {
         if let parentFile, parentFile.file.attaches.count > 0 {
             let attachGroupID: LegacySimFileGroup.ID = .init(
                 value: parentFile
@@ -44,7 +44,7 @@ struct AttachedFileSource: FileSource {
             return FileFromGroup(
                 groupID: attachGroupID,
                 file: parentFile.file.attaches[
-                    Int(Double(parentFile.file.attaches.count) * Double.random(in: 0 ... 1, using: &rnd))
+                    Int(Double(parentFile.file.attaches.count) * Double.random(in: 0 ... 1, using: &generator))
                 ]
             )
         }
@@ -52,14 +52,13 @@ struct AttachedFileSource: FileSource {
     }
 }
 
-struct GroupFileSource: FileSource {
-    var randomFiles: RandomFilePicker
+class GroupFileSource: FileSource {
+    var randomFiles: NonRepeatingRandomizer<LegacySimFile>
     let groupID: LegacySimFileGroup.ID
-    init?(fileGroup: LegacySimFileGroup, rnd: RandomNumberGenerator) {
-        guard let files = RandomFilePicker(
-            from: fileGroup.files,
-            withDontRepeatRatio: 3.0 / 7.0,
-            rnd: rnd
+    init?(fileGroup: LegacySimFileGroup) {
+        guard let files = NonRepeatingRandomizer(
+            elements: fileGroup.files,
+            avoidRepeatsRatio: 3.0 / 7.0
         ) else {
             return nil
         }
@@ -67,42 +66,8 @@ struct GroupFileSource: FileSource {
         randomFiles = files
     }
 
-    func next(parentFile _: FileFromGroup?, rnd _: inout RandomNumberGenerator) -> FileFromGroup? {
-        .init(groupID: groupID, file: randomFiles.next())
-    }
-}
-
-class RandomFilePicker {
-    private var discardPile: [LegacySimFile] = []
-    private var draw: [LegacySimFile] = []
-    private let maxDiscardPileCount: Int
-    private var rnd: RandomNumberGenerator
-
-    init?(
-        from: [LegacySimFile],
-        withDontRepeatRatio: Double,
-        rnd: RandomNumberGenerator
-    ) {
-        maxDiscardPileCount = max(1, Int(withDontRepeatRatio * Double(from.count)))
-        if from.count < 2 {
-            return nil
-        }
-        draw = from
-        self.rnd = rnd
-    }
-
-    func next() -> LegacySimFile {
-        let index = Int(Double(draw.count) * Double.random(in: 0 ... 1, using: &rnd))
-        let res = draw[index]
-
-        discardPile.append(res)
-        draw.remove(at: index)
-        if discardPile.count > maxDiscardPileCount {
-            let putBack = discardPile[0]
-            discardPile.remove(at: 0)
-            draw.append(putBack)
-        }
-        return res
+    func next(parentFile _: FileFromGroup?, generator: inout RandomNumberGenerator) -> FileFromGroup? {
+        .init(groupID: groupID, file: randomFiles.next(generator: &generator))
     }
 }
 
@@ -124,7 +89,7 @@ func makeFileSource(
     stationID: LegacySimStation.ID,
     model: LegacySimRadioDTO.Source,
     fileGroups: [LegacySimFileGroup.ID: LegacySimFileGroup],
-    rnd: RandomNumberGenerator
+    generator _: inout RandomNumberGenerator
 ) -> FileSource? {
     switch model.type {
     case .file:
@@ -141,7 +106,7 @@ func makeFileSource(
             let groupTag = model.groupTag,
             let fileGroup = fileGroups.fileGroup(tag: groupTag, stationID: stationID)
         else { return nil }
-        return GroupFileSource(fileGroup: fileGroup, rnd: rnd)
+        return GroupFileSource(fileGroup: fileGroup)
 
     case .attach:
         return AttachedFileSource()

@@ -5,6 +5,8 @@
 //  Created by Alexey Vorobyov on 07.07.2025.
 //
 
+// swiftlint:disable file_length
+
 import AVFoundation
 
 typealias DrawPools = [DrawPoolID: NonRepeatingRandomizer<DereferencedTruck>]
@@ -14,8 +16,14 @@ enum DrawPoolID: Hashable {
 }
 
 class PlaylistBuilder {
+    enum PlaylistMode {
+        case alternate(TimeInterval)
+        case option(SimRadioDTO.SourceOption.ID)
+    }
+
     var drawPools: DrawPools = [:]
     var trackLists: [TrackList.ID: TrackList] = [:]
+    var fragments: [SimRadioDTO.Fragment.ID: SimRadioDTO.Fragment] = [:]
     let stationData: SimRadioStationData
     var playlistСache: [Date: [PlaylistItem]] = [:]
 
@@ -33,10 +41,11 @@ class PlaylistBuilder {
     /// for the given date and time or if the item's duration is invalid.
     func makePlaylistItem(
         startingOn playlistStartDate: Date,
-        at timeOffsetInFirstDay: CMTime
+        at timeOffsetInFirstDay: CMTime,
+        mode: PlaylistMode?
     ) async throws -> PlaylistItem {
         let currentDate = playlistStartDate.startOfDay
-        let dailyItems = try await makeDailyPlaylist(for: currentDate)
+        let dailyItems = try await makeDailyPlaylist(for: currentDate, mode: mode)
         print(dailyItems.description)
 
         // Find the first item that is relevant (i.e., its playing end time is after the timeOffsetInFirstDay)
@@ -81,7 +90,8 @@ private extension PlaylistBuilder {
     var station: SimStation { stationData.station }
 
     func makeDailyPlaylist(
-        for date: Date
+        for date: Date,
+        mode: PlaylistMode?
     ) async throws -> [PlaylistItem] {
         if let cached = playlistСache[date] {
             return cached
@@ -89,6 +99,7 @@ private extension PlaylistBuilder {
         var generator: any RandomNumberGenerator = SplitMix64(seed: UInt64(date.startOfDay.timeIntervalSince1970))
         let playlist = try await makePlaylist(
             duration: .init(seconds: .fullDayDuration),
+            mode: mode,
             generator: &generator
         )
         return playlist
@@ -97,6 +108,11 @@ private extension PlaylistBuilder {
     func populateHelperDictionaries() throws {
         try populateDrawPools()
         trackLists = Dictionary(uniqueKeysWithValues: stationData.trackLists.map { ($0.id, $0) })
+        let fragments = stationData.station.playlistRules?.fragments ?? []
+        guard !fragments.isEmpty else {
+            throw PlaylistGenerationError.makePlaylistError
+        }
+        self.fragments = Dictionary(uniqueKeysWithValues: fragments.map { ($0.id, $0) })
     }
 
     func populateDrawPools() throws {
@@ -135,35 +151,74 @@ private extension PlaylistBuilder {
         drawPools = Dictionary(uniqueKeysWithValues: drawPoolTuples)
     }
 
+    func firstOption(for mode: PlaylistMode?) -> SimRadioDTO.SourceOption.ID? {
+        switch mode {
+        case .alternate:
+            if let firstOption = station.playlistRules?.options?.first {
+                firstOption.id
+            } else {
+                nil
+            }
+        case let .option(optionID):
+            optionID
+        case .none:
+            nil
+        }
+    }
+
+    func option(at moment: CMTime, for mode: PlaylistMode?) -> SimRadioDTO.SourceOption.ID? {
+        guard let mode else { return nil }
+
+        switch mode {
+        case let .option(optionID):
+            return optionID
+
+        case let .alternate(interval):
+            guard let options = station.playlistRules?.options, !options.isEmpty else {
+                return nil
+            }
+            guard interval > 0 else {
+                return options.first?.id
+            }
+            let intervalCount = Int(moment.seconds / interval)
+            let optionIndex = intervalCount % options.count
+            return options[optionIndex].id
+        }
+    }
+
     func makePlaylist(
         duration: CMTime,
+        mode: PlaylistMode?,
         generator: inout RandomNumberGenerator
     ) async throws -> [PlaylistItem] {
         try populateHelperDictionaries()
 
         guard let rulesDTO = station.playlistRules else { return [] }
-        let rules = try PlaylistRules(
-            model: rulesDTO,
-            trackLists: stationData.trackLists
-        )
 
         var result: [PlaylistItem] = []
         var moment: CMTime = .zero
         var fragmentID = rulesDTO.firstFragment
 
-        var next = try await rules.nextFragmentID(after: fragmentID, generator: &generator)
+        var next = try await nextFragmentID(
+            after: fragmentID,
+            option: firstOption(for: mode),
+            generator: &generator
+        )
         while moment < duration {
             let playlistItem = try await makePlaylistItem(
                 fragmentID: fragmentID,
                 nextTag: next,
                 starts: moment,
-                rules: rules,
                 generator: &generator
             )
             result.append(playlistItem)
             moment += playlistItem.track.playing.duration
             fragmentID = next
-            next = try await rules.nextFragmentID(after: fragmentID, generator: &generator)
+            next = try await nextFragmentID(
+                after: fragmentID,
+                option: option(at: moment, for: mode),
+                generator: &generator
+            )
         }
         return result
     }
@@ -172,10 +227,9 @@ private extension PlaylistBuilder {
         fragmentID: SimRadioDTO.Fragment.ID,
         nextTag: SimRadioDTO.Fragment.ID,
         starts sec: CMTime,
-        rules: PlaylistRules,
         generator: inout RandomNumberGenerator
     ) async throws -> PlaylistItem {
-        guard let fragment = rules.fragments[fragmentID] else {
+        guard let fragment = fragments[fragmentID] else {
             throw PlaylistGenerationError.fragmentNotFound(id: fragmentID)
         }
 
@@ -188,7 +242,7 @@ private extension PlaylistBuilder {
             track: track,
             nextFragmentID: nextTag,
             starts: sec,
-            positions: rules.model.positions ?? [],
+            positions: station.playlistRules?.positions ?? [],
             generator: &generator
         )
 
@@ -201,6 +255,26 @@ private extension PlaylistBuilder {
             ),
             mixes: mixes
         )
+    }
+
+    func nextFragmentID(
+        after fragmentID: SimRadioDTO.Fragment.ID,
+        option: SimRadioDTO.SourceOption.ID?,
+        generator: inout RandomNumberGenerator
+    ) async throws -> SimRadioDTO.Fragment.ID {
+        guard let fragment = fragments[fragmentID] else {
+            throw PlaylistGenerationError.fragmentNotFound(id: fragmentID)
+        }
+        let rnd = Double.random(in: 0 ... 1, using: &generator)
+        var p = 0.0
+        for next in fragment.next {
+            if let option, let nextOption = next.option, option != nextOption { continue }
+            p += next.probability ?? 1.0
+            if rnd <= p {
+                return next.fragment
+            }
+        }
+        throw PlaylistGenerationError.notExhaustiveFragment(id: fragmentID)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -387,3 +461,5 @@ extension SimRadioDTO.FragmentSource {
         }
     }
 }
+
+// swiftlint:enable file_length

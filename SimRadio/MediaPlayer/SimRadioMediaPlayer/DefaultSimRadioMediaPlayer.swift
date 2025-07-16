@@ -88,9 +88,15 @@ private extension DefaultSimRadioMediaPlayer {
         let startingDate = Date()
         let startingTime = CMTime(seconds: startingDate.currentSecondOfDay)
 
+        let playlistOption = (stationData.station.playlistRules?.options ?? []).last.map(\.id)
+
+//        let mode: PlaylistBuilder.PlaylistMode? = playlistOption.map { .option($0) }
+        let mode: PlaylistBuilder.PlaylistMode = .alternate(2 * 60 * 60)
+
         let playlistItem = try await playlistBuilder.makePlaylistItem(
             startingOn: startingDate,
-            at: .init(seconds: startingDate.currentSecondOfDay)
+            at: .init(seconds: startingDate.currentSecondOfDay),
+            mode: mode
         )
     }
 

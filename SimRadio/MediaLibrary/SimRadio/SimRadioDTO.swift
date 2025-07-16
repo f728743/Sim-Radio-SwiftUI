@@ -94,11 +94,13 @@ enum SimRadioDTO {
     struct Playlist: Codable {
         let firstFragment: Fragment.ID
         let fragments: [Fragment]
+        let options: [SourceOption]?
         let positions: [VoiceOverPosition]?
     }
 
     struct PlaylistTransition: Codable {
         let fragment: Fragment.ID
+        let option: SourceOption.ID?
         let probability: Double?
     }
 
@@ -107,6 +109,11 @@ enum SimRadioDTO {
         let src: FragmentSource
         let voiceOver: [VoiceOver]?
         let next: [PlaylistTransition]
+    }
+
+    struct SourceOption: Codable {
+        let id: ID
+        let title: String
     }
 
     struct FragmentSource: Codable {
@@ -181,5 +188,9 @@ extension SimRadioDTO.VoiceOverPosition {
 }
 
 extension SimRadioDTO.VoiceOver {
+    struct ID: CodableStringIDProtocol { let value: String }
+}
+
+extension SimRadioDTO.SourceOption {
     struct ID: CodableStringIDProtocol { let value: String }
 }

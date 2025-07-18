@@ -92,9 +92,9 @@ enum SimRadioDTO {
     }
 
     struct Playlist: Codable {
-        let firstFragment: Fragment.ID
+        let firstFragment: [PlaylistTransition]
         let fragments: [Fragment]
-        let options: [SourceOption]?
+        let options: Options?
         let positions: [VoiceOverPosition]?
     }
 
@@ -111,6 +111,11 @@ enum SimRadioDTO {
         let next: [PlaylistTransition]
     }
 
+    struct Options: Codable {
+        let available: [SourceOption]
+        let alternateInterval: Double?
+    }
+
     struct SourceOption: Codable {
         let id: ID
         let title: String
@@ -120,6 +125,7 @@ enum SimRadioDTO {
         let trackLists: [TrackList.ID]?
         let introTrackLists: [TrackList.ID]?
         let track: Track.ID?
+        let trackStart: Double?
     }
 
     struct VoiceOverPosition: Codable {

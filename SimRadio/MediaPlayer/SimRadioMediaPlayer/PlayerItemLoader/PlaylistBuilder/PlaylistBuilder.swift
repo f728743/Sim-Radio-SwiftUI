@@ -154,7 +154,7 @@ private extension PlaylistBuilder {
     func firstOption(for mode: PlaylistMode?) -> SimRadioDTO.SourceOption.ID? {
         switch mode {
         case .alternate:
-            if let firstOption = station.playlistRules?.options?.first {
+            if let firstOption = station.playlistRules?.options?.available.first {
                 firstOption.id
             } else {
                 nil
@@ -174,15 +174,15 @@ private extension PlaylistBuilder {
             return optionID
 
         case let .alternate(interval):
-            guard let options = station.playlistRules?.options, !options.isEmpty else {
+            guard let options = station.playlistRules?.options, !options.available.isEmpty else {
                 return nil
             }
             guard interval > 0 else {
-                return options.first?.id
+                return options.available.first?.id
             }
             let intervalCount = Int(moment.seconds / interval)
-            let optionIndex = intervalCount % options.count
-            return options[optionIndex].id
+            let optionIndex = intervalCount % options.available.count
+            return options.available[optionIndex].id
         }
     }
 
@@ -192,12 +192,9 @@ private extension PlaylistBuilder {
         generator: inout RandomNumberGenerator
     ) async throws -> [PlaylistItem] {
         try populateHelperDictionaries()
-
-        guard let rulesDTO = station.playlistRules else { return [] }
-
         var result: [PlaylistItem] = []
         var moment: CMTime = .zero
-        var fragmentID = rulesDTO.firstFragment
+        var fragmentID = try firstFragmentID(mode: mode)
 
         var next = try await nextFragmentID(
             after: fragmentID,
@@ -250,11 +247,33 @@ private extension PlaylistBuilder {
         return PlaylistItem(
             track: AudioSegment(
                 url: url,
-                timeRange: .init(start: .zero, duration: .init(seconds: track.duration)),
+                timeRange: .init(
+                    start: .init(seconds: track.start ?? 0),
+                    duration: .init(seconds: track.duration)
+                ),
                 startTime: sec
             ),
             mixes: mixes
         )
+    }
+
+    func firstFragmentID(mode: PlaylistMode?) throws -> SimRadioDTO.Fragment.ID {
+        guard let rules = station.playlistRules,
+              let firstFragment = rules.firstFragment.first?.fragment
+        else {
+            throw PlaylistGenerationError.firstFragmentNotFound
+        }
+        switch mode {
+        case .alternate:
+            return firstFragment
+        case let .option(optionID):
+            guard let transition = rules.firstFragment.first(where: { $0.option == optionID }) else {
+                throw PlaylistGenerationError.firstFragmentNotFound
+            }
+            return transition.fragment
+        case .none:
+            return firstFragment
+        }
     }
 
     func nextFragmentID(
@@ -313,7 +332,9 @@ private extension PlaylistBuilder {
                     let mixStartsSec = sec + .init(seconds: t * pos.relativeOffset)
                     res.append(AudioSegment(
                         url: mixTrack.url(local: stationData.isDownloaded),
-                        timeRange: .init(start: .zero, duration: .init(seconds: mixTrack.duration)),
+                        timeRange: .init(
+                            start: .init(seconds: mixTrack.start ?? 0),
+                            duration: .init(seconds: mixTrack.duration)),
                         startTime: mixStartsSec
                     ))
                     usedPositions.insert(pos.id)
@@ -459,6 +480,16 @@ extension SimRadioDTO.FragmentSource {
         } else {
             nil
         }
+    }
+}
+
+extension SimRadioDTO.Playlist {
+    var defaultMode: PlaylistBuilder.PlaylistMode? {
+        guard let options, options.available.isEmpty == false else { return nil }
+        if let interval = options.alternateInterval {
+            return .alternate(interval)
+        }
+        return options.available.first.map { .option($0.id) }
     }
 }
 

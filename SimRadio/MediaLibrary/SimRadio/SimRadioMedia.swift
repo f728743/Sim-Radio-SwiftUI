@@ -78,6 +78,7 @@ struct Track: Hashable {
 struct DereferencedTruck {
     let id: Track.ID
     let path: String
+    let start: Double?
     let duration: Double
     let intro: [Track.ID]?
     let markers: SimRadioDTO.TrackMarkers?
@@ -150,6 +151,7 @@ extension Track {
             return DereferencedTruck(
                 id: id,
                 path: path,
+                start: start,
                 duration: duration,
                 intro: referenceIntro ?? intro,
                 markers: markers

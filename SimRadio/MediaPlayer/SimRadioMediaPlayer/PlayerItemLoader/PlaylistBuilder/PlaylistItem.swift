@@ -8,23 +8,31 @@
 import AVFoundation
 
 struct PlaylistItem: Sendable {
-    let track: AudioSegment
-    let mixes: [AudioSegment]
+    let track: AudioFragment
+    let mixes: [AudioFragment]
 }
 
-struct AudioSegment: Sendable {
+struct AudioFragmentMarker {
+    let id: Int
+    let offset: CMTime
+    let title: String?
+    let artist: String?
+}
+
+struct AudioFragment: Sendable {
     let url: URL
     let timeRange: CMTimeRange
     let startTime: CMTime
+    let markers: [AudioFragmentMarker]?
 }
 
-extension AudioSegment {
+extension AudioFragment {
     var playing: CMTimeRange {
         .init(start: startTime, duration: timeRange.duration)
     }
 }
 
-extension AudioSegment: CustomStringConvertible {
+extension AudioFragment: CustomStringConvertible {
     private func formatTime(_ time: CMTime) -> String {
         time.seconds.formatted(
             .number
@@ -57,8 +65,8 @@ extension PlaylistItem: CustomStringConvertible {
     }
 }
 
-extension AudioSegment {
-    func trimmed(to endTime: CMTime) -> AudioSegment {
+extension AudioFragment {
+    func trimmed(to endTime: CMTime) -> AudioFragment {
         let newPlayDuration = max(.zero, min(endTime, playing.end) - startTime)
         return .init(
             url: url,
@@ -66,7 +74,8 @@ extension AudioSegment {
                 start: timeRange.start,
                 duration: newPlayDuration
             ),
-            startTime: startTime
+            startTime: startTime,
+            markers: markers
         )
     }
 }
@@ -79,8 +88,8 @@ extension PlaylistItem {
             return nil
         }
 
-        let trimmedMixes = mixes.compactMap { mixSegment -> AudioSegment? in
-            let trimmedMix = mixSegment.trimmed(to: endTime)
+        let trimmedMixes = mixes.compactMap { mixFragment -> AudioFragment? in
+            let trimmedMix = mixFragment.trimmed(to: endTime)
             return trimmedMix.timeRange.duration > .zero ? trimmedMix : nil
         }
 
@@ -113,7 +122,7 @@ extension [PlaylistItem] {
     }
 }
 
-extension [AudioSegment] {
+extension [AudioFragment] {
     func description(nesting: Int) -> String {
         map { $0.description(nesting: nesting) }.joined()
     }

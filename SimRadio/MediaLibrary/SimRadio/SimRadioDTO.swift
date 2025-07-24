@@ -67,7 +67,7 @@ enum SimRadioDTO {
         let id: ID
         let meta: StationMeta
         let trackLists: [TrackList.ID]
-        let playlist: Playlist?
+        let playlist: Playlist
     }
 
     struct StationMeta: Codable {

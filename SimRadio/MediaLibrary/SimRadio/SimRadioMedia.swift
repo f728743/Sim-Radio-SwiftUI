@@ -47,7 +47,7 @@ struct SimStation {
     let id: ID
     let meta: SimStationMeta
     let trackLists: [TrackList.ID]
-    let playlistRules: SimRadioDTO.Playlist? // TODO: remove optional
+    let playlistRules: SimRadioDTO.Playlist
 }
 
 struct TrackList {

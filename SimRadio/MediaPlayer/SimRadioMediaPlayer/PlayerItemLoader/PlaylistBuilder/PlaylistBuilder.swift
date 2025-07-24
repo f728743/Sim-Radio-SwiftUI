@@ -35,7 +35,7 @@ class PlaylistBuilder {
     /// - Parameters:
     ///   - playlistStartDate: The date on which the playlist item should start.
     ///   - timeOffsetInFirstDay: The time offset within the start date's day, in seconds, where the item begins.
-    /// - Returns: A `PlaylistItem` representing the audio segment and its associated mixes,
+    /// - Returns: A `PlaylistItem` representing the audio fragment and its associated mixes,
     /// adjusted to start at the specified offset.
     /// - Throws: `PlaylistGenerationError.makeDailyPlaylistError` if no valid item is found
     /// for the given date and time or if the item's duration is invalid.
@@ -53,7 +53,57 @@ class PlaylistBuilder {
             throw PlaylistGenerationError.makeDailyPlaylistError(date: currentDate)
         }
 
-        throw PlaylistGenerationError.makePlaylistError
+        var itemFileTimeRange = relevantItem.track.timeRange
+        var itemPlayableDuration = relevantItem.track.timeRange.duration
+        let parentOriginalStartTimeInDay = relevantItem.track.startTime
+        let itemStartTimeInOutput: CMTime = .zero // Single item, start at 0 in output
+
+        // Adjust for the time offset within the item
+        if timeOffsetInFirstDay > parentOriginalStartTimeInDay {
+            let offsetIntoItem = timeOffsetInFirstDay - parentOriginalStartTimeInDay
+            let newDuration = max(.zero, relevantItem.track.timeRange.duration - offsetIntoItem)
+            itemPlayableDuration = newDuration
+            itemFileTimeRange = CMTimeRange(
+                start: relevantItem.track.timeRange.start + offsetIntoItem,
+                duration: itemPlayableDuration
+            )
+        }
+
+        let remainingInDayDuration = max(
+            .zero,
+            .fullDayDuration - parentOriginalStartTimeInDay - itemFileTimeRange.start
+        )
+        let actualDurationToAdd = min(itemPlayableDuration, remainingInDayDuration)
+
+        if actualDurationToAdd < itemPlayableDuration {
+            itemFileTimeRange = CMTimeRange(
+                start: itemFileTimeRange.start,
+                duration: actualDurationToAdd
+            )
+        }
+
+        let parentActualStartTimeInDay = parentOriginalStartTimeInDay +
+            (itemFileTimeRange.start - relevantItem.track.timeRange.start)
+        let parentActualEndTimeInDay = parentActualStartTimeInDay + itemFileTimeRange.duration
+
+        // Adjust mixes to align with the trimmed track
+        let adjustedMixes: [AudioFragment] = relevantItem.mixes.compactMap { originalMix in
+            originalMix.adjustedMix(
+                parentActualStartTimeInDay: parentActualStartTimeInDay,
+                parentActualEndTimeInDay: parentActualEndTimeInDay,
+                itemStartTimeInOutput: itemStartTimeInOutput
+            )
+        }
+
+        return PlaylistItem(
+            track: AudioFragment(
+                url: relevantItem.track.url,
+                timeRange: itemFileTimeRange,
+                startTime: itemStartTimeInOutput,
+                markers: nil, // TODO: !!
+            ),
+            mixes: adjustedMixes
+        )
     }
 }
 
@@ -108,7 +158,7 @@ private extension PlaylistBuilder {
     func populateHelperDictionaries() throws {
         try populateDrawPools()
         trackLists = Dictionary(uniqueKeysWithValues: stationData.trackLists.map { ($0.id, $0) })
-        let fragments = stationData.station.playlistRules?.fragments ?? []
+        let fragments = stationData.station.playlistRules.fragments
         guard !fragments.isEmpty else {
             throw PlaylistGenerationError.makePlaylistError
         }
@@ -116,7 +166,8 @@ private extension PlaylistBuilder {
     }
 
     func populateDrawPools() throws {
-        guard drawPools.isEmpty, let rules = station.playlistRules else { return }
+        guard drawPools.isEmpty else { return }
+        let rules = station.playlistRules
         let fragments: [(DrawPoolID, [SimRadioDTO.TrackList.ID])] = rules.fragments.compactMap {
             guard let trackLists = $0.src.trackLists else { return nil }
             return (.fragment($0.id), trackLists)
@@ -154,7 +205,7 @@ private extension PlaylistBuilder {
     func firstOption(for mode: PlaylistMode?) -> SimRadioDTO.SourceOption.ID? {
         switch mode {
         case .alternate:
-            if let firstOption = station.playlistRules?.options?.available.first {
+            if let firstOption = station.playlistRules.options?.available.first {
                 firstOption.id
             } else {
                 nil
@@ -174,7 +225,7 @@ private extension PlaylistBuilder {
             return optionID
 
         case let .alternate(interval):
-            guard let options = station.playlistRules?.options, !options.available.isEmpty else {
+            guard let options = station.playlistRules.options, !options.available.isEmpty else {
                 return nil
             }
             guard interval > 0 else {
@@ -239,27 +290,28 @@ private extension PlaylistBuilder {
             track: track,
             nextFragmentID: nextTag,
             starts: sec,
-            positions: station.playlistRules?.positions ?? [],
+            positions: station.playlistRules.positions ?? [],
             generator: &generator
         )
 
         let url = stationData.isDownloaded ? track.localFileURL : track.url
         return PlaylistItem(
-            track: AudioSegment(
+            track: AudioFragment(
                 url: url,
                 timeRange: .init(
                     start: .init(seconds: track.start ?? 0),
                     duration: .init(seconds: track.duration)
                 ),
-                startTime: sec
+                startTime: sec,
+                markers: nil // TODO: !!
             ),
             mixes: mixes
         )
     }
 
     func firstFragmentID(mode: PlaylistMode?) throws -> SimRadioDTO.Fragment.ID {
-        guard let rules = station.playlistRules,
-              let firstFragment = rules.firstFragment.first?.fragment
+        let rules = station.playlistRules
+        guard let firstFragment = rules.firstFragment.first?.fragment
         else {
             throw PlaylistGenerationError.firstFragmentNotFound
         }
@@ -304,9 +356,9 @@ private extension PlaylistBuilder {
         starts sec: CMTime,
         positions: [SimRadioDTO.VoiceOverPosition],
         generator: inout RandomNumberGenerator
-    ) async throws -> [AudioSegment] {
+    ) async throws -> [AudioFragment] {
         var usedPositions: Set<SimRadioDTO.VoiceOverPosition.ID> = []
-        var res: [AudioSegment] = []
+        var res: [AudioFragment] = []
         for mix in fragment.voiceOver ?? [] where try mix.condition.isSatisfied(
             nextFragmentID: nextFragmentID,
             startingFrom: sec,
@@ -330,12 +382,13 @@ private extension PlaylistBuilder {
                 if let mixTrack {
                     let t = track.duration - mixTrack.duration
                     let mixStartsSec = sec + .init(seconds: t * pos.relativeOffset)
-                    res.append(AudioSegment(
+                    res.append(AudioFragment(
                         url: mixTrack.url(local: stationData.isDownloaded),
                         timeRange: .init(
                             start: .init(seconds: mixTrack.start ?? 0),
                             duration: .init(seconds: mixTrack.duration)),
-                        startTime: mixStartsSec
+                        startTime: mixStartsSec,
+                        markers: nil // TODO: !!
                     ))
                     usedPositions.insert(pos.id)
                     break
@@ -492,5 +545,39 @@ extension SimRadioDTO.Playlist {
         return options.available.first.map { .option($0.id) }
     }
 }
+
+extension AudioFragment {
+    func adjustedMix(
+        parentActualStartTimeInDay: CMTime,
+        parentActualEndTimeInDay: CMTime,
+        itemStartTimeInOutput: CMTime
+    ) -> AudioFragment? {
+        // Check for overlap: the mix must start before the end of the parent AND end after the start of the parent
+        guard startTime < parentActualEndTimeInDay,
+              playing.end > parentActualStartTimeInDay else { return nil }
+
+        // Calculate the overlap interval within the day context
+        let overlapStartInDay = max(parentActualStartTimeInDay, startTime)
+        let overlapEndInDay = min(parentActualEndTimeInDay, playing.end)
+        let overlapDuration = overlapEndInDay - overlapStartInDay
+
+        // Only include if overlap has a positive duration
+        guard overlapDuration > .zero else { return nil }
+
+        let offsetIntoMixOriginal = max(.zero, overlapStartInDay - startTime)
+
+        let adjustedMix = AudioFragment(
+            url: url,
+            timeRange: CMTimeRange(
+                start: timeRange.start + offsetIntoMixOriginal,
+                duration: overlapDuration
+            ),
+            startTime: itemStartTimeInOutput + (overlapStartInDay - parentActualStartTimeInDay),
+            markers: nil // TODO: adjust markers !!
+        )
+        return adjustedMix
+    }
+}
+
 
 // swiftlint:enable file_length

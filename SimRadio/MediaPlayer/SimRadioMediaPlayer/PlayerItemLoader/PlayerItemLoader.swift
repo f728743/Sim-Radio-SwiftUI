@@ -47,7 +47,7 @@ class PlayerItemLoader {
 
 private extension PlayerItemLoader {
     func load(
-        _ audio: AudioSegment,
+        _ audio: AudioFragment,
         track: AVMutableCompositionTrack
     ) async throws {
         let asset = AVURLAsset(url: audio.url)

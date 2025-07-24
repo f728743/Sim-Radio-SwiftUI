@@ -110,7 +110,7 @@ class LegacyPlaylistBuilder {
 
             let parentActualEndTimeInDay = parentActualStartTimeInDay + itemFileTimeRange.duration
 
-            let adjustedMixes: [AudioSegment] = item.mixes.compactMap { originalMix in
+            let adjustedMixes: [AudioFragment] = item.mixes.compactMap { originalMix in
                 originalMix.adjustedMix(
                     parentActualStartTimeInDay: parentActualStartTimeInDay,
                     parentActualEndTimeInDay: parentActualEndTimeInDay,
@@ -119,10 +119,11 @@ class LegacyPlaylistBuilder {
             }
 
             let newItem = PlaylistItem(
-                track: AudioSegment(
+                track: AudioFragment(
                     url: item.track.url,
                     timeRange: itemFileTimeRange,
-                    startTime: itemStartTimeInOutput
+                    startTime: itemStartTimeInOutput,
+                    markers: nil
                 ),
                 mixes: adjustedMixes // List of processed and filtered mixes
             )
@@ -139,7 +140,7 @@ class LegacyPlaylistBuilder {
     /// - Parameters:
     ///   - playlistStartDate: The date on which the playlist item should start.
     ///   - timeOffsetInFirstDay: The time offset within the start date's day, in seconds, where the item begins.
-    /// - Returns: A `PlaylistItem` representing the audio segment and its associated mixes,
+    /// - Returns: A `PlaylistItem` representing the audio fragment and its associated mixes,
     /// adjusted to start at the specified offset.
     /// - Throws: `PlaylistGenerationError.makeDailyPlaylistError` if no valid item is found
     /// for the given date and time or if the item's duration is invalid.
@@ -189,7 +190,7 @@ class LegacyPlaylistBuilder {
         let parentActualEndTimeInDay = parentActualStartTimeInDay + itemFileTimeRange.duration
 
         // Adjust mixes to align with the trimmed track
-        let adjustedMixes: [AudioSegment] = relevantItem.mixes.compactMap { originalMix in
+        let adjustedMixes: [AudioFragment] = relevantItem.mixes.compactMap { originalMix in
             originalMix.adjustedMix(
                 parentActualStartTimeInDay: parentActualStartTimeInDay,
                 parentActualEndTimeInDay: parentActualEndTimeInDay,
@@ -198,10 +199,11 @@ class LegacyPlaylistBuilder {
         }
 
         return PlaylistItem(
-            track: AudioSegment(
+            track: AudioFragment(
                 url: relevantItem.track.url,
                 timeRange: itemFileTimeRange,
-                startTime: itemStartTimeInOutput
+                startTime: itemStartTimeInOutput,
+                markers: nil
             ),
             mixes: adjustedMixes
         )
@@ -309,13 +311,14 @@ private extension LegacyPlaylistBuilder {
             generator: &generator
         )
         return PlaylistItem(
-            track: AudioSegment(
+            track: AudioFragment(
                 url: file.url(local: stationData.isDownloaded),
                 timeRange: .init(
                     start: .zero,
                     duration: .init(seconds: file.file.duration)
                 ),
-                startTime: sec
+                startTime: sec,
+                markers: nil, // TODO: !!
             ),
             mixes: mixes
         )
@@ -329,9 +332,9 @@ private extension LegacyPlaylistBuilder {
         mixins: [LegacyPlaylistRules.Mix],
         nextTag: String,
         generator: inout RandomNumberGenerator
-    ) async throws -> [AudioSegment] {
+    ) async throws -> [AudioFragment] {
         var usedPositions: Set<String> = []
-        var res: [AudioSegment] = []
+        var res: [AudioFragment] = []
         for mix in mixins where mix.condition.isSatisfied(
             forNextFragment: nextTag,
             startingFrom: sec,
@@ -347,10 +350,11 @@ private extension LegacyPlaylistBuilder {
                 if let mixFile = mix.src.next(parentFile: file, generator: &generator) {
                     let t = file.file.duration - mixFile.file.duration
                     let mixStartsSec = sec + .init(seconds: t * pos)
-                    res.append(AudioSegment(
+                    res.append(AudioFragment(
                         url: mixFile.url(local: stationData.isDownloaded),
                         timeRange: .init(start: .zero, duration: .init(seconds: mixFile.file.duration)),
-                        startTime: mixStartsSec
+                        startTime: mixStartsSec,
+                        markers: nil
                     ))
                     usedPositions.insert(posTag)
                     break
@@ -358,37 +362,5 @@ private extension LegacyPlaylistBuilder {
             }
         }
         return res.sorted { $0.playing.start < $1.playing.start }
-    }
-}
-
-private extension AudioSegment {
-    func adjustedMix(
-        parentActualStartTimeInDay: CMTime,
-        parentActualEndTimeInDay: CMTime,
-        itemStartTimeInOutput: CMTime
-    ) -> AudioSegment? {
-        // Check for overlap: the mix must start before the end of the parent AND end after the start of the parent
-        guard startTime < parentActualEndTimeInDay,
-              playing.end > parentActualStartTimeInDay else { return nil }
-
-        // Calculate the overlap interval within the day context
-        let overlapStartInDay = max(parentActualStartTimeInDay, startTime)
-        let overlapEndInDay = min(parentActualEndTimeInDay, playing.end)
-        let overlapDuration = overlapEndInDay - overlapStartInDay
-
-        // Only include if overlap has a positive duration
-        guard overlapDuration > .zero else { return nil }
-
-        let offsetIntoMixOriginal = max(.zero, overlapStartInDay - startTime)
-
-        let adjustedMix = AudioSegment(
-            url: url,
-            timeRange: CMTimeRange(
-                start: timeRange.start + offsetIntoMixOriginal,
-                duration: overlapDuration
-            ),
-            startTime: itemStartTimeInOutput + (overlapStartInDay - parentActualStartTimeInDay)
-        )
-        return adjustedMix
     }
 }

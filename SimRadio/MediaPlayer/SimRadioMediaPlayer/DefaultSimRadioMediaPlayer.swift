@@ -85,7 +85,8 @@ private extension DefaultSimRadioMediaPlayer {
 
         guard let stationData = mediaState.stationData(for: stationID) else { return }
         let playlistBuilder = PlaylistBuilder(stationData: stationData)
-        let startingDate = Date()
+//        let startingDate = Date()
+        let startingDate = Date("03.05.2025 00:3:50")
         let startingTime = CMTime(seconds: startingDate.currentSecondOfDay)
 
         let playlistOption = (stationData.station.playlistRules.options?.available ?? []).last.map(\.id)
@@ -184,5 +185,15 @@ private extension DefaultSimRadioMediaPlayer {
             day: date + playlistItem.duration.seconds,
             startTimeInDay: (time + playlistItem.duration).wrappedDay
         )
+    }
+}
+
+
+private extension Date {
+    init(_ string: String) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
+        let someDateTime = formatter.date(from: string)
+        self = someDateTime!
     }
 }

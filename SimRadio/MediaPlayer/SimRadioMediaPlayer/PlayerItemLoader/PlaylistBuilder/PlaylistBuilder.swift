@@ -303,7 +303,9 @@ private extension PlaylistBuilder {
                     duration: .init(seconds: track.duration)
                 ),
                 startTime: sec,
-                markers: nil // TODO: !!
+                markers: (track.markers?.track).map { trackMarkers in
+                    trackMarkers.map { .init(dto: $0) }
+                }
             ),
             mixes: mixes
         )
@@ -388,7 +390,7 @@ private extension PlaylistBuilder {
                             start: .init(seconds: mixTrack.start ?? 0),
                             duration: .init(seconds: mixTrack.duration)),
                         startTime: mixStartsSec,
-                        markers: nil // TODO: !!
+                        markers: nil
                     ))
                     usedPositions.insert(pos.id)
                     break
@@ -579,5 +581,15 @@ extension AudioFragment {
     }
 }
 
+extension AudioFragmentMarker {
+    init(dto: SimRadioDTO.TrackMarker) {
+        self.init(
+            id: dto.id,
+            offset: .init(seconds: dto.offset),
+            title: dto.title,
+            artist: dto.artist
+        )
+    }
+}
 
 // swiftlint:enable file_length

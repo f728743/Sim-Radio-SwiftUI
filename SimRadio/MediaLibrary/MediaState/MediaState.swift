@@ -55,7 +55,7 @@ class MediaState {
                     return Media(
                         id: .legacySimRadio(station.id),
                         meta: .init(
-                            artwork: station.meta.artwork,
+                            artwork: station.meta.logo,
                             title: station.meta.title,
                             listSubtitle: station.meta.genre,
                             detailsSubtitle: station.meta.detailsSubtitle,
@@ -69,7 +69,7 @@ class MediaState {
         let simRadioMedia = simRadio.series.values.map { series in
             MediaList(
                 id: .simRadioSeries(series.id),
-                meta: .init(artwork: nil, title: "new", subtitle: nil),
+                meta: series.meta,
                 items: series.stationsIDs.compactMap {
                     guard let station: SimStation = simRadio.stations[$0] else { return nil }
                     return Media(

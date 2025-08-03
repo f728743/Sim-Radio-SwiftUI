@@ -91,11 +91,11 @@ private extension PlayerController {
         }
         guard let meta = mediaState?.metaOfMedia(withID: mediaID) else { return }
         display = .init(
-            artwork: meta.artwork,
+            artwork: meta.logo,
             title: meta.title,
             subtitle: meta.detailsSubtitle
         )
-        let colors = await meta.artwork?
+        let colors = await meta.logo?
             .image?
             .dominantColorFrequencies(with: .high)?
             .map(\.color)

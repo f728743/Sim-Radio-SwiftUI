@@ -388,7 +388,8 @@ private extension PlaylistBuilder {
                         url: mixTrack.url(local: stationData.isDownloaded),
                         timeRange: .init(
                             start: .init(seconds: mixTrack.start ?? 0),
-                            duration: .init(seconds: mixTrack.duration)),
+                            duration: .init(seconds: mixTrack.duration)
+                        ),
                         startTime: mixStartsSec,
                         markers: nil
                     ))

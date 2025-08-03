@@ -27,17 +27,7 @@ class DefaultSimRadioMediaPlayer {
 }
 
 extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
-    func playStation(withID stationID: SimStation.ID) {
-        Task {
-            do {
-                try await doPlayStation(withID: stationID)
-            } catch {
-                print(error)
-            }
-        }
-    }
-
-    func playStation(withID stationID: LegacySimStation.ID) {
+    func playStation(withID stationID: MediaID) {
         Task {
             do {
                 try await doPlayStation(withID: stationID)
@@ -69,7 +59,7 @@ extension DefaultSimRadioMediaPlayer: AudioTapProcessorDelegate {
 private extension DefaultSimRadioMediaPlayer {
     /// Represents the next media item to be queued for playback
     struct NextPlayableItem {
-        let stationID: LegacySimStation.ID
+        let stationID: MediaID
         let item: AVPlayerItem
         /// Reference date used to calculate the day boundary for playback scheduling
         /// - Important: Calendar operations should use this date's startOfDay
@@ -80,35 +70,13 @@ private extension DefaultSimRadioMediaPlayer {
         let startTimeInDay: CMTime
     }
 
-    func doPlayStation(withID stationID: SimStation.ID) async throws {
-        guard let mediaState else { return }
-
-        guard let stationData = mediaState.stationData(for: stationID) else { return }
-        let playlistBuilder = PlaylistBuilder(stationData: stationData)
-//        let startingDate = Date()
-        let startingDate = Date("03.05.2025 00:3:50")
+    func doPlayStation(withID stationID: MediaID) async throws {
+        let startingDate = Date() // TODO: uncomment
+//        let startingDate = Date("03.05.2025 00:3:50")
         let startingTime = CMTime(seconds: startingDate.currentSecondOfDay)
 
-        let playlistOption = (stationData.station.playlistRules.options?.available ?? []).last.map(\.id)
-
-        // TODO: 
-        
-        let playlistItem = try await playlistBuilder.makePlaylistItem(
-            startingOn: startingDate,
-            at: .init(seconds: startingDate.currentSecondOfDay),
-            mode: stationData.station.playlistRules.defaultMode
-        )
-    }
-
-    func doPlayStation(withID stationID: LegacySimStation.ID) async throws {
-        guard let mediaState else { return }
-
-        guard let stationData = mediaState.stationData(for: stationID) else { return }
-        let playlistBuilder = LegacyPlaylistBuilder(stationData: stationData)
-        let startingDate = Date()
-        let startingTime = CMTime(seconds: startingDate.currentSecondOfDay)
-
-        let playlistItem = try await playlistBuilder.makePlaylistItem(
+        let playlistItem = try await makePlaylistItem(
+            stationID: stationID,
             startingOn: startingDate,
             at: .init(seconds: startingDate.currentSecondOfDay)
         )
@@ -132,6 +100,64 @@ private extension DefaultSimRadioMediaPlayer {
         }
         self.nextPlayableItem = nextPlayableItem
         queuePlayer.insert(nextPlayableItem.item, after: nil)
+    }
+
+    func makePlaylistItem(
+        stationID: MediaID,
+        startingOn startingDate: Date,
+        at startingTime: CMTime
+    ) async throws -> PlaylistItem {
+        switch stationID {
+        case let .legacySimRadio(id):
+            try await makePlaylistItem(
+                stationID: id,
+                startingOn: startingDate,
+                at: startingTime
+            )
+        case let .simRadio(id):
+            try await makePlaylistItem(
+                stationID: id,
+                startingOn: startingDate,
+                at: startingTime
+            )
+        }
+    }
+
+    func makePlaylistItem(
+        stationID: LegacySimStation.ID,
+        startingOn startingDate: Date,
+        at _: CMTime
+    ) async throws -> PlaylistItem {
+        guard let mediaState,
+              let stationData = mediaState.stationData(for: stationID)
+        else {
+            throw PlayerItemLoadingError.playerItemCreatingError
+        }
+        let playlistBuilder = LegacyPlaylistBuilder(stationData: stationData)
+
+        return try await playlistBuilder.makePlaylistItem(
+            startingOn: startingDate,
+            at: .init(seconds: startingDate.currentSecondOfDay)
+        )
+    }
+
+    func makePlaylistItem(
+        stationID: SimStation.ID,
+        startingOn startingDate: Date,
+        at _: CMTime
+    ) async throws -> PlaylistItem {
+        guard let mediaState,
+              let stationData = mediaState.stationData(for: stationID)
+        else {
+            throw PlayerItemLoadingError.playerItemCreatingError
+        }
+        let playlistBuilder = PlaylistBuilder(stationData: stationData)
+
+        return try await playlistBuilder.makePlaylistItem(
+            startingOn: startingDate,
+            at: .init(seconds: startingDate.currentSecondOfDay),
+            mode: stationData.station.playlistRules.defaultMode
+        )
     }
 
     func onPlayerItemDidPlayToEndTime() {
@@ -164,21 +190,22 @@ private extension DefaultSimRadioMediaPlayer {
     }
 
     func makeNextPlayableItem(
-        stationID: LegacySimStation.ID,
+        stationID: MediaID,
         date: Date,
         time: CMTime
     ) async throws -> NextPlayableItem? {
-        guard let stationData = mediaState?.stationData(for: stationID) else { return nil }
-        let playlistBuilder = LegacyPlaylistBuilder(stationData: stationData)
-        let playlistItem = try await playlistBuilder.makePlaylistItem(
+        let playlistItem = try await makePlaylistItem(
+            stationID: stationID,
             startingOn: date,
             at: time
         )
+
         let loader = PlayerItemLoader()
         let playerItem = try await loader.loadPlayerItem(
             playlistItem: playlistItem,
             tapProcessor: audioTapProcessor
         )
+
         return NextPlayableItem(
             stationID: stationID,
             item: playerItem,
@@ -187,7 +214,6 @@ private extension DefaultSimRadioMediaPlayer {
         )
     }
 }
-
 
 private extension Date {
     init(_ string: String) {

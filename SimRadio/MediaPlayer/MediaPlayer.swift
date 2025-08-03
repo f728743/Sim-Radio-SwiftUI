@@ -138,12 +138,10 @@ private extension MediaPlayer {
             stopCurrentPlayerActivity()
         }
 
-        switch mediaID {
-        case let .legacySimRadio(stationID):
-            simRadio?.playStation(withID: stationID)
-        case let .simRadio(stationID):
-            simRadio?.playStation(withID: stationID)
+        if mediaID.isSimRadio {
+            simRadio?.playStation(withID: mediaID)
         }
+
         state = .playing(mediaID)
         let profile = CommandProfile(isLiveStream: true, isSwitchTrackEnabled: items.count > 1)
         setCommandProfile(profile)
@@ -152,11 +150,8 @@ private extension MediaPlayer {
 
     func stopCurrentPlayerActivity() {
         if state.isPlaying, let mediaID = state.currentMediaID {
-            switch mediaID {
-            case .legacySimRadio:
+            if mediaID.isSimRadio {
                 simRadio?.stop()
-            case let .simRadio(stationID):
-                print("stop", stationID.value)
             }
         }
     }
@@ -198,6 +193,14 @@ extension MediaPlayerState {
             return true
         }
         return false
+    }
+}
+
+extension MediaID {
+    var isSimRadio: Bool {
+        switch self {
+        case .simRadio, .legacySimRadio: true
+        }
     }
 }
 
@@ -270,7 +273,7 @@ extension SimRadioMediaState {
 extension SimStationMeta {
     var nowPlayingMeta: NowPlayingInfo.Meta {
         get async {
-            let image: UIImage = await artwork?.image ?? UIImage()
+            let image: UIImage = await logo?.image ?? UIImage()
             return .init(
                 title: title,
                 artwork: image,

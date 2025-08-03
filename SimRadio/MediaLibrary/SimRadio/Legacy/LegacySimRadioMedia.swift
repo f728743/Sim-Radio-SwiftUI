@@ -52,7 +52,7 @@ extension LegacySimRadioMedia {
 extension Media.Meta {
     init(_ meta: SimStationMeta) {
         self.init(
-            artwork: meta.artwork,
+            artwork: meta.logo,
             title: meta.title,
             listSubtitle: meta.genre,
             detailsSubtitle: meta.detailsSubtitle,
@@ -213,7 +213,7 @@ extension LegacySimStation {
             id: .init(origin: origin, stationTag: dto.tag),
             meta: .init(
                 title: dto.info.title,
-                artwork: artwork,
+                logo: artwork,
                 genre: dto.info.genre,
                 host: dto.info.dj
             ),

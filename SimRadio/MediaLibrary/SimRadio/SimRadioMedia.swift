@@ -27,13 +27,13 @@ struct SimGameSeries {
     }
 
     let id: ID
-//    let meta: MediaList.Meta
+    let meta: MediaList.Meta
     let stationsIDs: [SimStation.ID]
 }
 
 struct SimStationMeta: Codable {
     let title: String
-    let artwork: URL?
+    let logo: URL?
     let genre: String
     let host: String?
 }
@@ -287,9 +287,20 @@ extension SimRadioMedia {
 
 extension SimGameSeries {
     init(origin: URL, dto: SimRadioDTO.GameSeries) {
+        let logo = origin
+            .deletingLastPathComponent()
+            .appendingPathComponent(dto.meta.logo + SimRadioDTO.Const.imageExtension)
+
         self.init(
             id: .init(origin: origin),
-            stationsIDs: dto.stations.map { .init(series: .init(origin: origin), value: $0.id.value) }
+            meta: .init(
+                artwork: logo,
+                title: dto.meta.title,
+                subtitle: dto.meta.subtitle
+            ),
+            stationsIDs: dto.stations.map {
+                .init(series: .init(origin: origin), value: $0.id.value)
+            }
         )
     }
 

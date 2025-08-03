@@ -14,7 +14,7 @@ extension LegacySimRadioMedia {
                 id: .init(value: $0.title),
                 meta: .init(
                     title: $0.title,
-                    artwork: stationImageUrl(String($0.logo.split(separator: ".")[0])),
+                    logo: stationImageUrl(String($0.logo.split(separator: ".")[0])),
                     genre: $0.genre,
                     host: $0.dj
                 ),

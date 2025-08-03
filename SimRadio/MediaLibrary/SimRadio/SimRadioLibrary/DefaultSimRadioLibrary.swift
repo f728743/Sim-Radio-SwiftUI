@@ -301,6 +301,7 @@ private extension DefaultSimRadioLibrary {
         let fileURL = directory.appending(path: SimGameSeries.defaultFileName, directoryHint: .notDirectory)
         try fileURL.removeFileIfExists()
         let gameSeries = SimRadioDTO.GameSeries(
+            meta: series.meta,
             origin: origin.absoluteString,
             trackLists: series.trackLists,
             stations: series.stations

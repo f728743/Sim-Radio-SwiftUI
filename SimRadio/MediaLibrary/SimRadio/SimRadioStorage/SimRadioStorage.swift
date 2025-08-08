@@ -14,16 +14,6 @@ enum StationStorageState: String {
 
 @MainActor
 protocol SimRadioStorage {
-    var addedLegacySeriesIDs: [LegacySimGameSeries.ID] { get }
-    func addSeries(id: LegacySimGameSeries.ID)
-    func removeSeries(id: LegacySimGameSeries.ID)
-    func containsSeries(id: LegacySimGameSeries.ID) -> Bool
-
-    func setStorageState(_ state: StationStorageState, for stationID: LegacySimStation.ID)
-    func getStorageState(for stationID: LegacySimStation.ID) -> StationStorageState?
-    func removeStorageState(for stationID: LegacySimStation.ID)
-    var allStoredLegacyStationStates: [LegacySimStation.ID: StationStorageState] { get }
-
     var addedSeriesIDs: [SimGameSeries.ID] { get }
     func addSeries(id: SimGameSeries.ID)
     func removeSeries(id: SimGameSeries.ID)

@@ -321,6 +321,12 @@ extension SimGameSeries.ID {
     }
 }
 
+extension URL {
+    var nonCryptoHash: UInt64 {
+        absoluteString.nonCryptoHash
+    }
+}
+
 extension [TrackList.ID: TrackList] {
     func findAllUsedTrackLists(usedIDs: [TrackList.ID]) -> [TrackList] {
         var result = [TrackList]()

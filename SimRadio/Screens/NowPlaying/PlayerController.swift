@@ -119,8 +119,6 @@ extension PlayerController.Display {
 extension SimRadioMediaState {
     func metaOfMedia(withID id: MediaID) -> SimStationMeta? {
         switch id {
-        case let .legacySimRadio(id):
-            legacySimRadio.stations[id]?.meta
         case let .simRadio(id):
             simRadio.stations[id]?.meta
         }

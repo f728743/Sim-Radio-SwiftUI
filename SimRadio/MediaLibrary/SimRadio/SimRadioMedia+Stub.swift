@@ -1,5 +1,5 @@
 //
-//  LegacySimRadioMedia+Stub.swift
+//  SimRadioMedia+Stub.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 23.04.2025.
@@ -7,29 +7,32 @@
 
 import Foundation
 
-extension LegacySimRadioMedia {
-    static var stub: LegacySimRadioMedia {
-        let stations: [LegacySimStation] = gta5stations.map {
+extension SimRadioMedia {
+    static var stub: SimRadioMedia {
+        let seriesID = SimGameSeries.ID(origin: URL(string: "sample-gta5")!)
+        let stations: [SimStation] = gta5stations.map {
             .init(
-                id: .init(value: $0.title),
+                id: .init(series: seriesID, value: $0.title),
                 meta: .init(
                     title: $0.title,
                     logo: stationImageUrl(String($0.logo.split(separator: ".")[0])),
                     genre: $0.genre,
                     host: $0.dj
                 ),
-                fileGroupIDs: [],
+                trackLists: [],
                 playlistRules: .init(
-                    firstFragment: .init(fragmentTag: "", probability: nil),
-                    fragments: []
+                    firstFragment: [],
+                    fragments: [],
+                    options: nil,
+                    positions: nil
                 )
             )
         }
 
         return .init(
             series: [
-                .init(value: "sample-gta5"): LegacySimGameSeries(
-                    id: .init(value: "sample-gta5"),
+                seriesID: SimGameSeries(
+                    id: seriesID,
                     meta: .init(
                         artwork: stationGroupImageUrl(),
                         title: "GTA V Radio",
@@ -38,7 +41,7 @@ extension LegacySimRadioMedia {
                     stationsIDs: stations.map(\.id)
                 )
             ],
-            fileGroups: [:],
+            trackLists: [:],
             stations: Dictionary(uniqueKeysWithValues: stations.map { ($0.id, $0) })
         )
     }
@@ -46,8 +49,9 @@ extension LegacySimRadioMedia {
 
 extension MediaList {
     static var mockGta5: Self {
-        MediaList(
-            id: .legacySimRadioSeries(.init(value: "sample-gta5")),
+        let seriesID = SimGameSeries.ID(origin: URL(string: "sample-gta5")!)
+        return MediaList(
+            id: .simRadioSeries(seriesID),
             meta: .init(
                 artwork: stationGroupImageUrl(),
                 title: "GTA V Radio",
@@ -55,7 +59,7 @@ extension MediaList {
             ),
             items: gta5stations.map {
                 Media(
-                    id: .legacySimRadio(.init(value: $0.title)),
+                    id: .simRadio(.init(series: seriesID, value: $0.title)),
                     meta: .init(
                         artwork: stationImageUrl(String($0.logo.split(separator: ".")[0])),
                         title: $0.title,

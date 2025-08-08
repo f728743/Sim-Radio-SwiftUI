@@ -7,30 +7,6 @@
 
 @MainActor
 class RadioStorageStub: SimRadioStorage {
-    var addedLegacySeriesIDs: [LegacySimGameSeries.ID] {
-        []
-    }
-
-    func addSeries(id _: LegacySimGameSeries.ID) {}
-
-    func removeSeries(id _: LegacySimGameSeries.ID) {}
-
-    func containsSeries(id _: LegacySimGameSeries.ID) -> Bool {
-        false
-    }
-
-    func setStorageState(_: StationStorageState, for _: LegacySimStation.ID) {}
-
-    func getStorageState(for _: LegacySimStation.ID) -> StationStorageState? {
-        nil
-    }
-
-    func removeStorageState(for _: LegacySimStation.ID) {}
-
-    var allStoredLegacyStationStates: [LegacySimStation.ID: StationStorageState] {
-        [:]
-    }
-
     var addedSeriesIDs: [SimGameSeries.ID] {
         []
     }

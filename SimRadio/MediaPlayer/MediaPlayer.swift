@@ -199,7 +199,7 @@ extension MediaPlayerState {
 extension MediaID {
     var isSimRadio: Bool {
         switch self {
-        case .simRadio, .legacySimRadio: true
+        case .simRadio: true
         }
     }
 }
@@ -253,8 +253,6 @@ extension MediaPlayer: SimRadioMediaPlayerDelegate {
 extension SimRadioMediaState {
     func nowPlayingMetaOfMedia(withID id: MediaID) async -> NowPlayingInfo.Meta? {
         switch id {
-        case let .legacySimRadio(id):
-            await legacySimRadio.stations[id]?.meta.nowPlayingMeta
         case let .simRadio(id):
             await simRadio.stations[id]?.meta.nowPlayingMeta
         }
@@ -263,7 +261,7 @@ extension SimRadioMediaState {
 
 extension SimRadioMediaState {
     var defaultPlayItems: (media: MediaID, items: [MediaID])? {
-        let items = legacySimRadio.stations.keys.map { MediaID.legacySimRadio($0) }
+        let items = simRadio.stations.keys.map { MediaID.simRadio($0) }
         guard !items.isEmpty,
               let media = items.randomElement() else { return nil }
         return (media, items)

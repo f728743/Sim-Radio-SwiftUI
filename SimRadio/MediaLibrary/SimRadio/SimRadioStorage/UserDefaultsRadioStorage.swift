@@ -10,8 +10,6 @@ import Foundation
 @MainActor
 class UserDefaultsRadioStorage: SimRadioStorage {
     private enum Key: String {
-        case addedLegacySeriesIDs = "UserData.addedLegacySeriesIDs" // Use a prefix for uniqueness
-        case stationLegacyStorageStates = "UserData.stationLegacyStorageStates"
         case addedSeriesIDs = "UserData.addedSeriesIDs" // Use a prefix for uniqueness
         case stationStorageStates = "UserData.stationStorageStates"
     }
@@ -23,77 +21,6 @@ class UserDefaultsRadioStorage: SimRadioStorage {
     }
 
     // MARK: Managing Series
-
-    var addedLegacySeriesIDs: [LegacySimGameSeries.ID] {
-        (userDefaults.stringArray(forKey: Key.addedLegacySeriesIDs.rawValue) ?? [])
-            .compactMap { LegacySimGameSeries.ID(value: $0) }
-    }
-
-    func addSeries(id: LegacySimGameSeries.ID) {
-        var currentIDs = addedLegacySeriesIDs
-        if !currentIDs.contains(id) {
-            currentIDs.append(id)
-            saveSeriesIDs(currentIDs)
-        }
-    }
-
-    func removeSeries(id: LegacySimGameSeries.ID) {
-        var currentIDs = addedLegacySeriesIDs
-        currentIDs.removeAll { $0 == id }
-        saveSeriesIDs(currentIDs)
-    }
-
-    func containsSeries(id: LegacySimGameSeries.ID) -> Bool {
-        addedLegacySeriesIDs.contains(id)
-    }
-
-    private func saveSeriesIDs(_ ids: [LegacySimGameSeries.ID]) {
-        let stringIDs = ids.map(\.value)
-        userDefaults.set(stringIDs, forKey: Key.addedLegacySeriesIDs.rawValue)
-    }
-
-    // MARK: Managing the loading status of stations
-
-    func setStorageState(_ state: StationStorageState, for stationID: LegacySimStation.ID) {
-        var currentStates = loadStoredLegacyStatesDictionary()
-        currentStates[stationID.value] = state.rawValue
-        saveStoredLegacyStatesDictionary(currentStates)
-    }
-
-    func getStorageState(for stationID: LegacySimStation.ID) -> StationStorageState? {
-        let currentStates = loadStoredLegacyStatesDictionary()
-        guard let rawValue = currentStates[stationID.value] else {
-            return nil
-        }
-        return StationStorageState(rawValue: rawValue)
-    }
-
-    func removeStorageState(for stationID: LegacySimStation.ID) {
-        var currentStates = loadStoredLegacyStatesDictionary()
-        currentStates.removeValue(forKey: stationID.value)
-        saveStoredLegacyStatesDictionary(currentStates)
-    }
-
-    var allStoredLegacyStationStates: [LegacySimStation.ID: StationStorageState] {
-        let rawStates = loadStoredLegacyStatesDictionary()
-        var result: [LegacySimStation.ID: StationStorageState] = [:]
-        for (key, rawValue) in rawStates {
-            if let state = StationStorageState(rawValue: rawValue) {
-                result[LegacySimStation.ID(value: key)] = state
-            }
-        }
-        return result
-    }
-
-    private func loadStoredLegacyStatesDictionary() -> [String: String] {
-        userDefaults.dictionary(forKey: Key.stationLegacyStorageStates.rawValue) as? [String: String] ?? [:]
-    }
-
-    private func saveStoredLegacyStatesDictionary(_ dictionary: [String: String]) {
-        userDefaults.set(dictionary, forKey: Key.stationLegacyStorageStates.rawValue)
-    }
-
-    // ----
 
     func addSeries(id: SimGameSeries.ID) {
         var currentIDs = addedSeriesIDs

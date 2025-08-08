@@ -13,17 +13,6 @@ protocol SimRadioLibraryDelegate: AnyObject {
     func simRadioLibrary(
         _ library: SimRadioLibrary,
         didChangeDownloadStatus status: MediaDownloadStatus?,
-        for stationID: LegacySimStation.ID
-    )
-
-    func simRadioLibrary(
-        _ library: SimRadioLibrary,
-        didChange media: LegacySimRadioMedia
-    )
-
-    func simRadioLibrary(
-        _ library: SimRadioLibrary,
-        didChangeDownloadStatus status: MediaDownloadStatus?,
         for stationID: SimStation.ID
     )
 
@@ -35,7 +24,6 @@ protocol SimRadioLibraryDelegate: AnyObject {
 
 @Observable @MainActor
 class MediaState {
-    var legacySimRadio: LegacySimRadioMedia = .empty
     var simRadio: SimRadioMedia = .empty
 
     private(set) var downloadStatus: [MediaID: MediaDownloadStatus] = [:]
@@ -46,26 +34,6 @@ class MediaState {
     }
 
     var mediaList: [MediaList] {
-        let legacySimRadioMedia = legacySimRadio.series.values.map { series in
-            MediaList(
-                id: .legacySimRadioSeries(series.id),
-                meta: series.meta,
-                items: series.stationsIDs.compactMap {
-                    guard let station = legacySimRadio.stations[$0] else { return nil }
-                    return Media(
-                        id: .legacySimRadio(station.id),
-                        meta: .init(
-                            artwork: station.meta.logo,
-                            title: station.meta.title,
-                            listSubtitle: station.meta.genre,
-                            detailsSubtitle: station.meta.detailsSubtitle,
-                            isLiveStream: true
-                        )
-                    )
-                }
-            )
-        }
-
         let simRadioMedia = simRadio.series.values.map { series in
             MediaList(
                 id: .simRadioSeries(series.id),
@@ -80,7 +48,7 @@ class MediaState {
             )
         }
 
-        return legacySimRadioMedia + simRadioMedia
+        return simRadioMedia
     }
 
     func load() async {
@@ -96,8 +64,6 @@ class MediaState {
         guard current == nil || current?.state == .paused else { return }
 
         switch mediaID {
-        case let .legacySimRadio(stationID):
-            await simRadioLibrary.downloadStation(stationID)
         case let .simRadio(stationID):
             await simRadioLibrary.downloadStation(stationID)
         }
@@ -107,8 +73,6 @@ class MediaState {
         guard downloadStatus.keys.contains(mediaID) else { return }
 
         switch mediaID {
-        case let .legacySimRadio(stationID):
-            await simRadioLibrary.removeDownload(stationID)
         case let .simRadio(stationID):
             await simRadioLibrary.removeDownload(stationID)
         }
@@ -118,8 +82,6 @@ class MediaState {
         guard downloadStatus.keys.contains(mediaID) else { return }
 
         switch mediaID {
-        case let .legacySimRadio(stationID):
-            await simRadioLibrary.pauseDownload(stationID)
         case let .simRadio(stationID):
             await simRadioLibrary.pauseDownload(stationID)
         }
@@ -141,19 +103,38 @@ extension MediaState: SimRadioLibraryDelegate {
     ) {
         simRadio = media
     }
+}
 
-    func simRadioLibrary(
-        _: any SimRadioLibrary,
-        didChange media: LegacySimRadioMedia
-    ) {
-        legacySimRadio = media
+extension MediaState {
+    var downloadedMedia: [Media] {
+        downloadStatus
+            .map(\.self)
+            .filter { $0.value.state == .completed }
+            .compactMap {
+                media(withId: $0.key)
+            }
     }
 
-    func simRadioLibrary(
-        _: any SimRadioLibrary,
-        didChangeDownloadStatus status: MediaDownloadStatus?,
-        for stationID: LegacySimStation.ID
-    ) {
-        downloadStatus[.legacySimRadio(stationID)] = status
+    func media(withId id: Media.ID) -> Media? {
+        switch id {
+        case let .simRadio(stationId):
+            guard let station = simRadio.stations[stationId] else { return nil }
+            return Media(
+                id: id,
+                meta: .init(station.meta)
+            )
+        }
+    }
+}
+
+extension Media.Meta {
+    init(_ meta: SimStationMeta) {
+        self.init(
+            artwork: meta.logo,
+            title: meta.title,
+            listSubtitle: meta.genre,
+            detailsSubtitle: meta.detailsSubtitle,
+            isLiveStream: true
+        )
     }
 }

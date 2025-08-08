@@ -108,12 +108,6 @@ private extension DefaultSimRadioMediaPlayer {
         at startingTime: CMTime
     ) async throws -> PlaylistItem {
         switch stationID {
-        case let .legacySimRadio(id):
-            try await makePlaylistItem(
-                stationID: id,
-                startingOn: startingDate,
-                at: startingTime
-            )
         case let .simRadio(id):
             try await makePlaylistItem(
                 stationID: id,
@@ -121,24 +115,6 @@ private extension DefaultSimRadioMediaPlayer {
                 at: startingTime
             )
         }
-    }
-
-    func makePlaylistItem(
-        stationID: LegacySimStation.ID,
-        startingOn startingDate: Date,
-        at _: CMTime
-    ) async throws -> PlaylistItem {
-        guard let mediaState,
-              let stationData = mediaState.stationData(for: stationID)
-        else {
-            throw PlayerItemLoadingError.playerItemCreatingError
-        }
-        let playlistBuilder = LegacyPlaylistBuilder(stationData: stationData)
-
-        return try await playlistBuilder.makePlaylistItem(
-            startingOn: startingDate,
-            at: .init(seconds: startingDate.currentSecondOfDay)
-        )
     }
 
     func makePlaylistItem(

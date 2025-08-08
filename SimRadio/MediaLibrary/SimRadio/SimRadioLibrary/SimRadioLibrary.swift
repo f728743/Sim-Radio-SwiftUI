@@ -6,14 +6,7 @@
 //
 
 @MainActor
-protocol LegacySimRadioLibrary {
-    func downloadStation(_ stationID: LegacySimStation.ID) async
-    func removeDownload(_ stationID: LegacySimStation.ID) async
-    func pauseDownload(_ stationID: LegacySimStation.ID) async
-}
-
-@MainActor
-protocol SimRadioLibrary: LegacySimRadioLibrary {
+protocol SimRadioLibrary {
     func testPopulate() async
     func load() async
 

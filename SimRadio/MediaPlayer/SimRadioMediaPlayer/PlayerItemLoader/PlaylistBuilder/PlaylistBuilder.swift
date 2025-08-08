@@ -593,4 +593,16 @@ extension AudioFragmentMarker {
     }
 }
 
+func secOfDay(hhmm: String) -> Double? {
+    let time = hhmm.split { $0 == ":" }.map(String.init)
+    guard time.count > 1 else {
+        return nil
+    }
+
+    guard let h = Double(time[0]), let m = Double(time[1]) else {
+        return nil
+    }
+    return (h * 60 * 60) + (m * 60)
+}
+
 // swiftlint:enable file_length

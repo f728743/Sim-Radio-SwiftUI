@@ -8,29 +8,24 @@
 import UIKit
 
 struct NowPlayingInfo {
-    let meta: Meta
+    let meta: MediaMeta
+    let artwork: UIImage
     let isPlaying: Bool
     let queue: Queue?
     let progress: Progress?
 
     init(
-        meta: Meta,
+        meta: MediaMeta,
+        artwork: UIImage,
         isPlaying: Bool,
         queue: Queue? = nil,
         progress: Progress? = nil
     ) {
         self.meta = meta
+        self.artwork = artwork
         self.isPlaying = isPlaying
         self.queue = queue
         self.progress = progress
-    }
-
-    struct Meta {
-        let title: String
-        let artwork: UIImage
-        let artist: String?
-        let genre: String?
-        let isLiveStream: Bool
     }
 
     struct Queue {
@@ -48,6 +43,7 @@ extension NowPlayingInfo {
     func playing(_ playing: Bool) -> NowPlayingInfo {
         .init(
             meta: meta,
+            artwork: artwork,
             isPlaying: playing,
             queue: queue,
             progress: progress
@@ -63,6 +59,7 @@ extension NowPlayingInfo {
         }
         return .init(
             meta: meta,
+            artwork: artwork,
             isPlaying: isPlaying,
             queue: queue,
             progress: .init(elapsedTime: elapsedTime, duration: duration)

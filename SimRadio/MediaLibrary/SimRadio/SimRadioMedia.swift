@@ -84,12 +84,6 @@ struct DereferencedTruck {
     let markers: SimRadioDTO.TrackMarkers?
 }
 
-extension SimStationMeta {
-    var detailsSubtitle: String {
-        host.map { "Hosted by \($0) – \(genre)" } ?? genre
-    }
-}
-
 extension DereferencedTruck {
     var url: URL { Track.url(seriesID: id.series, path: path) }
     var localFileURL: URL { Track.localFileURL(seriesID: id.series, path: path) }

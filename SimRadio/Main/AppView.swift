@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct AppView: View {
-    @State private var playerController: PlayerController
+    @State private var playerController: PlayerController?
     init(dependencies: Dependencies?) {
-        let playerController = PlayerController()
-        playerController.player = dependencies?.mediaPlayer
-        playerController.mediaState = dependencies?.mediaState
-        _playerController = State(wrappedValue: playerController)
+        if let playerController = dependencies?.playerController {
+            _playerController = State(wrappedValue: playerController)
+        }
     }
 
     var body: some View {

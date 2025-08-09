@@ -21,15 +21,17 @@ struct MediaList: Identifiable, Hashable, Equatable {
 
 struct Media: Identifiable, Hashable, Equatable {
     let id: MediaID
-    let meta: Meta
+    let meta: MediaMeta
+}
 
-    struct Meta: Equatable, Hashable {
-        let artwork: URL?
-        let title: String
-        let listSubtitle: String?
-        let detailsSubtitle: String?
-        let isLiveStream: Bool
-    }
+struct MediaMeta: Equatable, Hashable {
+    let artwork: URL?
+    let title: String
+    let subtitle: String?
+    let description: String?
+    let artist: String?
+    let genre: String?
+    let isLiveStream: Bool
 }
 
 enum MediaListID: Hashable, Equatable {

@@ -16,4 +16,5 @@ protocol SimRadioMediaPlayer {
 @MainActor
 protocol SimRadioMediaPlayerDelegate: AnyObject {
     func simRadioMediaPlayer(_ player: SimRadioMediaPlayer, didUpdateSpectrum spectrum: [Float])
+    func simRadioMediaPlayer(_ player: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?)
 }

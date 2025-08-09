@@ -17,7 +17,7 @@ class MediaListScreenViewModel {
         case delete
     }
 
-    var mediaState: MediaState?
+    var mediaState: DefaultMediaState?
     let items: [Media]
     let listMeta: MediaList.Meta?
     var state: MediaPlayerState = .paused(.none)

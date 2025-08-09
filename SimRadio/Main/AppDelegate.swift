@@ -28,7 +28,7 @@ private extension AppDelegate {
             simRadioDownload: simRadioDownload
         )
 
-        let mediaState = MediaState(simRadioLibrary: simRadioLibrary)
+        let mediaState = DefaultMediaState(simRadioLibrary: simRadioLibrary)
 
         simRadioDownload.mediaState = mediaState
         simRadioLibrary.delegate = mediaState
@@ -48,7 +48,8 @@ private extension AppDelegate {
 
         dependencies = Dependencies(
             mediaState: mediaState,
-            mediaPlayer: mediaPlayer
+            mediaPlayer: mediaPlayer,
+            playerController: playerController
         )
 
         Task {

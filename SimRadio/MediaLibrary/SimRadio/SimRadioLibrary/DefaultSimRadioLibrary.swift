@@ -5,8 +5,6 @@
 //  Created by Alexey Vorobyov on 23.04.2025.
 //
 
-// swiftlint:disable file_length
-
 import Foundation
 
 @MainActor
@@ -302,5 +300,3 @@ private extension DefaultSimRadioLibrary {
         )
     }
 }
-
-// swiftlint:enable file_length

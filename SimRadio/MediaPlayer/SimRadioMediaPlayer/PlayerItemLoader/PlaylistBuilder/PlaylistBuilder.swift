@@ -25,12 +25,14 @@ class PlaylistBuilder {
     var trackLists: [TrackList.ID: TrackList] = [:]
     var fragments: [SimRadioDTO.Fragment.ID: SimRadioDTO.Fragment] = [:]
     let stationData: SimRadioStationData
-    var playlistСache: [Date: [PlaylistItem]] = [:]
+    var playlistCache: [Date: [PlaylistItem]] = [:]
 
     init(stationData: SimRadioStationData) {
         self.stationData = stationData
     }
 
+    // swiftlint:disable function_body_length
+    
     /// Generates a single `PlaylistItem` starting at the specified date and time offset within that day.
     /// - Parameters:
     ///   - playlistStartDate: The date on which the playlist item should start.
@@ -46,13 +48,10 @@ class PlaylistBuilder {
     ) async throws -> PlaylistItem {
         let currentDate = playlistStartDate.startOfDay
         let dailyItems = try await makeDailyPlaylist(for: currentDate, mode: mode)
-        print(dailyItems.description)
-
         // Find the first item that is relevant (i.e., its playing end time is after the timeOffsetInFirstDay)
         guard let relevantItem = dailyItems.first(where: { $0.track.playing.end > timeOffsetInFirstDay }) else {
             throw PlaylistGenerationError.makeDailyPlaylistError(date: currentDate)
         }
-
         var itemFileTimeRange = relevantItem.track.timeRange
         var itemPlayableDuration = relevantItem.track.timeRange.duration
         let parentOriginalStartTimeInDay = relevantItem.track.startTime
@@ -68,20 +67,17 @@ class PlaylistBuilder {
                 duration: itemPlayableDuration
             )
         }
-
         let remainingInDayDuration = max(
             .zero,
             .fullDayDuration - parentOriginalStartTimeInDay - itemFileTimeRange.start
         )
         let actualDurationToAdd = min(itemPlayableDuration, remainingInDayDuration)
-
         if actualDurationToAdd < itemPlayableDuration {
             itemFileTimeRange = CMTimeRange(
                 start: itemFileTimeRange.start,
                 duration: actualDurationToAdd
             )
         }
-
         let parentActualStartTimeInDay = parentOriginalStartTimeInDay +
             (itemFileTimeRange.start - relevantItem.track.timeRange.start)
         let parentActualEndTimeInDay = parentActualStartTimeInDay + itemFileTimeRange.duration
@@ -94,17 +90,21 @@ class PlaylistBuilder {
                 itemStartTimeInOutput: itemStartTimeInOutput
             )
         }
-
-        return PlaylistItem(
+        let markers = relevantItem.track.markers.map {
+            adjustMarkers(for: itemFileTimeRange, from: $0)
+        }
+        let result = PlaylistItem(
             track: AudioFragment(
                 url: relevantItem.track.url,
                 timeRange: itemFileTimeRange,
                 startTime: itemStartTimeInOutput,
-                markers: nil, // TODO: !!
+                markers: markers,
             ),
             mixes: adjustedMixes
         )
+        return result
     }
+    // swiftlint:enable function_body_length
 }
 
 extension SimRadioStationData {
@@ -139,11 +139,24 @@ extension SimRadioStationData {
 private extension PlaylistBuilder {
     var station: SimStation { stationData.station }
 
+    func adjustMarkers(for timeRange: CMTimeRange, from markers: [AudioFragmentMarker]) -> [AudioFragmentMarker] {
+        guard !markers.isEmpty else { return [] }
+        let startIndex = markers.lastIndex(where: { $0.offset <= timeRange.start }) ?? 0
+        let relevantMarkers = markers.suffix(from: startIndex)
+        return relevantMarkers.map { marker in
+            let offset = marker.offset - timeRange.start
+            return .init(
+                offset: offset < .zero ? .zero : offset,
+                value: marker.value
+            )
+        }
+    }
+
     func makeDailyPlaylist(
         for date: Date,
         mode: PlaylistMode?
     ) async throws -> [PlaylistItem] {
-        if let cached = playlistСache[date] {
+        if let cached = playlistCache[date] {
             return cached
         }
         var generator: any RandomNumberGenerator = SplitMix64(seed: UInt64(date.startOfDay.timeIntervalSince1970))
@@ -576,7 +589,7 @@ extension AudioFragment {
                 duration: overlapDuration
             ),
             startTime: itemStartTimeInOutput + (overlapStartInDay - parentActualStartTimeInDay),
-            markers: nil // TODO: adjust markers !!
+            markers: nil
         )
         return adjustedMix
     }
@@ -585,10 +598,8 @@ extension AudioFragment {
 extension AudioFragmentMarker {
     init(dto: SimRadioDTO.TrackMarker) {
         self.init(
-            id: dto.id,
             offset: .init(seconds: dto.offset),
-            title: dto.title,
-            artist: dto.artist
+            value: .init(title: dto.title, artist: dto.artist)
         )
     }
 }

@@ -18,6 +18,10 @@ class DefaultSimRadioMediaPlayer {
     private var observer: NSObjectProtocol?
     private var playToEndTask: Task<Void, Never>?
 
+    private var timeObserverToken: Any?
+    private var currentMarkers: [AudioFragmentMarker]?
+    private var lastBroadcastedMarker: AudioFragmentMarker?
+
     init() {
         audioTapProcessor = AudioTapProcessor(
             frequencyBands: MediaPlayer.Const.frequencyBands
@@ -41,6 +45,8 @@ extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
         queuePlayer.removeAllItems()
         playToEndTask?.cancel()
         playToEndTask = nil
+        removePeriodicTimeObserver()
+        currentMarkers = nil
     }
 }
 
@@ -68,11 +74,15 @@ private extension DefaultSimRadioMediaPlayer {
         /// - Note: Uses CMTime for frame-accurate scheduling and AVFoundation compatibility
         /// - Value represents seconds since start of day (00:00)
         let startTimeInDay: CMTime
+
+        let markers: [AudioFragmentMarker]?
     }
 
     func doPlayStation(withID stationID: MediaID) async throws {
-        let startingDate = Date() // TODO: uncomment
-//        let startingDate = Date("03.05.2025 00:3:50")
+        removePeriodicTimeObserver()
+
+        let startingDate = Date()
+//        let startingDate = Date("03.05.2025 00:02:35")
         let startingTime = CMTime(seconds: startingDate.currentSecondOfDay)
 
         let playlistItem = try await makePlaylistItem(
@@ -81,11 +91,17 @@ private extension DefaultSimRadioMediaPlayer {
             at: .init(seconds: startingDate.currentSecondOfDay)
         )
 
+        currentMarkers = playlistItem.track.markers
+        lastBroadcastedMarker = nil
+        delegate?.simRadioMediaPlayer(self, didCrossTrackMarker: nil)
+
         let loader = PlayerItemLoader()
         let playerItem = try await loader.loadPlayerItem(
             playlistItem: playlistItem,
             tapProcessor: audioTapProcessor
         )
+
+        addPeriodicTimeObserver()
 
         queuePlayer.insert(playerItem, after: nil)
         queuePlayer.play()
@@ -120,7 +136,7 @@ private extension DefaultSimRadioMediaPlayer {
     func makePlaylistItem(
         stationID: SimStation.ID,
         startingOn startingDate: Date,
-        at _: CMTime
+        at startingTime: CMTime
     ) async throws -> PlaylistItem {
         guard let mediaState,
               let stationData = mediaState.stationData(for: stationID)
@@ -131,7 +147,8 @@ private extension DefaultSimRadioMediaPlayer {
 
         return try await playlistBuilder.makePlaylistItem(
             startingOn: startingDate,
-            at: .init(seconds: startingDate.currentSecondOfDay),
+//            at: .init(seconds: startingDate.currentSecondOfDay),
+            at: startingTime,
             mode: stationData.station.playlistRules.defaultMode
         )
     }
@@ -139,12 +156,19 @@ private extension DefaultSimRadioMediaPlayer {
     func onPlayerItemDidPlayToEndTime() {
         guard let nextPlayableItem else { return }
         addDidPlayToEndObserver(to: nextPlayableItem.item)
+        removePeriodicTimeObserver()
         Task {
             guard let newNextPlayableItem = try await makeNextPlayableItem(
                 stationID: nextPlayableItem.stationID,
                 date: nextPlayableItem.day,
                 time: nextPlayableItem.startTimeInDay
             ) else { return }
+
+            currentMarkers = nextPlayableItem.markers
+            lastBroadcastedMarker = nil
+            addPeriodicTimeObserver()
+            delegate?.simRadioMediaPlayer(self, didCrossTrackMarker: nil)
+
             queuePlayer.insert(newNextPlayableItem.item, after: nil)
             self.nextPlayableItem = newNextPlayableItem
         }
@@ -162,6 +186,40 @@ private extension DefaultSimRadioMediaPlayer {
                 guard !Task.isCancelled else { break }
                 self?.onPlayerItemDidPlayToEndTime()
             }
+        }
+    }
+
+    func addPeriodicTimeObserver() {
+        removePeriodicTimeObserver()
+        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+
+        timeObserverToken = queuePlayer.addPeriodicTimeObserver(
+            forInterval: interval,
+            queue: .main
+        ) { [weak self] time in
+            Task { @MainActor in
+                self?.processPlaybackTime(time)
+            }
+        }
+    }
+
+    func processPlaybackTime(_ time: CMTime) {
+        guard let markers = currentMarkers,
+              !markers.isEmpty
+        else {
+            return
+        }
+        let currentMarker = markers.last { time >= $0.offset }
+        if currentMarker != lastBroadcastedMarker {
+            lastBroadcastedMarker = currentMarker
+            delegate?.simRadioMediaPlayer(self, didCrossTrackMarker: currentMarker)
+        }
+    }
+
+    func removePeriodicTimeObserver() {
+        if let token = timeObserverToken {
+            queuePlayer.removeTimeObserver(token)
+            timeObserverToken = nil
         }
     }
 
@@ -186,7 +244,8 @@ private extension DefaultSimRadioMediaPlayer {
             stationID: stationID,
             item: playerItem,
             day: date + playlistItem.duration.seconds,
-            startTimeInDay: (time + playlistItem.duration).wrappedDay
+            startTimeInDay: (time + playlistItem.duration).wrappedDay,
+            markers: playlistItem.track.markers
         )
     }
 }

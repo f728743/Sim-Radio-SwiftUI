@@ -10,7 +10,7 @@ import SwiftUI
 
 @Observable @MainActor
 class DownloadedScreenViewModel {
-    var mediaState: MediaState?
+    var mediaState: DefaultMediaState?
     var items: [Media] {
         mediaState?.downloadedMedia ?? []
     }

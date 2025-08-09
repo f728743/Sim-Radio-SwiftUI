@@ -28,7 +28,7 @@ class PlayerController {
         }
     }
 
-    weak var mediaState: SimRadioMediaState?
+    weak var mediaState: MediaState?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -66,10 +66,8 @@ private extension PlayerController {
         cancellables.removeAll()
         player.$state
             .sink { [weak self] state in
-                if self?.state.currentMediaID != state.currentMediaID {
-                    Task {
-                        await self?.updateMeta(for: state.currentMediaID)
-                    }
+                Task {
+                    await self?.updateMeta(for: state.currentMediaID)
                 }
                 self?.state = state
             }
@@ -82,6 +80,18 @@ private extension PlayerController {
                 }
             }
             .store(in: &cancellables)
+
+        player.$nowPlayingMeta
+            .sink { [weak self] meta in
+                guard let self else { return }
+                if let meta {
+                    display = .init(
+                        artwork: display.artwork,
+                        title: meta.title,
+                        subtitle: meta.description ?? ""
+                    )
+                }
+            }.store(in: &cancellables)
     }
 
     func updateMeta(for mediaID: MediaID?) async {
@@ -90,12 +100,13 @@ private extension PlayerController {
             return
         }
         guard let meta = mediaState?.metaOfMedia(withID: mediaID) else { return }
+        
         display = .init(
-            artwork: meta.logo,
+            artwork: meta.artwork,
             title: meta.title,
-            subtitle: meta.detailsSubtitle
+            subtitle: meta.description ?? ""
         )
-        let colors = await meta.logo?
+        let colors = await meta.artwork?
             .image?
             .dominantColorFrequencies(with: .high)?
             .map(\.color)
@@ -113,14 +124,5 @@ extension PlayerController.Display {
             title: "",
             subtitle: ""
         )
-    }
-}
-
-extension SimRadioMediaState {
-    func metaOfMedia(withID id: MediaID) -> SimStationMeta? {
-        switch id {
-        case let .simRadio(id):
-            simRadio.stations[id]?.meta
-        }
     }
 }

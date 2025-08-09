@@ -28,8 +28,8 @@ class SystemMediaInterface {
         )
     }
 
-    func setNowPlayingInfo(_ info: NowPlayingInfo?) {
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = info?.mpNowPlayingInfo
+    func setNowPlayingInfo(_ info: NowPlayingInfo) {
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info.mpNowPlayingInfo
     }
 }
 
@@ -88,7 +88,7 @@ extension NowPlayingInfo {
         info[MPNowPlayingInfoPropertyIsLiveStream] = meta.isLiveStream
         info[MPMediaItemPropertyTitle] = meta.title
         info[MPMediaItemPropertyArtist] = meta.artist
-        info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: meta.artwork.size) { _ in meta.artwork }
+        info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: artwork.size) { _ in artwork }
         if let queue {
             info[MPNowPlayingInfoPropertyPlaybackQueueIndex] = queue.index
             info[MPNowPlayingInfoPropertyPlaybackQueueCount] = queue.count

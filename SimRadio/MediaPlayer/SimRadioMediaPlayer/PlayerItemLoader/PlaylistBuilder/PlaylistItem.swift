@@ -12,11 +12,14 @@ struct PlaylistItem: Sendable {
     let mixes: [AudioFragment]
 }
 
-struct AudioFragmentMarker {
-    let id: Int
-    let offset: CMTime
+struct AudioFragmentMarkerValue: Equatable {
     let title: String?
     let artist: String?
+}
+
+struct AudioFragmentMarker: Equatable {
+    let offset: CMTime
+    let value: AudioFragmentMarkerValue
 }
 
 struct AudioFragment: Sendable {

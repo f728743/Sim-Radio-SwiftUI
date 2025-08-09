@@ -279,7 +279,7 @@ private extension DefaultSimRadioDownload {
             download.trackListIDs.contains(trackListID) ? id : nil
         }
         if result.isEmpty {
-            print("")
+            print("--- WARNING: No station found for trackList \(trackListID)")
         }
         return result
     }

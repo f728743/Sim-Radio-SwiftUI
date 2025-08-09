@@ -9,15 +9,18 @@ import Observation
 
 @MainActor
 class Dependencies: Observable {
-    let mediaState: MediaState
+    let mediaState: DefaultMediaState
     let mediaPlayer: MediaPlayer
+    let playerController: PlayerController
 
     init(
-        mediaState: MediaState,
-        mediaPlayer: MediaPlayer
+        mediaState: DefaultMediaState,
+        mediaPlayer: MediaPlayer,
+        playerController: PlayerController
     ) {
         self.mediaState = mediaState
         self.mediaPlayer = mediaPlayer
+        self.playerController = playerController
     }
 }
 
@@ -26,7 +29,8 @@ extension Dependencies {
         let mediaPlayer = MediaPlayer()
         return Dependencies(
             mediaState: .stub,
-            mediaPlayer: mediaPlayer
+            mediaPlayer: mediaPlayer,
+            playerController: PlayerController()
         )
     }()
 }

@@ -20,15 +20,15 @@ class MediaPlayer {
     }
 
     var simRadio: SimRadioMediaPlayer?
-    weak var mediaState: SimRadioMediaState?
+    weak var mediaState: MediaState?
     private(set) var items: [MediaID] = []
 
     @Published private(set) var progress: NowPlayingInfo.Progress?
     @Published private(set) var state: MediaPlayerState
     @Published private(set) var commandProfile: CommandProfile?
     @Published private(set) var palyIndicatorSpectrum: [Float]
+    @Published private(set) var nowPlayingMeta: MediaMeta?
 
-    private var nowPlayingMeta: NowPlayingInfo.Meta?
     private var audioSession: AudioSession
     private var systemMediaInterface: SystemMediaInterface
     // For handling interruptions
@@ -84,7 +84,7 @@ class MediaPlayer {
         }
         stopCurrentPlayerActivity()
         state = .paused(mediaID)
-        setStemMediaInterfaceNowPlayingInfo()
+        setSytemMediaInterfaceNowPlayingInfo()
     }
 
     func forward() {
@@ -116,7 +116,7 @@ private extension MediaPlayer {
             playItem(at: index)
         } else {
             state = .paused(items[index])
-            setStemMediaInterfaceNowPlayingInfo()
+            setSytemMediaInterfaceNowPlayingInfo()
         }
     }
 
@@ -145,7 +145,7 @@ private extension MediaPlayer {
         state = .playing(mediaID)
         let profile = CommandProfile(isLiveStream: true, isSwitchTrackEnabled: items.count > 1)
         setCommandProfile(profile)
-        setStemMediaInterfaceNowPlayingInfo()
+        setSytemMediaInterfaceNowPlayingInfo()
     }
 
     func stopCurrentPlayerActivity() {
@@ -161,16 +161,17 @@ private extension MediaPlayer {
         commandProfile = profile
     }
 
-    func setStemMediaInterfaceNowPlayingInfo() {
+    func setSytemMediaInterfaceNowPlayingInfo() {
         guard let mediaID = state.currentMediaID,
               let mediaIndex = items.firstIndex(of: mediaID)
         else { return }
         Task {
-            nowPlayingMeta = await mediaState?.nowPlayingMetaOfMedia(withID: mediaID)
             guard let nowPlayingMeta else { return }
+            let artwork = await nowPlayingMeta.artwork?.image ?? UIImage()
             systemMediaInterface.setNowPlayingInfo(
                 .init(
                     meta: nowPlayingMeta,
+                    artwork: artwork,
                     isPlaying: state.isPlaying,
                     queue: .init(index: mediaIndex, count: items.count),
                     progress: progress
@@ -248,37 +249,39 @@ extension MediaPlayer: SimRadioMediaPlayerDelegate {
     func simRadioMediaPlayer(_: any SimRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
         palyIndicatorSpectrum = spectrum
     }
-}
 
-extension SimRadioMediaState {
-    func nowPlayingMetaOfMedia(withID id: MediaID) async -> NowPlayingInfo.Meta? {
-        switch id {
-        case let .simRadio(id):
-            await simRadio.stations[id]?.meta.nowPlayingMeta
+    func simRadioMediaPlayer(_: any SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
+        Task {
+            guard
+                let mediaID = state.currentMediaID,
+                let newNowPlayingMeta = await mediaState?.nowPlayingMetaOfMedia(
+                    withID: mediaID,
+                    marker: marker?.value
+                )
+            else { return }
+            nowPlayingMeta = newNowPlayingMeta
+            setSytemMediaInterfaceNowPlayingInfo()
         }
     }
 }
 
-extension SimRadioMediaState {
-    var defaultPlayItems: (media: MediaID, items: [MediaID])? {
-        let items = simRadio.stations.keys.map { MediaID.simRadio($0) }
-        guard !items.isEmpty,
-              let media = items.randomElement() else { return nil }
-        return (media, items)
-    }
-}
-
-extension SimStationMeta {
-    var nowPlayingMeta: NowPlayingInfo.Meta {
-        get async {
-            let image: UIImage = await logo?.image ?? UIImage()
-            return .init(
-                title: title,
-                artwork: image,
-                artist: host,
-                genre: genre,
-                isLiveStream: true
-            )
+extension MediaState {
+    func nowPlayingMetaOfMedia(
+        withID id: MediaID,
+        marker: AudioFragmentMarkerValue?
+    ) async -> MediaMeta? {
+        guard let meta = metaOfMedia(withID: id) else {
+            return nil
         }
+
+        return .init(
+            artwork: meta.artwork,
+            title: marker?.title ?? meta.title,
+            subtitle: meta.subtitle,
+            description: marker?.artist ?? meta.description,
+            artist: marker?.artist ?? meta.artist,
+            genre: marker != nil ? nil : meta.genre,
+            isLiveStream: meta.isLiveStream
+        )
     }
 }

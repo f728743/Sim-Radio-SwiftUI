@@ -9,7 +9,7 @@ import Observation
 
 @Observable @MainActor
 class LibraryScreenViewModel {
-    var mediaState: MediaState?
+    var mediaState: DefaultMediaState?
 
     func testPopulate() {
         Task {

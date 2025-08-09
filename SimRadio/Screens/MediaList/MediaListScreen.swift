@@ -131,7 +131,7 @@ private extension MediaListScreen {
             model: .init(
                 artwork: item.meta.artwork,
                 title: item.meta.title,
-                subtitle: item.meta.listSubtitle,
+                subtitle: item.meta.subtitle,
                 downloadStatus: viewModel.downloadStatus(for: item.id),
                 activity: viewModel.mediaActivity(item.id)
             )

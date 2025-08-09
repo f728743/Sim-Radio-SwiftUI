@@ -57,14 +57,16 @@ extension MediaList {
                 title: "GTA V Radio",
                 subtitle: nil
             ),
-            items: gta5stations.map {
+            items: gta5stations.map { data in
                 Media(
-                    id: .simRadio(.init(series: seriesID, value: $0.title)),
+                    id: .simRadio(.init(series: seriesID, value: data.title)),
                     meta: .init(
-                        artwork: stationImageUrl(String($0.logo.split(separator: ".")[0])),
-                        title: $0.title,
-                        listSubtitle: $0.genre,
-                        detailsSubtitle: $0.detailsSubtitle,
+                        artwork: stationImageUrl(String(data.logo.split(separator: ".")[0])),
+                        title: data.title,
+                        subtitle: data.genre,
+                        description: data.dj.map { "Hosted by \($0) – \(data.genre)" } ?? data.genre,
+                        artist: data.dj,
+                        genre: data.genre,
                         isLiveStream: false
                     )
                 )
@@ -87,9 +89,6 @@ private struct GTARadioStation {
     let genre: String
     let logo: String
     let dj: String?
-    var detailsSubtitle: String {
-        dj.map { "Hosted by \($0) – \(genre)" } ?? genre
-    }
 }
 
 private let gta5stations: [GTARadioStation] = [

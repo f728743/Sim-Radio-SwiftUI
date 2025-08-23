@@ -100,7 +100,7 @@ private extension PlayerController {
             return
         }
         guard let meta = mediaState?.metaOfMedia(withID: mediaID) else { return }
-        
+
         display = .init(
             artwork: meta.artwork,
             title: meta.title,

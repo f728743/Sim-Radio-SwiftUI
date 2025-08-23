@@ -32,7 +32,7 @@ class PlaylistBuilder {
     }
 
     // swiftlint:disable function_body_length
-    
+
     /// Generates a single `PlaylistItem` starting at the specified date and time offset within that day.
     /// - Parameters:
     ///   - playlistStartDate: The date on which the playlist item should start.

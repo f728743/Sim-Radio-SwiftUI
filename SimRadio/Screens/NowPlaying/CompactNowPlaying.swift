@@ -70,15 +70,15 @@ private extension CompactNowPlaying {
     @ViewBuilder
     var artwork: some View {
         if !hideArtworkOnExpanded || !expanded {
-            KFImage.url(model.display.artwork)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .background(Color(UIColor.systemGray4))
-                .clipShape(.rect(cornerRadius: 7))
-                .matchedGeometryEffect(
-                    id: PlayerMatchedGeometry.artwork,
-                    in: animationNamespace
-                )
+            Artwork(
+                url: model.display.artwork,
+                cornerRadius: 7,
+                background: Color(.systemGray4)
+            )
+            .matchedGeometryEffect(
+                id: PlayerMatchedGeometry.artwork,
+                in: animationNamespace
+            )
         }
     }
 }

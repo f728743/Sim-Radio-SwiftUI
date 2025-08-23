@@ -41,23 +41,17 @@ struct MediaItemView: View {
     }
 
     var artwork: some View {
-        let border = UIScreen.hairlineWidth
-        return ZStack {
-            KFImage.url(model.artwork)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .background(Color(.palette.artworkBackground))
+        ZStack {
+            Artwork(
+                url: model.artwork,
+                cornerRadius: 5
+            )
             if let activity = model.activity {
                 Color.black.opacity(0.4)
+                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
                 MediaActivityIndicator(state: activity)
             }
         }
-        .clipShape(.rect(cornerRadius: 5))
-        .overlay(
-            RoundedRectangle(cornerRadius: 5)
-                .inset(by: border / 2)
-                .stroke(Color(.palette.artworkBorder), lineWidth: border)
-        )
         .frame(width: 48, height: 48)
     }
 }

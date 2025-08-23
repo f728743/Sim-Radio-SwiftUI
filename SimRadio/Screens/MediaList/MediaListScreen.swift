@@ -61,18 +61,11 @@ private extension MediaListScreen {
 
     func header(listMeta: MediaList.Meta) -> some View {
         VStack(spacing: 0) {
-            let border = UIScreen.hairlineWidth
-            KFImage.url(listMeta.artwork)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .background(Color(.palette.artworkBackground))
-                .clipShape(.rect(cornerRadius: 10))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .inset(by: border / 2)
-                        .stroke(Color(.palette.artworkBorder), lineWidth: border)
-                )
-                .padding(.horizontal, 52)
+            Artwork(
+                url: listMeta.artwork,
+                cornerRadius: 10
+            )
+            .padding(.horizontal, 52)
 
             Text(listMeta.title)
                 .font(.appFont.mediaListHeaderTitle)

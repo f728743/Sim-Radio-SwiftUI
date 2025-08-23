@@ -85,27 +85,16 @@ private struct RecentlyAddedItem: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            KFImage.url(item.meta.artwork)
-                .resizable()
-                .aspectRatio(1, contentMode: .fit)
-                .background(Color(.palette.artworkBackground))
-                .clipShape(.rect(cornerRadius: 8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color(.palette.artworkBorder), lineWidth: UIScreen.hairlineWidth)
-                )
-
+            Artwork(url: item.meta.artwork)
             VStack(alignment: .leading, spacing: 0) {
                 Text(item.meta.title)
                     .font(.system(size: 13, weight: .medium))
                     .lineLimit(1)
 
-                if let subtitle = item.meta.subtitle {
-                    Text(subtitle)
-                        .font(.appFont.mediaListItemSubtitle)
-                        .foregroundStyle(Color(.palette.textSecondary))
-                        .lineLimit(1)
-                }
+                Text(item.meta.subtitle ?? "")
+                    .font(.appFont.mediaListItemSubtitle)
+                    .foregroundStyle(Color(.palette.textSecondary))
+                    .lineLimit(1)
             }
         }
     }

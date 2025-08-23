@@ -51,24 +51,21 @@ private extension RegularNowPlaying {
             .frame(width: 40, height: 5)
     }
 
+    @ViewBuilder
     var artwork: some View {
-        GeometryReader {
-            let size = $0.size
-            let small = !model.state.isPlaying
-            KFImage.url(model.display.artwork)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .background(Color(UIColor.palette.playerCard.artworkBackground))
-                .clipShape(RoundedRectangle(cornerRadius: expanded ? 10 : 5, style: .continuous))
-                .padding(small ? 48 : 0)
-                .shadow(
-                    color: Color(.sRGBLinear, white: 0, opacity: small ? 0.13 : 0.33),
-                    radius: small ? 3 : 8,
-                    y: small ? 3 : 10
-                )
-                .frame(width: size.width, height: size.height)
-                .animation(.smooth, value: model.state)
-        }
+        let small = !model.state.isPlaying
+        Artwork(
+            url: model.display.artwork,
+            cornerRadius: expanded ? 10 : 7,
+            background: Color(.palette.playerCard.artworkBackground)
+        )
+        .shadow(
+            color: Color(.sRGBLinear, white: 0, opacity: small ? 0.13 : 0.33),
+            radius: small ? 3 : 8,
+            y: small ? 3 : 10
+        )
+        .padding(small ? 48 : 0)
+        .animation(.smooth, value: model.state)
     }
 }
 

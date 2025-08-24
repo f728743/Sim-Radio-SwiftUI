@@ -66,9 +66,6 @@ private extension PlayerController {
         cancellables.removeAll()
         player.$state
             .sink { [weak self] state in
-                Task {
-                    await self?.updateMeta(for: state.currentMediaID)
-                }
                 self?.state = state
             }
             .store(in: &cancellables)
@@ -84,35 +81,29 @@ private extension PlayerController {
         player.$nowPlayingMeta
             .sink { [weak self] meta in
                 guard let self else { return }
-                if let meta {
-                    display = .init(
-                        artwork: display.artwork,
-                        title: meta.title,
-                        subtitle: meta.description ?? ""
-                    )
+                Task {
+                    await updateDisplay(withMeta: meta)
                 }
             }.store(in: &cancellables)
     }
-
-    func updateMeta(for mediaID: MediaID?) async {
-        guard let mediaID else {
+    
+    func updateDisplay(withMeta meta: MediaMeta?) async {
+        if let meta {
+            display = .init(
+                artwork: meta.artwork,
+                title: meta.title,
+                subtitle: meta.description ?? ""
+            )
+            let colors = await meta.artwork?
+                .image?
+                .dominantColorFrequencies(with: .high)?
+                .map(\.color)            
+            if let colors {
+                self.colors = colors
+            }
+        } else {
             display = .placeholder
-            return
-        }
-        guard let meta = mediaState?.metaOfMedia(withID: mediaID) else { return }
-
-        display = .init(
-            artwork: meta.artwork,
-            title: meta.title,
-            subtitle: meta.description ?? ""
-        )
-        let colors = await meta.artwork?
-            .image?
-            .dominantColorFrequencies(with: .high)?
-            .map(\.color)
-
-        if let colors {
-            self.colors = colors
+            colors = []
         }
     }
 }

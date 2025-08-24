@@ -93,7 +93,6 @@ private extension DefaultSimRadioMediaPlayer {
 
         currentMarkers = playlistItem.track.markers
         lastBroadcastedMarker = nil
-        delegate?.simRadioMediaPlayer(self, didCrossTrackMarker: nil)
 
         let loader = PlayerItemLoader()
         let playerItem = try await loader.loadPlayerItem(
@@ -167,8 +166,6 @@ private extension DefaultSimRadioMediaPlayer {
             currentMarkers = nextPlayableItem.markers
             lastBroadcastedMarker = nil
             addPeriodicTimeObserver()
-            delegate?.simRadioMediaPlayer(self, didCrossTrackMarker: nil)
-
             queuePlayer.insert(newNextPlayableItem.item, after: nil)
             self.nextPlayableItem = newNextPlayableItem
         }

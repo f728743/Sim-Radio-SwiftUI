@@ -84,7 +84,7 @@ class MediaPlayer {
         }
         stopCurrentPlayerActivity()
         state = .paused(mediaID)
-        setSytemMediaInterfaceNowPlayingInfo()
+        updateMeta()
     }
 
     func forward() {
@@ -116,7 +116,7 @@ private extension MediaPlayer {
             playItem(at: index)
         } else {
             state = .paused(items[index])
-            setSytemMediaInterfaceNowPlayingInfo()
+            updateMeta()
         }
     }
 
@@ -145,7 +145,7 @@ private extension MediaPlayer {
         state = .playing(mediaID)
         let profile = CommandProfile(isLiveStream: true, isSwitchTrackEnabled: items.count > 1)
         setCommandProfile(profile)
-        setSytemMediaInterfaceNowPlayingInfo()
+        updateMeta()
     }
 
     func stopCurrentPlayerActivity() {
@@ -177,6 +177,20 @@ private extension MediaPlayer {
                     progress: progress
                 )
             )
+        }
+    }
+    
+    func updateMeta(trackMarker marker: AudioFragmentMarker? = nil) {
+        Task {
+            guard
+                let mediaID = state.currentMediaID,
+                let newNowPlayingMeta = await mediaState?.nowPlayingMetaOfMedia(
+                    withID: mediaID,
+                    marker: marker?.value
+                )
+            else { return }
+            nowPlayingMeta = newNowPlayingMeta
+            setSytemMediaInterfaceNowPlayingInfo()
         }
     }
 }
@@ -250,18 +264,8 @@ extension MediaPlayer: SimRadioMediaPlayerDelegate {
         palyIndicatorSpectrum = spectrum
     }
 
-    func simRadioMediaPlayer(_: any SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
-        Task {
-            guard
-                let mediaID = state.currentMediaID,
-                let newNowPlayingMeta = await mediaState?.nowPlayingMetaOfMedia(
-                    withID: mediaID,
-                    marker: marker?.value
-                )
-            else { return }
-            nowPlayingMeta = newNowPlayingMeta
-            setSytemMediaInterfaceNowPlayingInfo()
-        }
+    func simRadioMediaPlayer(_ player: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
+        updateMeta(trackMarker: marker)
     }
 }
 

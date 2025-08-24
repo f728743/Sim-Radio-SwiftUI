@@ -84,8 +84,5 @@ extension PlayerButtonConfig {
         }
         .foregroundStyle(Color(Palette.PlayerCard.opaque))
     }
-    .onAppear {
-//        playerController.mediaList = .mockGta5
-    }
     .environment(playerController)
 }

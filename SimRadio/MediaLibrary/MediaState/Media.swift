@@ -1,5 +1,5 @@
 //
-//  MediaList.swift
+//  Media.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 29.03.2025.
@@ -7,21 +7,18 @@
 
 import Foundation
 
-struct MediaList: Identifiable, Hashable, Equatable {
-    let id: MediaListID
-    let meta: Meta
-    let items: [Media]
-
-    struct Meta: Hashable, Equatable {
-        let artwork: URL?
-        let title: String
-        let subtitle: String?
-    }
-}
-
 struct Media: Identifiable, Hashable, Equatable {
     let id: MediaID
     let meta: MediaMeta
+}
+
+struct MediaPlaybackMode: Identifiable {
+    struct ID: Hashable {
+        let value: String
+    }
+
+    let id: ID
+    let title: String
 }
 
 struct MediaMeta: Equatable, Hashable {
@@ -41,6 +38,18 @@ enum MediaListID: Hashable, Equatable {
 
 enum MediaID: Hashable {
     case simRadio(SimStation.ID)
+}
+
+struct MediaList: Identifiable, Hashable, Equatable {
+    let id: MediaListID
+    let meta: Meta
+    let items: [Media]
+
+    struct Meta: Hashable, Equatable {
+        let artwork: URL?
+        let title: String
+        let subtitle: String?
+    }
 }
 
 extension MediaList {

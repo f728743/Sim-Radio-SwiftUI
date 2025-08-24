@@ -6,11 +6,15 @@
 //
 
 class SimRadioMediaPlayerStub: SimRadioMediaPlayer {
-    func playStation(withID stationID: MediaID) {
+    func playStation(withID stationID: MediaID, mode _: MediaPlaybackMode.ID?) {
         print("Play \(stationID)")
     }
 
     func stop() {
         print("Stop")
+    }
+
+    func availableModes(stationID _: MediaID) -> [MediaPlaybackMode] {
+        []
     }
 }

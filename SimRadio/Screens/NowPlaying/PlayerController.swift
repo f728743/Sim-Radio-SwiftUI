@@ -17,8 +17,10 @@ class PlayerController {
     }
 
     var display: Display = .placeholder
+    var modes: [MediaPlaybackMode] = []
+    var selectedMode: MediaPlaybackMode.ID?
 
-    var state: MediaPlayerState = .paused(.none)
+    var state: MediaPlayerState = .paused(media: .none, mode: nil)
     var commandProfile: CommandProfile = .init(isLiveStream: true, isSwitchTrackEnabled: false)
     var colors: [UIColor] = []
 
@@ -57,6 +59,10 @@ class PlayerController {
     func onBackward() {
         player?.backward()
     }
+
+    func onSelectMode(_ mode: MediaPlaybackMode.ID?) {
+        player?.play(mode: mode)
+    }
 }
 
 private extension PlayerController {
@@ -66,7 +72,11 @@ private extension PlayerController {
         cancellables.removeAll()
         player.$state
             .sink { [weak self] state in
-                self?.state = state
+                guard let self else { return }
+                if self.state.currentMediaID != state.currentMediaID {
+                    selectedMode = nil
+                }
+                self.state = state
             }
             .store(in: &cancellables)
 
@@ -78,6 +88,17 @@ private extension PlayerController {
             }
             .store(in: &cancellables)
 
+        player.$playbackModes
+            .sink { [weak self] modes in
+                guard let self else { return }
+                if selectedMode == nil {
+                    selectedMode = modes.first?.id
+                    print("new mode: \(String(describing: selectedMode))")
+                }
+                self.modes = modes
+            }
+            .store(in: &cancellables)
+
         player.$nowPlayingMeta
             .sink { [weak self] meta in
                 guard let self else { return }
@@ -86,7 +107,7 @@ private extension PlayerController {
                 }
             }.store(in: &cancellables)
     }
-    
+
     func updateDisplay(withMeta meta: MediaMeta?) async {
         if let meta {
             display = .init(
@@ -97,7 +118,7 @@ private extension PlayerController {
             let colors = await meta.artwork?
                 .image?
                 .dominantColorFrequencies(with: .high)?
-                .map(\.color)            
+                .map(\.color)
             if let colors {
                 self.colors = colors
             }

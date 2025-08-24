@@ -552,16 +552,6 @@ extension SimRadioDTO.FragmentSource {
     }
 }
 
-extension SimRadioDTO.Playlist {
-    var defaultMode: PlaylistBuilder.PlaylistMode? {
-        guard let options, options.available.isEmpty == false else { return nil }
-        if let interval = options.alternateInterval {
-            return .alternate(interval)
-        }
-        return options.available.first.map { .option($0.id) }
-    }
-}
-
 extension AudioFragment {
     func adjustedMix(
         parentActualStartTimeInDay: CMTime,

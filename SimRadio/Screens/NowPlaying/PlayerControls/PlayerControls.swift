@@ -17,7 +17,10 @@ struct PlayerControls: View {
             let spacing = size.verticalSpacing
             VStack(spacing: 0) {
                 VStack(spacing: spacing) {
-                    trackInfo
+                    HStack(spacing: 4) {
+                        trackInfo
+                        options
+                    }
 
                     timingIndicator(spacing: spacing)
                         .padding(.top, spacing)
@@ -77,6 +80,49 @@ private extension PlayerControls {
         }
     }
 
+    @ViewBuilder
+    var options: some View {
+        if !model.modes.isEmpty {
+            Menu {
+                Picker(
+                    selection: Binding(
+                        get: { model.selectedMode },
+                        set: { newValue in
+                            model.selectedMode = newValue
+                            model.onSelectMode(newValue)
+                        }
+                    ),
+                    label: EmptyView()
+                ) {
+                    ForEach(model.modes) {
+                        if let systemImage = $0.id.systemImage {
+                            Label($0.title, systemImage: systemImage)
+                                .tag($0.id as MediaPlaybackMode.ID?)
+                        } else {
+                            Text($0.title)
+                                .tag($0.id as MediaPlaybackMode.ID?)
+                        }
+                    }
+                }
+            } label: {
+                optionsMenuLabel
+            }
+            .preferredColorScheme(.dark)
+            .padding(.trailing, ViewConst.playerCardPaddings)
+        }
+    }
+
+    var optionsMenuLabel: some View {
+        ZStack {
+            Image(systemName: "ellipsis.circle.fill")
+                .foregroundStyle(.clear, Color(palette.translucent))
+                .blendMode(.overlay)
+            Image(systemName: "ellipsis.circle.fill")
+                .foregroundStyle(Color(palette.opaque), .clear)
+        }
+        .font(.system(size: 28))
+    }
+
     func volume(playerSize: CGSize) -> some View {
         VStack(spacing: playerSize.verticalSpacing) {
             VolumeSlider()
@@ -95,15 +141,22 @@ private extension PlayerControls {
     }
 }
 
+extension MediaPlaybackMode.ID {
+    var systemImage: String? {
+        switch value {
+        case "alternate_playback": "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
+        case "option_all": "checklist.checked"
+        default: nil
+        }
+    }
+}
+
 #Preview {
     @Previewable @State var playerController = PlayerController()
     ZStack(alignment: .bottom) {
         PreviewBackground()
         PlayerControls()
             .frame(height: 400)
-    }
-    .onAppear {
-//        playerController.mediaList = .mockGta5
     }
     .environment(playerController)
 }

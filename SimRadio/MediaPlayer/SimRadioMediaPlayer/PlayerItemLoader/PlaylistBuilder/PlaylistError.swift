@@ -18,6 +18,7 @@ enum PlaylistGenerationError: Error {
     case makeDailyPlaylistError(date: Date)
     case makePlaylistError
     case wrongCondition
+    case wrongMode
     case firstFragmentNotFound
     case fragmentNotFound(id: SimRadioDTO.Fragment.ID)
     case invalidTimeInterval(from: String, to: String)

@@ -9,14 +9,19 @@ import Combine
 import UIKit
 
 enum MediaPlayerState: Equatable, Hashable {
-    case playing(MediaID)
-    case paused(MediaID?)
+    case playing(media: MediaID, mode: MediaPlaybackMode.ID?)
+    case paused(media: MediaID?, mode: MediaPlaybackMode.ID?)
 }
 
 @MainActor
 class MediaPlayer {
     enum Const {
         static let frequencyBands = 5
+    }
+
+    struct MediaMode {
+        let media: MediaID
+        let mode: MediaPlaybackMode.ID?
     }
 
     var simRadio: SimRadioMediaPlayer?
@@ -27,17 +32,18 @@ class MediaPlayer {
     @Published private(set) var state: MediaPlayerState
     @Published private(set) var commandProfile: CommandProfile?
     @Published private(set) var palyIndicatorSpectrum: [Float]
+    @Published private(set) var playbackModes: [MediaPlaybackMode] = []
     @Published private(set) var nowPlayingMeta: MediaMeta?
 
     private var audioSession: AudioSession
     private var systemMediaInterface: SystemMediaInterface
     // For handling interruptions
-    private var interruptedMediaID: MediaID?
+    private var interruptedMedia: MediaMode?
 
     init() {
         audioSession = AudioSession()
         systemMediaInterface = SystemMediaInterface()
-        state = .paused(.none)
+        state = .paused(media: .none, mode: .none)
         commandProfile = CommandProfile(isLiveStream: false, isSwitchTrackEnabled: false)
         palyIndicatorSpectrum = .init(repeating: 0, count: Const.frequencyBands)
         systemMediaInterface.setRemoteCommandProfile(commandProfile!)
@@ -51,39 +57,39 @@ class MediaPlayer {
         if state.isPlaying {
             pause()
         } else {
-            play()
+            play(mode: state.currentMediaMode)
         }
     }
 
-    func play() {
-        guard !state.isPlaying else { return }
+    func play(mode: MediaPlaybackMode.ID?) {
+        guard !state.isPlaying || state.currentMediaMode != mode else { return }
         if let mediaID = state.currentMediaID {
             guard let index = items.firstIndex(of: mediaID) else {
                 print("MediaPlayer Error: there is no mediaID \(mediaID) in items.")
                 return
             }
-            playItem(at: index)
+            playItem(at: index, mode: mode)
         } else if let playItems = mediaState?.defaultPlayItems {
-            play(playItems.media, of: playItems.items)
+            play(playItems.media, of: playItems.items, mode: mode)
         }
     }
 
-    func play(_ mediaID: MediaID, of items: [MediaID]) {
+    func play(_ mediaID: MediaID, of items: [MediaID], mode: MediaPlaybackMode.ID?) {
         guard let index = items.firstIndex(of: mediaID) else {
             print("MediaPlayer Error: there is no mediaID \(mediaID) in items.")
             return
         }
         self.items = items
-        playItem(at: index)
+        playItem(at: index, mode: mode)
     }
 
     func pause() {
-        guard case let .playing(mediaID) = state else {
+        guard case let .playing(mediaID, mode) = state else {
             print("MediaPlayer: Not playing, cannot pause.")
             return
         }
         stopCurrentPlayerActivity()
-        state = .paused(mediaID)
+        state = .paused(media: mediaID, mode: mode)
         updateMeta()
     }
 
@@ -112,23 +118,31 @@ class MediaPlayer {
 
 private extension MediaPlayer {
     func goToItem(at index: Int) {
-        if state.isPlaying {
-            playItem(at: index)
-        } else {
-            state = .paused(items[index])
-            updateMeta()
+        guard let newMedia = items[safe: index] else {
+            fatalError("MediaPlayer Error: Invalid index \(index)")
+        }
+        switch state {
+        case let .playing(media, _):
+            if newMedia != media {
+                playItem(at: index, mode: nil)
+            }
+        case let .paused(media, _):
+            if newMedia != media {
+                state = .paused(media: items[index], mode: nil)
+                updateMeta()
+                updatePlaybackModes()
+            }
         }
     }
 
-    func playItem(at index: Int) {
-        guard items.indices.contains(index) else {
-            print("MediaPlayer Error: Index out of bounds for items queue.")
-            return
+    func playItem(at index: Int, mode: MediaPlaybackMode.ID?) {
+        guard let mediaID = items[safe: index] else {
+            fatalError("MediaPlayer Error: Invalid index \(index)")
         }
 
-        let mediaID = items[index]
-
-        if case let .playing(currentID) = state, currentID == mediaID {
+        if case let .playing(currentID, currentMode) = state,
+           currentID == mediaID, currentMode == mode
+        {
             print("MediaPlayer: Already playing \(mediaID).")
             // TODO: check if actualy playing
             return
@@ -139,13 +153,14 @@ private extension MediaPlayer {
         }
 
         if mediaID.isSimRadio {
-            simRadio?.playStation(withID: mediaID)
+            simRadio?.playStation(withID: mediaID, mode: mode)
         }
 
-        state = .playing(mediaID)
+        state = .playing(media: mediaID, mode: mode)
         let profile = CommandProfile(isLiveStream: true, isSwitchTrackEnabled: items.count > 1)
         setCommandProfile(profile)
         updateMeta()
+        updatePlaybackModes()
     }
 
     func stopCurrentPlayerActivity() {
@@ -179,7 +194,17 @@ private extension MediaPlayer {
             )
         }
     }
-    
+
+    func updatePlaybackModes() {
+        guard let mediaID = state.currentMediaID else {
+            playbackModes = []
+            return
+        }
+        if mediaID.isSimRadio {
+            playbackModes = simRadio?.availableModes(stationID: mediaID) ?? []
+        }
+    }
+
     func updateMeta(trackMarker marker: AudioFragmentMarker? = nil) {
         Task {
             guard
@@ -198,8 +223,15 @@ private extension MediaPlayer {
 extension MediaPlayerState {
     var currentMediaID: MediaID? {
         switch self {
-        case let .paused(mediaID): mediaID
-        case let .playing(mediaID): mediaID
+        case let .paused(mediaID, _): mediaID
+        case let .playing(mediaID, _): mediaID
+        }
+    }
+
+    var currentMediaMode: MediaPlaybackMode.ID? {
+        switch self {
+        case let .paused(_, mode): mode
+        case let .playing(_, mode): mode
         }
     }
 
@@ -224,17 +256,17 @@ extension MediaID {
 extension MediaPlayer: AudioSessionDelegate {
     func audioSessionInterruptionBegan() {
         audioSession.setActive(false)
-        guard case let .playing(mediaID) = state else { return }
-        interruptedMediaID = mediaID
+        guard case let .playing(mediaID, mode) = state else { return }
+        interruptedMedia = .init(media: mediaID, mode: mode)
         pause()
     }
 
     func audioSessionInterruptionEnded(shouldResume: Bool) {
         audioSession.setActive(true)
-        guard let mediaToResume = interruptedMediaID else { return }
-        interruptedMediaID = nil
-        if shouldResume, let resumeIndex = items.firstIndex(of: mediaToResume) {
-            playItem(at: resumeIndex)
+        guard let mediaToResume = interruptedMedia else { return }
+        interruptedMedia = nil
+        if shouldResume, let resumeIndex = items.firstIndex(of: mediaToResume.media) {
+            playItem(at: resumeIndex, mode: mediaToResume.mode)
         }
     }
 }
@@ -246,7 +278,7 @@ extension MediaPlayer: SystemMediaInterfaceDelegate {
         print("MediaPlayer: Received remote command: \(command)")
         switch command {
         case .play:
-            play()
+            play(mode: state.currentMediaMode)
         case .stop, .pause:
             pause()
         case .togglePausePlay:
@@ -264,7 +296,7 @@ extension MediaPlayer: SimRadioMediaPlayerDelegate {
         palyIndicatorSpectrum = spectrum
     }
 
-    func simRadioMediaPlayer(_ player: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
+    func simRadioMediaPlayer(_: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
         updateMeta(trackMarker: marker)
     }
 }

@@ -31,10 +31,10 @@ class DefaultSimRadioMediaPlayer {
 }
 
 extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
-    func playStation(withID stationID: MediaID) {
+    func playStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?) {
         Task {
             do {
-                try await doPlayStation(withID: stationID)
+                try await doPlayStation(withID: stationID, mode: mode)
             } catch {
                 print(error)
             }
@@ -47,6 +47,18 @@ extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
         playToEndTask = nil
         removePeriodicTimeObserver()
         currentMarkers = nil
+    }
+
+    func availableModes(stationID: MediaID) -> [MediaPlaybackMode] {
+        switch stationID {
+        case let .simRadio(id):
+            guard let mediaState,
+                  let stationData = mediaState.stationData(for: id)
+            else {
+                return []
+            }
+            return stationData.station.playlistRules.availableModes
+        }
     }
 }
 
@@ -74,11 +86,11 @@ private extension DefaultSimRadioMediaPlayer {
         /// - Note: Uses CMTime for frame-accurate scheduling and AVFoundation compatibility
         /// - Value represents seconds since start of day (00:00)
         let startTimeInDay: CMTime
-
+        let mode: MediaPlaybackMode.ID?
         let markers: [AudioFragmentMarker]?
     }
 
-    func doPlayStation(withID stationID: MediaID) async throws {
+    func doPlayStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?) async throws {
         removePeriodicTimeObserver()
 
         let startingDate = Date()
@@ -88,7 +100,8 @@ private extension DefaultSimRadioMediaPlayer {
         let playlistItem = try await makePlaylistItem(
             stationID: stationID,
             startingOn: startingDate,
-            at: .init(seconds: startingDate.currentSecondOfDay)
+            at: .init(seconds: startingDate.currentSecondOfDay),
+            mode: mode
         )
 
         currentMarkers = playlistItem.track.markers
@@ -109,7 +122,8 @@ private extension DefaultSimRadioMediaPlayer {
         guard let nextPlayableItem = try await makeNextPlayableItem(
             stationID: stationID,
             date: startingDate + playlistItem.duration.seconds,
-            time: (startingTime + playlistItem.duration).wrappedDay
+            time: (startingTime + playlistItem.duration).wrappedDay,
+            mode: mode
         ) else {
             throw PlayerItemLoadingError.playerItemCreatingError
         }
@@ -120,14 +134,16 @@ private extension DefaultSimRadioMediaPlayer {
     func makePlaylistItem(
         stationID: MediaID,
         startingOn startingDate: Date,
-        at startingTime: CMTime
+        at startingTime: CMTime,
+        mode: MediaPlaybackMode.ID?
     ) async throws -> PlaylistItem {
         switch stationID {
         case let .simRadio(id):
             try await makePlaylistItem(
                 stationID: id,
                 startingOn: startingDate,
-                at: startingTime
+                at: startingTime,
+                modeID: mode
             )
         }
     }
@@ -135,7 +151,8 @@ private extension DefaultSimRadioMediaPlayer {
     func makePlaylistItem(
         stationID: SimStation.ID,
         startingOn startingDate: Date,
-        at startingTime: CMTime
+        at startingTime: CMTime,
+        modeID: MediaPlaybackMode.ID?
     ) async throws -> PlaylistItem {
         guard let mediaState,
               let stationData = mediaState.stationData(for: stationID)
@@ -148,7 +165,7 @@ private extension DefaultSimRadioMediaPlayer {
             startingOn: startingDate,
 //            at: .init(seconds: startingDate.currentSecondOfDay),
             at: startingTime,
-            mode: stationData.station.playlistRules.defaultMode
+            mode: stationData.station.playlistRules.mode(for: modeID)
         )
     }
 
@@ -160,7 +177,8 @@ private extension DefaultSimRadioMediaPlayer {
             guard let newNextPlayableItem = try await makeNextPlayableItem(
                 stationID: nextPlayableItem.stationID,
                 date: nextPlayableItem.day,
-                time: nextPlayableItem.startTimeInDay
+                time: nextPlayableItem.startTimeInDay,
+                mode: nextPlayableItem.mode
             ) else { return }
 
             currentMarkers = nextPlayableItem.markers
@@ -223,12 +241,14 @@ private extension DefaultSimRadioMediaPlayer {
     func makeNextPlayableItem(
         stationID: MediaID,
         date: Date,
-        time: CMTime
+        time: CMTime,
+        mode: MediaPlaybackMode.ID?
     ) async throws -> NextPlayableItem? {
         let playlistItem = try await makePlaylistItem(
             stationID: stationID,
             startingOn: date,
-            at: time
+            at: time,
+            mode: mode
         )
 
         let loader = PlayerItemLoader()
@@ -242,6 +262,7 @@ private extension DefaultSimRadioMediaPlayer {
             item: playerItem,
             day: date + playlistItem.duration.seconds,
             startTimeInDay: (time + playlistItem.duration).wrappedDay,
+            mode: mode,
             markers: playlistItem.track.markers
         )
     }
@@ -253,5 +274,50 @@ private extension Date {
         formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
         let someDateTime = formatter.date(from: string)
         self = someDateTime!
+    }
+}
+
+extension SimRadioDTO.Playlist {
+    var availableModes: [MediaPlaybackMode] {
+        guard let options, options.available.isEmpty == false else { return [] }
+
+        let alternate = options.alternateInterval.map { _ in
+            [MediaPlaybackMode(id: .alternate, title: "Alternate")]
+        } ?? []
+
+        let available = options.available.map {
+            MediaPlaybackMode(id: .init(value: $0.id.value), title: $0.title)
+        }
+        return alternate + available
+    }
+}
+
+extension MediaPlaybackMode.ID {
+    static var alternate: Self {
+        .init(value: "alternate_playback")
+    }
+}
+
+extension SimRadioDTO.Playlist {
+    func mode(for id: MediaPlaybackMode.ID?) throws -> PlaylistBuilder.PlaylistMode? {
+        guard let id else { return defaultMode }
+        if id == .alternate {
+            guard let interval = options?.alternateInterval else {
+                throw PlaylistGenerationError.wrongMode
+            }
+            return .alternate(interval)
+        }
+        guard let option = options?.available.first(where: { $0.id.value == id.value }) else {
+            throw PlaylistGenerationError.wrongMode
+        }
+        return .option(option.id)
+    }
+
+    private var defaultMode: PlaylistBuilder.PlaylistMode? {
+        guard let options, options.available.isEmpty == false else { return nil }
+        if let interval = options.alternateInterval {
+            return .alternate(interval)
+        }
+        return options.available.first.map { .option($0.id) }
     }
 }

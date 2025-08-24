@@ -9,7 +9,8 @@ import Foundation
 
 @MainActor
 protocol SimRadioMediaPlayer {
-    func playStation(withID stationID: MediaID)
+    func playStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?)
+    func availableModes(stationID: MediaID) -> [MediaPlaybackMode]
     func stop()
 }
 

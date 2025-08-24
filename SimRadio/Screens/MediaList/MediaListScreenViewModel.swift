@@ -20,7 +20,7 @@ class MediaListScreenViewModel {
     var mediaState: DefaultMediaState?
     let items: [Media]
     let listMeta: MediaList.Meta?
-    var state: MediaPlayerState = .paused(.none)
+    var state: MediaPlayerState = .paused(media: .none, mode: nil)
     var palyIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
     private var cancellables = Set<AnyCancellable>()
 
@@ -37,7 +37,7 @@ class MediaListScreenViewModel {
 
     func onSelect(media: Media.ID) {
         guard let player else { return }
-        player.play(media, of: items.map(\.id))
+        player.play(media, of: items.map(\.id), mode: nil)
     }
 
     func swipeButtons(media: Media.ID) -> [SwipeButton] {
@@ -69,8 +69,8 @@ class MediaListScreenViewModel {
 
     func mediaActivity(_ mediaID: MediaID) -> MediaActivity? {
         switch state {
-        case let .paused(pausedMediaID): pausedMediaID == mediaID ? .paused : nil
-        case let .playing(playingMediaID): playingMediaID == mediaID ? .spectrum(palyIndicatorSpectrum) : nil
+        case let .paused(pausedMediaID, _): pausedMediaID == mediaID ? .paused : nil
+        case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(palyIndicatorSpectrum) : nil
         }
     }
 

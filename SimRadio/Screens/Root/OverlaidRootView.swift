@@ -43,7 +43,8 @@ struct OverlaidRootView: View {
                 expandedNowPlaying = false
             case .inactive:
                 if oldPhase == .background, expandWhenGoToBackground == true {
-                    expandedNowPlaying = true
+                    // Bugs occur with the safe area when restoring this parameter on return from background
+                    // expandedNowPlaying = true
                 }
             case .active:
                 expandWhenGoToBackground = nil

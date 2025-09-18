@@ -25,7 +25,7 @@ class PlayerItemLoader {
         let params = AVMutableAudioMixInputParameters(track: mainTrack)
 
         let tap = try tapProcessor.makeTap()
-        params.audioTapProcessor = tap.takeRetainedValue()
+        params.audioTapProcessor = tap
 
         try await load(playlistItem.track, track: mainTrack)
         for mix in playlistItem.mixes {

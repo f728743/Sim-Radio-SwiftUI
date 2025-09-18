@@ -73,7 +73,7 @@ final class AudioTapProcessor {
         analyzer.setSampleRate(format.pointee.mSampleRate)
     }
 
-    func makeTap() throws -> Unmanaged<MTAudioProcessingTap> {
+    func makeTap() throws -> MTAudioProcessingTap {
         let tapContext = AudioTapContext(content: analyzer)
 
         var callbacks = MTAudioProcessingTapCallbacks(
@@ -86,7 +86,7 @@ final class AudioTapProcessor {
             process: tapProcess
         )
 
-        var tap: Unmanaged<MTAudioProcessingTap>?
+        var tap: MTAudioProcessingTap?
 
         let err = MTAudioProcessingTapCreate(
             kCFAllocatorDefault,

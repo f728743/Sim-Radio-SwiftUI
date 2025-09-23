@@ -141,8 +141,7 @@ private extension MediaPlayer {
         }
 
         if case let .playing(currentID, currentMode) = state,
-           currentID == mediaID, currentMode == mode
-        {
+           currentID == mediaID, currentMode == mode {
             print("MediaPlayer: Already playing \(mediaID).")
             // TODO: check if actualy playing
             return

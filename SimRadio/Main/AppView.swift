@@ -16,9 +16,15 @@ struct AppView: View {
     }
 
     var body: some View {
-        OverlayableRootView {
-            OverlaidRootView()
-                .environment(playerController)
+        Group {
+            if #available(iOS 26, *) {
+                NativeRootTabView()
+            } else {
+                OverlayableRootView {
+                    OverlaidRootView()
+                }
+            }
         }
+        .environment(playerController)
     }
 }

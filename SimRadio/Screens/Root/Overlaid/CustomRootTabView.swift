@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CustomTabRootView: View {
+struct CustomRootTabView: View {
     @State private var tabSelection: TabBarItem = .home
 
     var body: some View {
@@ -17,7 +17,10 @@ struct CustomTabRootView: View {
                 .accentColor(Color(.palette.brand))
                 .tabBarItem(tab: .home, selection: $tabSelection)
 
-            Text("Looking for something?")
+            RadioScreen()
+                .tabBarItem(tab: .radio, selection: $tabSelection)
+
+            SearchScreen()
                 .tabBarItem(tab: .search, selection: $tabSelection)
         }
     }
@@ -27,7 +30,7 @@ struct CustomTabRootView: View {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
 
-    CustomTabRootView()
+    CustomRootTabView()
         .environment(dependencies)
         .environment(playerController)
 }

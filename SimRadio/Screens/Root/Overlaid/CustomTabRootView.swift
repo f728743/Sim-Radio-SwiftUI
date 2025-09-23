@@ -1,5 +1,5 @@
 //
-//  RootView.swift
+//  CustomTabRootView.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 27.11.2024.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RootView: View {
+struct CustomTabRootView: View {
     @State private var tabSelection: TabBarItem = .home
 
     var body: some View {
@@ -27,7 +27,7 @@ struct RootView: View {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
 
-    RootView()
+    CustomTabRootView()
         .environment(dependencies)
         .environment(playerController)
 }

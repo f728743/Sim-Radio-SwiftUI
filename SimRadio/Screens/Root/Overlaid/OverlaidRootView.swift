@@ -18,7 +18,7 @@ struct OverlaidRootView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            RootView()
+            CustomTabRootView()
             CompactNowPlayingReplacement(expanded: .constant(false))
                 .opacity(showNowPlayingReplacement ? 1 : 0)
         }

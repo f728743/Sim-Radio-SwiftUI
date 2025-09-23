@@ -142,5 +142,5 @@ extension View {
 }
 
 #Preview {
-    RootView()
+    CustomRootTabView()
 }

@@ -26,7 +26,7 @@ extension View {
 
 /// Root View Wrapper
 /// In order to place views on top of the SwiftUl app, we need to create
-/// an overlay window on top of the active key window. This RootView wrapper
+/// an overlay window on top of the active key window. This CustomTabRootView wrapper
 /// will create an overlay window, which allows us to place our views on top of the current key window.
 /// To make this work, you will have to wrap your app's entry view with this wrapper.
 struct OverlayableRootView<Content: View>: View {
@@ -153,7 +153,7 @@ private class PassthroughWindow: UIWindow {
     @Previewable @State var playerController = PlayerController.stub
 
     OverlayableRootView {
-        OverlaidRootView()
+        CustomOverlaidRootView()
             .environment(playerController)
             .environment(dependencies)
     }

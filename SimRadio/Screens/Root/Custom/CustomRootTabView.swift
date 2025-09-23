@@ -1,5 +1,5 @@
 //
-//  RootView.swift
+//  CustomRootTabView.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 27.11.2024.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RootView: View {
+struct CustomRootTabView: View {
     @State private var tabSelection: TabBarItem = .home
 
     var body: some View {
@@ -17,7 +17,10 @@ struct RootView: View {
                 .accentColor(Color(.palette.brand))
                 .tabBarItem(tab: .home, selection: $tabSelection)
 
-            Text("Looking for something?")
+            RadioScreen()
+                .tabBarItem(tab: .radio, selection: $tabSelection)
+
+            SearchScreen()
                 .tabBarItem(tab: .search, selection: $tabSelection)
         }
     }
@@ -27,7 +30,7 @@ struct RootView: View {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
 
-    RootView()
+    CustomRootTabView()
         .environment(dependencies)
         .environment(playerController)
 }

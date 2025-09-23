@@ -107,7 +107,7 @@ private extension PlayerControls {
             } label: {
                 optionsMenuLabel
             }
-            .preferredColorScheme(.dark)
+            // TODO: set dark theme menu without  .preferredColorScheme(.dark)
             .padding(.trailing, ViewConst.playerCardPaddings)
         }
     }

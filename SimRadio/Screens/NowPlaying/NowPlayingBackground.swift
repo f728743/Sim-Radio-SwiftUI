@@ -8,6 +8,12 @@
 import SwiftUI
 
 struct NowPlayingBackground: View {
+    enum Mode {
+        case standard
+        case small
+    }
+
+    var mode: Mode = .standard
     let colors: [Color]
     let expanded: Bool
     let isFullExpanded: Bool
@@ -16,8 +22,7 @@ struct NowPlayingBackground: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        let expandPlayerCornerRadius = (isFullExpanded ? 0 : UIScreen.deviceCornerRadius)
-        return ZStack {
+        ZStack {
             Rectangle()
                 .fill(.thickMaterial)
             if canBeExpanded {
@@ -26,10 +31,10 @@ struct NowPlayingBackground: View {
                     .opacity(expanded ? 1 : 0)
             }
         }
-        .clipShape(.rect(cornerRadius: expanded ? expandPlayerCornerRadius : 14))
+        .clipShape(.rect(cornerRadius: playerCornerRadius))
         .frame(height: expanded ? nil : ViewConst.compactNowPlayingHeight)
         .shadow(
-            color: .primary.opacity(colorScheme == .light ? 0.2 : 0),
+            color: .primary.opacity(needShadow ? 0.2 : 0),
             radius: 8,
             x: 0,
             y: 2
@@ -37,8 +42,27 @@ struct NowPlayingBackground: View {
     }
 }
 
+private extension NowPlayingBackground {
+    var playerCornerRadius: CGFloat {
+        expanded ? expandPlayerCornerRadius : collapsedPlayerCornerRadius
+    }
+
+    var expandPlayerCornerRadius: CGFloat {
+        isFullExpanded ? 0 : UIScreen.deviceCornerRadius
+    }
+
+    var collapsedPlayerCornerRadius: CGFloat {
+        mode == .standard ? 14 : ViewConst.compactNowPlayingHeight / 2
+    }
+
+    var needShadow: Bool {
+        colorScheme == .light && mode == .standard
+    }
+}
+
 #Preview {
     NowPlayingBackground(
+        mode: .small,
         colors: [],
         expanded: false,
         isFullExpanded: false

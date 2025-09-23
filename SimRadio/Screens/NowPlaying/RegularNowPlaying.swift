@@ -10,9 +10,8 @@ import SwiftUI
 
 struct RegularNowPlaying: View {
     @Environment(PlayerController.self) var model
-    @Binding var expanded: Bool
+    var expanded: Bool
     var size: CGSize
-    var safeArea: EdgeInsets
     var animationNamespace: Namespace.ID
 
     var body: some View {
@@ -35,8 +34,8 @@ struct RegularNowPlaying: View {
                     .transition(.move(edge: .bottom))
             }
         }
-        .padding(.top, safeArea.top)
-        .padding(.bottom, safeArea.bottom)
+        .padding(.top, ViewConst.safeAreaInsets.top)
+        .padding(.bottom, ViewConst.safeAreaInsets.bottom)
     }
 }
 
@@ -74,9 +73,8 @@ private extension RegularNowPlaying {
     @Previewable @State var playerController = PlayerController.stub
 
     RegularNowPlaying(
-        expanded: .constant(true),
-        size: UIScreen.main.bounds.size,
-        safeArea: (UIApplication.keyWindow?.safeAreaInsets ?? .zero).edgeInsets,
+        expanded: true,
+        size: UIScreen.size,
         animationNamespace: Namespace().wrappedValue
     )
     .onAppear {

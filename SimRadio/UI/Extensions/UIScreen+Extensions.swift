@@ -15,4 +15,6 @@ extension UIScreen {
     static var hairlineWidth: CGFloat {
         1 / main.scale
     }
+
+    static let size = UIScreen.main.bounds.size
 }

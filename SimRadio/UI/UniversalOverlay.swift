@@ -153,7 +153,7 @@ private class PassthroughWindow: UIWindow {
     @Previewable @State var playerController = PlayerController.stub
 
     OverlayableRootView {
-        OverlaidRootView()
+        CustomOverlaidRootView()
             .environment(playerController)
             .environment(dependencies)
     }

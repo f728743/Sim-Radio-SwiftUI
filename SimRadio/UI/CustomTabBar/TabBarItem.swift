@@ -29,7 +29,7 @@ extension TabBarItem {
         case .search: Image(systemName: "magnifyingglass")
         }
     }
-    
+
     var role: TabRole? {
         switch self {
         case .search: .search

@@ -9,6 +9,7 @@ import SwiftUI
 
 enum PlayerMatchedGeometry {
     case artwork
+    case backgroundView
 }
 
 struct ExpandableNowPlaying: View {
@@ -203,7 +204,7 @@ private extension UIWindow {
     @Previewable @State var playerController = PlayerController.stub
 
     OverlayableRootView {
-        OverlaidRootView()
+        CustomOverlaidRootView()
             .environment(playerController)
             .environment(dependencies)
     }

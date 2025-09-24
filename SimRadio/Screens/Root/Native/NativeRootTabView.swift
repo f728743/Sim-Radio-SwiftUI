@@ -1,5 +1,5 @@
 //
-//  NativeRootView.swift
+//  NativeRootTabView.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 23.09.2025.
@@ -48,7 +48,7 @@ private extension TabBarItem {
 #Preview {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
-    
+
     NativeRootTabView()
         .environment(playerController)
         .environment(dependencies)

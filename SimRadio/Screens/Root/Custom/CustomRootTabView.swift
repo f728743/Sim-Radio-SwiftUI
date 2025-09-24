@@ -1,5 +1,5 @@
 //
-//  CustomTabRootView.swift
+//  CustomRootTabView.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 27.11.2024.

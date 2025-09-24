@@ -1,5 +1,5 @@
 //
-//  OverlaidRootView.swift
+//  CustomOverlaidRootView.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 17.11.2024.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct OverlaidRootView: View {
+struct CustomOverlaidRootView: View {
     @State private var nowPlayingExpandProgress: CGFloat = .zero
     @State private var showOverlayingNowPlayng: Bool = false
     @State private var expandedNowPlaying: Bool = false
@@ -88,7 +88,7 @@ private struct CompactNowPlayingReplacement: View {
     @Previewable @State var playerController = PlayerController.stub
 
     OverlayableRootView {
-        OverlaidRootView()
+        CustomOverlaidRootView()
             .environment(playerController)
             .environment(dependencies)
     }

@@ -18,10 +18,10 @@ struct AppView: View {
     var body: some View {
         Group {
             if #available(iOS 26, *) {
-                NativeRootTabView()
+                NativeOverlaidRootView()
             } else {
                 OverlayableRootView {
-                    OverlaidRootView()
+                    CustomOverlaidRootView()
                 }
             }
         }

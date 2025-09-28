@@ -1,5 +1,6 @@
 # SimRadio
 
+[![Watch the video](https://img.youtube.com/vi/zcUebp7Oofc/maxresdefault.jpg)](https://youtu.be/zcUebp7Oofc)
 ## Introduction
 
 SimRadio is an iOS application designed to simulate the experience of listening to complex, dynamic radio stations, such as those found in video games like the Grand Theft Auto series. It goes beyond simple track playback by dynamically sequencing various audio components according to predefined rules, offering features like offline playback and a modern user interface.

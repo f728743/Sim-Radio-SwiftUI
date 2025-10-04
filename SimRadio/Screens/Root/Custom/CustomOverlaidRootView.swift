@@ -1,5 +1,5 @@
 //
-//  OverlaidRootView.swift
+//  CustomOverlaidRootView.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 17.11.2024.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct OverlaidRootView: View {
+struct CustomOverlaidRootView: View {
     @State private var nowPlayingExpandProgress: CGFloat = .zero
     @State private var showOverlayingNowPlayng: Bool = false
     @State private var expandedNowPlaying: Bool = false
@@ -18,7 +18,7 @@ struct OverlaidRootView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            RootView()
+            CustomRootTabView()
             CompactNowPlayingReplacement(expanded: .constant(false))
                 .opacity(showNowPlayingReplacement ? 1 : 0)
         }
@@ -83,12 +83,67 @@ private struct CompactNowPlayingReplacement: View {
     }
 }
 
+/// Resuable File
+struct MusicInfo: View {
+    @Binding var expandSheet: Bool
+    var animation: Namespace.ID
+    var body: some View {
+        HStack(spacing: 0) {
+            /// Adding Matched Geometry Effect (Hero Animation)
+            ZStack {
+                if !expandSheet {
+                    GeometryReader {
+                        let size = $0.size
+
+                        Image("Artwork")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: size.width, height: size.height)
+                            .clipShape(RoundedRectangle(cornerRadius: expandSheet ? 15 : 5, style: .continuous))
+                    }
+                    .matchedGeometryEffect(id: PlayerMatchedGeometry.artwork, in: animation)
+                }
+            }
+            .frame(width: 45, height: 45)
+
+            Text("Look What You Made Me do")
+                .fontWeight(.semibold)
+                .lineLimit(1)
+                .padding(.horizontal, 15)
+
+            Spacer(minLength: 0)
+
+            Button {} label: {
+                Image(systemName: "pause.fill")
+                    .font(.title2)
+            }
+
+            Button {} label: {
+                Image(systemName: "forward.fill")
+                    .font(.title2)
+            }
+            .padding(.leading, 25)
+        }
+        .foregroundColor(.primary)
+        .padding(.horizontal)
+        .padding(.bottom, 5)
+        .frame(height: 70)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            /// Expanding Bottom Sheet
+            withAnimation(.easeInOut(duration: 0.3)) {
+                expandSheet = true
+            }
+        }
+    }
+}
+
 #Preview {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
 
     OverlayableRootView {
-        OverlaidRootView()
+        CustomOverlaidRootView()
             .environment(playerController)
             .environment(dependencies)
     }

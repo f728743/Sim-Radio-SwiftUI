@@ -14,7 +14,14 @@ extension ViewConst {
     static let playerCardPaddings: CGFloat = 32
     static let screenPaddings: CGFloat = 20
     static let tabbarHeight: CGFloat = safeAreaInsets.bottom + 92
-    static let compactNowPlayingHeight: CGFloat = 56
+    static var compactNowPlayingHeight: CGFloat {
+        if #available(iOS 26.0, *) {
+            48
+        } else {
+            56
+        }
+    }
+
     static var safeAreaInsets: EdgeInsets {
         MainActor.assumeIsolated {
             EdgeInsets(UIApplication.keyWindow?.safeAreaInsets ?? .zero)

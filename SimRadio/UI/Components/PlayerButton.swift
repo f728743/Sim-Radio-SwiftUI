@@ -38,6 +38,7 @@ struct PlayerButton<Content: View>: View {
             .background(showCircle ? config.tint : .clear)
             .clipShape(Ellipse())
             .scaleEffect(pressed ? 0.85 : 1)
+            .contentShape(.circle)
             .onPressGesture(
                 interval: config.updateInterval,
                 onPressed: {

@@ -9,11 +9,18 @@ import SwiftUI
 
 enum PlayerMatchedGeometry {
     case artwork
+    case backgroundView
 }
 
 struct ExpandableNowPlaying: View {
+    enum Mode {
+        case deck
+        case overlay(collapsedFrame: CGRect)
+    }
+
     @Binding var show: Bool
     @Binding var expanded: Bool
+    var mode: Mode = .deck
     @Environment(PlayerController.self) var model
     @State private var offsetY: CGFloat = 0.0
     @State private var mainWindow: UIWindow?
@@ -21,13 +28,12 @@ struct ExpandableNowPlaying: View {
     @State private var windowProgress: CGFloat = 0.0
     @State private var progressTrackState: CGFloat = 0.0
     @State private var expandProgress: CGFloat = 0.0
-    @Environment(\.colorScheme) var colorScheme
     @Namespace private var animationNamespace
 
     var body: some View {
         expandableNowPlaying
             .onAppear {
-                if let window = UIApplication.keyWindow {
+                if let window = UIApplication.keyWindow, mode.isDeck {
                     mainWindow = window
                 }
             }
@@ -42,32 +48,51 @@ struct ExpandableNowPlaying: View {
     }
 }
 
+extension ExpandableNowPlaying.Mode {
+    var isDeck: Bool {
+        if case .deck = self {
+            return true
+        }
+        return false
+    }
+
+    var isOverlay: Bool {
+        if case .overlay = self {
+            return true
+        }
+        return false
+    }
+}
+
 private extension ExpandableNowPlaying {
-    var isFullExpanded: Bool {
+    var isFullyExpanded: Bool {
         expandProgress >= 1
+    }
+
+    var isFullyCollapsed: Bool {
+        expandProgress.isZero
     }
 
     var expandableNowPlaying: some View {
         GeometryReader {
             let size = $0.size
-            let safeArea = $0.safeAreaInsets
-
             ZStack(alignment: .top) {
                 NowPlayingBackground(
+                    mode: mode.isOverlay ? .small : .standard,
                     colors: model.colors.map { Color($0) },
                     expanded: expanded,
-                    isFullExpanded: isFullExpanded
+                    isFullExpanded: isFullyExpanded
                 )
                 CompactNowPlaying(
+                    mode: mode.isOverlay ? .small : .standard,
                     expanded: $expanded,
                     animationNamespace: animationNamespace
                 )
                 .opacity(expanded ? 0 : 1)
 
                 RegularNowPlaying(
-                    expanded: $expanded,
+                    expanded: expanded,
                     size: size,
-                    safeArea: safeArea,
                     animationNamespace: animationNamespace
                 )
                 .opacity(expanded ? 1 : 0)
@@ -75,8 +100,9 @@ private extension ExpandableNowPlaying {
             }
             .frame(height: expanded ? nil : ViewConst.compactNowPlayingHeight, alignment: .top)
             .frame(maxHeight: .infinity, alignment: .bottom)
-            .padding(.bottom, expanded ? 0 : safeArea.bottom + ViewConst.compactNowPlayingHeight)
-            .padding(.horizontal, expanded ? 0 : 12)
+            .padding(.bottom, insets.bottom)
+            .padding(.leading, insets.leading)
+            .padding(.trailing, insets.trailing)
             .offset(y: offsetY)
             .gesture(
                 PanGesture(
@@ -86,6 +112,7 @@ private extension ExpandableNowPlaying {
             )
             .ignoresSafeArea()
         }
+        .opacity(isFullyCollapsed && mode.isOverlay ? 0 : 1)
     }
 
     func handleGestureChange(value: PanGesture.Value, viewSize: CGSize) {
@@ -119,7 +146,6 @@ private extension ExpandableNowPlaying {
         } else {
             progressTrackState = progress
         }
-
         mainWindow?.stacked(
             progress: progress,
             animationDuration: withAnimation ? Animation.playerExpandAnimationDuration : nil
@@ -131,6 +157,30 @@ private extension ExpandableNowPlaying {
             progressTrackState = 0
         }
         mainWindow?.resetStackedWithAnimation(duration: Animation.playerExpandAnimationDuration)
+    }
+
+    var insets: EdgeInsets {
+        if expanded {
+            return .init(top: 0, leading: 0, bottom: 0, trailing: 0)
+        }
+
+        switch mode {
+        case let .overlay(frame):
+            return .init(
+                top: 0,
+                leading: frame.minX,
+                bottom: UIScreen.size.height - frame.maxY,
+                trailing: UIScreen.size.width - frame.maxX
+            )
+
+        case .deck:
+            return .init(
+                top: 0,
+                leading: 12,
+                bottom: ViewConst.safeAreaInsets.bottom + ViewConst.compactNowPlayingHeight,
+                trailing: 12
+            )
+        }
     }
 }
 
@@ -203,8 +253,18 @@ private extension UIWindow {
     @Previewable @State var playerController = PlayerController.stub
 
     OverlayableRootView {
-        OverlaidRootView()
+        CustomOverlaidRootView()
             .environment(playerController)
             .environment(dependencies)
     }
+}
+
+@available(iOS 26, *)
+#Preview {
+    @Previewable @State var dependencies = Dependencies.stub
+    @Previewable @State var playerController = PlayerController.stub
+
+    NativeOverlaidRootView()
+        .environment(playerController)
+        .environment(dependencies)
 }

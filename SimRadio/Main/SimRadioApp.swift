@@ -13,7 +13,7 @@ struct SimRadioApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppView(dependencies: appDelegate.dependencies)
+            AppView()
                 .environment(appDelegate.dependencies)
         }
     }

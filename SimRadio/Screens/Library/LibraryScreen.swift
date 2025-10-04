@@ -9,7 +9,6 @@ import Kingfisher
 import SwiftUI
 
 struct LibraryScreen: View {
-    @Environment(\.nowPlayingExpandProgress) var expandProgress
     @Environment(Router.self) var router
     @Environment(Dependencies.self) var dependencies
     @State private var viewModel = LibraryScreenViewModel()
@@ -19,16 +18,16 @@ struct LibraryScreen: View {
             navigationLink(title: "Downloaded", icon: "arrow.down.circle")
                 .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
                 .listSectionSeparator(.hidden, edges: .top)
-                .listRowBackground(Color(.palette.appBackground(expandProgress: expandProgress)))
+                .listRowBackground(Color(.palette.appBackground))
                 .onTapGesture {
                     router.navigateToDownloaded()
                 }
             recentlyAdded
                 .listRowInsets(.init(top: 25, leading: 20, bottom: 0, trailing: 20))
                 .listSectionSeparator(.hidden, edges: .bottom)
-                .listRowBackground(Color(.palette.appBackground(expandProgress: expandProgress)))
+                .listRowBackground(Color(.palette.appBackground))
         }
-        .background(Color(.palette.appBackground(expandProgress: expandProgress)))
+        .background(Color(.palette.appBackground))
         .listStyle(.plain)
         .navigationTitle("Library")
         .toolbar {

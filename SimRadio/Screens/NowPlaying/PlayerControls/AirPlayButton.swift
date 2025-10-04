@@ -7,46 +7,86 @@
 
 import AVKit
 import SwiftUI
+import UIKit
 
 struct AirPlayButton: View {
-    private let airPlayPresenter = AirPlayPresenter()
+    @State private var presenter = AirPlayPresenter()
 
     var body: some View {
-        Button(
-            action: {
-                airPlayPresenter.presentAirPlayPicker()
-            },
-            label: {
-                Image(systemName: "airplayaudio")
-                    .font(.system(size: 24))
-            }
-        )
+        ZStack {
+            // Invisible AVRoutePickerView hosted correctly in SwiftUI hierarchy
+            AirPlayRoutePickerView(presenter: $presenter)
+                .frame(width: 0, height: 0)
+                .accessibilityHidden(true)
+                .allowsHitTesting(false)
+                .opacity(0.0001)
+
+            Button(
+                action: {
+                    presenter.presentAirPlayPicker()
+                },
+                label: {
+                    Image(systemName: "airplayaudio")
+                        .font(.system(size: 24))
+                }
+            )
+        }
     }
 }
 
-private class AirPlayPresenter {
+private struct AirPlayRoutePickerView: UIViewRepresentable {
+    @Binding var presenter: AirPlayPresenter
+
+    func makeUIView(context _: Context) -> AVRoutePickerView {
+        let view = AVRoutePickerView(frame: .zero)
+        view.prioritizesVideoDevices = false
+        view.isHidden = true // keep it hidden; we trigger it programmatically
+        // Hand the instance to the presenter so it can trigger the internal button safely
+        presenter.attach(routePickerView: view)
+        return view
+    }
+
+    func updateUIView(_: AVRoutePickerView, context _: Context) {
+        // Nothing to update dynamically right now
+    }
+}
+
+private final class AirPlayPresenter {
+    private weak var routePickerView: AVRoutePickerView?
+
+    func attach(routePickerView: AVRoutePickerView) {
+        self.routePickerView = routePickerView
+    }
+
     @MainActor
     func presentAirPlayPicker() {
-        let routePickerView = AVRoutePickerView()
-        guard let rootViewController = UIApplication.keyWindow?.rootViewController
-        else {
-            print("Unable to find root view controller.")
+        guard let routePickerView else {
+            // Not yet mounted in the SwiftUI hierarchy; try again shortly
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.presentAirPlayPicker()
+            }
             return
         }
 
-        routePickerView.frame = .zero
-        routePickerView.alpha = 0.0001
-        routePickerView.isUserInteractionEnabled = false
-        rootViewController.view.addSubview(routePickerView)
-
+        // Find the internal UIButton and trigger it
         if let internalButton = routePickerView.subviews.first(where: { $0 is UIButton }) as? UIButton {
             internalButton.sendActions(for: .touchUpInside)
         } else {
-            print("Could not find internal button AVRoutePickerView. Display may not work.")
+            // On some OS versions, subview hierarchy can change; as a fallback,
+            // try UIControlEvents broadly or iterate deeper if needed.
+            if let button = findButton(in: routePickerView) {
+                button.sendActions(for: .touchUpInside)
+            } else {
+                print("Could not find internal button in AVRoutePickerView. Display may not work.")
+            }
         }
+    }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            routePickerView.removeFromSuperview()
+    @MainActor private func findButton(in view: UIView) -> UIButton? {
+        if let button = view as? UIButton { return button }
+        for sub in view.subviews {
+            if let found = findButton(in: sub) { return found }
         }
+        return nil
     }
 }

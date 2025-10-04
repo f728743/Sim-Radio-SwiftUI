@@ -55,7 +55,7 @@ private extension CompactNowPlaying {
             )
         }
     }
-    
+
     @ViewBuilder
     var nowPlaying: some View {
         if mode == .standard {
@@ -64,7 +64,7 @@ private extension CompactNowPlaying {
             smallNowPlaying
         }
     }
-    
+
     var standardNowPlaying: some View {
         HStack(spacing: 8) {
             artwork(cornerRadius: 7)
@@ -106,18 +106,17 @@ private extension CompactNowPlaying {
         }
         .padding(.horizontal, 8)
     }
-    
+
     var inlinedBottomAccessory: Bool {
-        let padding = UIScreen.size.width - viewWidth        
+        let padding = UIScreen.size.width - viewWidth
         return padding > 60
     }
-    
+
     var smallNowPlaying: some View {
         HStack(spacing: 0) {
             artwork(cornerRadius: 5)
                 .frame(width: 30, height: 30)
-                VStack(spacing: 0) {
-                
+            VStack(spacing: 0) {
                 let title = model.display.title
                 // TODO: MarqueeText
 //                    let fade = ViewConst.playerCardPaddings
@@ -137,7 +136,7 @@ private extension CompactNowPlaying {
             .padding(.leading, 8)
             .geometryGroup()
             .lineLimit(1)
-            
+
             Spacer(minLength: 0)
 
             HStack(spacing: 0) {
@@ -165,7 +164,6 @@ private extension CompactNowPlaying {
                             }
                         }
                     )
-                    
                 }
             }
             .playerButtonStyle(.miniPlayer)

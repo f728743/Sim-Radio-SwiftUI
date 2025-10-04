@@ -1,5 +1,5 @@
 //
-//  NativeRootTabView.swift
+//  RootTabView.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 23.09.2025.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct NativeRootTabView: View {
+struct RootTabView: View {
     var body: some View {
         TabView {
             ForEach(TabBarItem.allCases, id: \.self) { item in
@@ -49,7 +49,7 @@ private extension TabBarItem {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
 
-    NativeRootTabView()
+    RootTabView()
         .environment(playerController)
         .environment(dependencies)
 }

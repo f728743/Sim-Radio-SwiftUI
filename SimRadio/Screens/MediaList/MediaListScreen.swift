@@ -9,7 +9,6 @@ import Kingfisher
 import SwiftUI
 
 struct MediaListScreen: View {
-    @Environment(\.nowPlayingExpandProgress) var expandProgress
     @Environment(Dependencies.self) var dependencies
     @State private var selection: Media.ID?
     @State private var viewModel: MediaListScreenViewModel
@@ -24,7 +23,7 @@ struct MediaListScreen: View {
         content
             .contentMargins(.bottom, ViewConst.tabbarHeight + 27, for: .scrollContent)
             .contentMargins(.bottom, ViewConst.tabbarHeight, for: .scrollIndicators)
-            .background(Color(.palette.appBackground(expandProgress: expandProgress)))
+            .background(Color(.palette.appBackground))
             .toolbar {
                 Button { print("Profile tapped") }
                     label: { ProfileToolbarButton() }
@@ -54,7 +53,7 @@ private extension MediaListScreen {
                 .padding(.top, 17)
                 .listRowInsets(.screenInsets)
                 .listSectionSeparator(.hidden, edges: .bottom)
-                .listRowBackground(Color(.palette.appBackground(expandProgress: expandProgress)))
+                .listRowBackground(Color(.palette.appBackground))
         }
         .listStyle(.plain)
     }
@@ -81,7 +80,7 @@ private extension MediaListScreen {
             buttons
                 .padding(.top, 14)
         }
-        .listRowBackground(Color(.palette.appBackground(expandProgress: expandProgress)))
+        .listRowBackground(Color(.palette.appBackground))
     }
 
     var buttons: some View {
@@ -134,7 +133,7 @@ private extension MediaListScreen {
         .listRowBackground(
             item.id == selection
                 ? Color(uiColor: .systemGray4)
-                : Color(.palette.appBackground(expandProgress: expandProgress))
+                : Color(.palette.appBackground)
         )
         .alignmentGuide(.listRowSeparatorLeading) {
             isLastItem ? $0[.leading] : $0[.leading] + 60

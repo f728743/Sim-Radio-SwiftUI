@@ -1,5 +1,5 @@
 //
-//  NativeOverlaidRootView.swift
+//  OverlaidRootView.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 24.09.2025.
@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 
 @available(iOS 26, *)
-struct NativeOverlaidRootView: View {
+struct OverlaidRootView: View {
     @State private var expandSheet: Bool = false
 
     @State private var nowPlayingFrame: CGRect = .zero
@@ -18,7 +18,7 @@ struct NativeOverlaidRootView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        NativeRootTabView()
+        RootTabView()
             .tabBarMinimizeBehavior(.onScrollDown)
             .tabViewBottomAccessory {
                 CompactNowPlaying(
@@ -51,7 +51,7 @@ struct NativeOverlaidRootView: View {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
 
-    NativeOverlaidRootView()
+    OverlaidRootView()
         .environment(playerController)
         .environment(dependencies)
 }

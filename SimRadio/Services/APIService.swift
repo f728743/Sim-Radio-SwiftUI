@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol APIServiceProtocol {
+protocol APIServiceProtocol: Sendable {
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> APIResponse<T>
 }
@@ -40,25 +40,25 @@ enum APIError: Error {
     case noData
     case unauthorized
     case serverError(String)
-    
+
     var localizedDescription: String {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            "Invalid URL"
         case .invalidResponse:
-            return "Invalid response from server"
-        case .statusCode(let code):
-            return "HTTP Error: \(code)"
-        case .decodingError(let error):
-            return "Decoding error: \(error.localizedDescription)"
-        case .encodingError(let error):
-            return "Encoding error: \(error.localizedDescription)"
+            "Invalid response from server"
+        case let .statusCode(code):
+            "HTTP Error: \(code)"
+        case let .decodingError(error):
+            "Decoding error: \(error.localizedDescription)"
+        case let .encodingError(error):
+            "Encoding error: \(error.localizedDescription)"
         case .noData:
-            return "No data received"
+            "No data received"
         case .unauthorized:
-            return "Unauthorized access"
-        case .serverError(let message):
-            return "Server error: \(message)"
+            "Unauthorized access"
+        case let .serverError(message):
+            "Server error: \(message)"
         }
     }
 }
@@ -69,12 +69,14 @@ struct Endpoint {
     let queryParameters: [String: Any]?
     let body: Any?
     let headers: [String: String]?
-    
-    init(method: HTTPMethod,
-         path: String,
-         queryParameters: [String: Any]? = nil,
-         body: Any? = nil,
-         headers: [String: String]? = nil) {
+
+    init(
+        method: HTTPMethod,
+        path: String,
+        queryParameters: [String: Any]? = nil,
+        body: Any? = nil,
+        headers: [String: String]? = nil
+    ) {
         self.method = method
         self.path = path
         self.queryParameters = queryParameters
@@ -88,33 +90,35 @@ struct APIResponse<T: Decodable> {
     let response: HTTPURLResponse
 }
 
-class APIService: APIServiceProtocol {
+final class APIService: APIServiceProtocol, Sendable {
     private let baseURL: String
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
-    
-    init(baseURL: String,
-         session: URLSession = .shared,
-         decoder: JSONDecoder = JSONDecoder(),
-         encoder: JSONEncoder = JSONEncoder()) {
+
+    init(
+        baseURL: String,
+        session: URLSession = .shared,
+        decoder: JSONDecoder = JSONDecoder(),
+        encoder: JSONEncoder = JSONEncoder()
+    ) {
         self.baseURL = baseURL
         self.session = session
         self.decoder = decoder
         self.encoder = encoder
-        
+
         // Configure decoder and encoder
         self.decoder.keyDecodingStrategy = .convertFromSnakeCase
         self.decoder.dateDecodingStrategy = .iso8601
         self.encoder.keyEncodingStrategy = .convertToSnakeCase
         self.encoder.dateEncodingStrategy = .iso8601
     }
-    
+
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
-        let response: APIResponse<T> = try await self.request(endpoint)
+        let response: APIResponse<T> = try await request(endpoint)
         return response.value
     }
-    
+
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> APIResponse<T> {
         let urlRequest = try buildURLRequest(from: endpoint)
         let (data, response) = try await session.data(for: urlRequest)
@@ -155,7 +159,7 @@ private extension APIService {
         }
         return urlRequest
     }
-    
+
     private func buildURL(from request: Endpoint) -> URL? {
         var urlComponents = URLComponents(string: baseURL + request.path)
         if let queryParameters = request.queryParameters {
@@ -165,7 +169,7 @@ private extension APIService {
         }
         return urlComponents?.url
     }
-    
+
     private func encodeBody(_ body: Encodable) throws -> Data {
         do {
             return try encoder.encode(body)
@@ -173,16 +177,16 @@ private extension APIService {
             throw APIError.encodingError(error)
         }
     }
-    
+
     private func validateStatusCode(_ statusCode: Int) throws {
         switch statusCode {
-        case 200...299:
+        case 200 ... 299:
             return // Success
         case 401:
             throw APIError.unauthorized
-        case 400...499:
+        case 400 ... 499:
             throw APIError.statusCode(statusCode)
-        case 500...599:
+        case 500 ... 599:
             throw APIError.serverError("Server error: \(statusCode)")
         default:
             throw APIError.statusCode(statusCode)
@@ -190,25 +194,25 @@ private extension APIService {
     }
 }
 
-extension APIService {
+extension APIServiceProtocol {
     func get<T: Decodable>(_ path: String, parameters: [String: Any]? = nil) async throws -> T {
-        let request = Endpoint(method: .get, path: path, queryParameters: parameters)
-        return try await self.request(request)
+        let endpoint = Endpoint(method: .get, path: path, queryParameters: parameters)
+        return try await request(endpoint)
     }
-    
-    func post<T: Decodable, U: Encodable>(_ path: String, body: U? = nil) async throws -> T {
-        let request = Endpoint(method: .post, path: path, body: body)
-        return try await self.request(request)
+
+    func post<T: Decodable>(_ path: String, body: (some Encodable)? = nil) async throws -> T {
+        let endpoint = Endpoint(method: .post, path: path, body: body)
+        return try await request(endpoint)
     }
-    
-    func put<T: Decodable, U: Encodable>(_ path: String, body: U? = nil) async throws -> T {
-        let request = Endpoint(method: .put, path: path, body: body)
-        return try await self.request(request)
+
+    func put<T: Decodable>(_ path: String, body: (some Encodable)? = nil) async throws -> T {
+        let endpoint = Endpoint(method: .put, path: path, body: body)
+        return try await request(endpoint)
     }
-    
+
     func delete(_ path: String) async throws {
-        let request = Endpoint(method: .delete, path: path)
-        let _: EmptyResponse = try await self.request(request)
+        let endpoint = Endpoint(method: .delete, path: path)
+        let _: EmptyResponse = try await request(endpoint)
     }
 }
 

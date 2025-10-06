@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol APIServiceProtocol {
+protocol APIServiceProtocol: Sendable {
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> APIResponse<T>
 }
@@ -90,7 +90,7 @@ struct APIResponse<T: Decodable> {
     let response: HTTPURLResponse
 }
 
-class APIService: APIServiceProtocol {
+final class APIService: APIServiceProtocol, Sendable {
     private let baseURL: String
     private let session: URLSession
     private let decoder: JSONDecoder
@@ -194,25 +194,25 @@ private extension APIService {
     }
 }
 
-extension APIService {
+extension APIServiceProtocol {
     func get<T: Decodable>(_ path: String, parameters: [String: Any]? = nil) async throws -> T {
-        let request = Endpoint(method: .get, path: path, queryParameters: parameters)
-        return try await self.request(request)
+        let endpoint = Endpoint(method: .get, path: path, queryParameters: parameters)
+        return try await self.request(endpoint)
     }
 
     func post<T: Decodable>(_ path: String, body: (some Encodable)? = nil) async throws -> T {
-        let request = Endpoint(method: .post, path: path, body: body)
-        return try await self.request(request)
+        let endpoint = Endpoint(method: .post, path: path, body: body)
+        return try await self.request(endpoint)
     }
 
     func put<T: Decodable>(_ path: String, body: (some Encodable)? = nil) async throws -> T {
-        let request = Endpoint(method: .put, path: path, body: body)
-        return try await self.request(request)
+        let endpoint = Endpoint(method: .put, path: path, body: body)
+        return try await self.request(endpoint)
     }
 
     func delete(_ path: String) async throws {
-        let request = Endpoint(method: .delete, path: path)
-        let _: EmptyResponse = try await self.request(request)
+        let endpoint = Endpoint(method: .delete, path: path)
+        let _: EmptyResponse = try await self.request(endpoint)
     }
 }
 

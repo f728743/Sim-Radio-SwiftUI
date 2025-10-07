@@ -19,7 +19,7 @@ final class SearchService: Sendable {
     }
 }
 
-struct RadioStationDTO: Codable, Identifiable {
+struct RealRadioStationDTO: Codable, Identifiable {
     let id: Int
     let stationuuid: String
     let name: String
@@ -43,7 +43,7 @@ struct SearchResponseDTO: Codable {
 }
 
 struct SearchDataDTO: Codable {
-    let stations: [RadioStationDTO]
+    let stations: [RealRadioStationDTO]
     let meta: SearchMetaDTO
 }
 

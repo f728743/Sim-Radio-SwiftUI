@@ -1,0 +1,139 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.22837,0.41238,0.15751,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "extended-gray:1.00000,0.74023"
+          },
+          "image-name" : "Case.svg",
+          "name" : "Case",
+          "position" : {
+            "scale" : 0.86,
+            "translation-in-points" : [
+              -0.910343919436301,
+              22.499131768550896
+            ]
+          }
+        },
+        {
+          "image-name" : "Antenna.svg",
+          "name" : "Antenna",
+          "position" : {
+            "scale" : 0.86,
+            "translation-in-points" : [
+              -20.971905783823313,
+              -302.08789721239236
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "blend-mode-specializations" : [
+            {
+              "value" : "lighten"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "normal"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "multiply"
+            }
+          ],
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "extended-gray:1.00000,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "gray:0.77903,0.26945"
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "gray:0.73716,1.00000"
+              }
+            }
+          ],
+          "glass" : false,
+          "hidden" : false,
+          "image-name" : "Grid.svg",
+          "name" : "Grid",
+          "position" : {
+            "scale" : 0.78,
+            "translation-in-points" : [
+              -121.30508733354395,
+              86.54847516666139
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "extended-gray:1.00000,1.00000"
+          },
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "Controls.svg",
+          "name" : "Controlls",
+          "position" : {
+            "scale" : 0.86,
+            "translation-in-points" : [
+              -1.8221471989681053,
+              26.97680124555322
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "extended-gray:1.00000,0.44757"
+          },
+          "glass" : true,
+          "image-name" : "Speaker.svg",
+          "name" : "Speaker",
+          "position" : {
+            "scale" : 0.86,
+            "translation-in-points" : [
+              -123.74393030814086,
+              84.709964147241
+            ]
+          }
+        }
+      ],
+      "name" : "Group",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}

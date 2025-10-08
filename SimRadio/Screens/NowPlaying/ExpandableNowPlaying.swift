@@ -252,19 +252,7 @@ private extension UIWindow {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
 
-    OverlayableRootView {
-        CustomOverlaidRootView()
-            .environment(playerController)
-            .environment(dependencies)
-    }
-}
-
-@available(iOS 26, *)
-#Preview {
-    @Previewable @State var dependencies = Dependencies.stub
-    @Previewable @State var playerController = PlayerController.stub
-
-    NativeOverlaidRootView()
+    OverlaidRootView()
         .environment(playerController)
         .environment(dependencies)
 }

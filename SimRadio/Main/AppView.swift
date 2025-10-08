@@ -8,23 +8,10 @@
 import SwiftUI
 
 struct AppView: View {
-    @State private var playerController: PlayerController?
-    init(dependencies: Dependencies?) {
-        if let playerController = dependencies?.playerController {
-            _playerController = State(wrappedValue: playerController)
-        }
-    }
-
+    @Environment(Dependencies.self) var dependencies
     var body: some View {
-        Group {
-            if #available(iOS 26, *) {
-                NativeOverlaidRootView()
-            } else {
-                OverlayableRootView {
-                    CustomOverlaidRootView()
-                }
-            }
-        }
-        .environment(playerController)
+        OverlaidRootView()
+            .environment(dependencies.playerController)
+            .environment(\.managedObjectContext, dependencies.dataController.container.viewContext)
     }
 }

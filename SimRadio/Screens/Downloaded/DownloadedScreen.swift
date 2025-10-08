@@ -8,15 +8,8 @@
 import SwiftUI
 
 struct DownloadedScreen: View {
-//    @Environment(MediaState.self) var mediaState
     @Environment(Dependencies.self) var dependencies
-    @State private var viewModel: DownloadedScreenViewModel
-
-    init() {
-        _viewModel = State(
-            wrappedValue: DownloadedScreenViewModel()
-        )
-    }
+    @State private var viewModel = DownloadedScreenViewModel()
 
     var body: some View {
         Group {

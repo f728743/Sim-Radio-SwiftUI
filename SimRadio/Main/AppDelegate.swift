@@ -45,11 +45,14 @@ private extension AppDelegate {
         let playerController = PlayerController()
         playerController.player = mediaPlayer
         playerController.mediaState = mediaState
+        
+        let dataController = DataController()
 
         dependencies = Dependencies(
+            dataController: dataController,
             mediaState: mediaState,
             mediaPlayer: mediaPlayer,
-            playerController: playerController
+            playerController: playerController            
         )
 
         Task {

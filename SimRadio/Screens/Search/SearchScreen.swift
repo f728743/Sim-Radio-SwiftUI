@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SearchScreen: View {
     @State private var viewModel = SearchScreenViewModel()
+    @Environment(Dependencies.self) var dependencies
     
     var body: some View {
         VStack {
@@ -38,6 +39,9 @@ struct SearchScreen: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: Text("Search for radio stations...")
         )
+        .task {
+            viewModel.searchService = SearchService(apiService: dependencies.apiService)
+        }
     }
 }
 

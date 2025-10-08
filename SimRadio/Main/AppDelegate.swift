@@ -47,8 +47,11 @@ private extension AppDelegate {
         playerController.mediaState = mediaState
         
         let dataController = DataController()
-
+        
+        let apiService = APIService(baseURL: "https://cx10577.tw1.ru")
+        
         dependencies = Dependencies(
+            apiService: apiService,
             dataController: dataController,
             mediaState: mediaState,
             mediaPlayer: mediaPlayer,

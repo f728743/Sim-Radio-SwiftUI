@@ -21,10 +21,11 @@ class SearchScreenViewModel {
     var isLoading: Bool = false
     var errorMessage: String?
     
-    private let searchService = SearchService(apiService: APIService(baseURL: "https://cx10577.tw1.ru"))
+    var searchService: SearchService?
     private var searchTask: Task<Void, Never>?
     
     func performSearch() {
+        guard let searchService else { return }
         searchTask?.cancel()
         
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {

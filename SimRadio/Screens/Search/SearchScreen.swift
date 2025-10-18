@@ -43,9 +43,6 @@ private extension SearchScreen {
                 List(viewModel.items) { item in
                     SearchItemView(
                         item: item,
-//                            station.cachedFavicon.flatMap { URL(string: $0) },
-//                        title: station.name,
-//                        subtitle: station.country,
                         onAdd: {
                             viewModel.add(item)
                         }
@@ -61,18 +58,18 @@ private extension SearchScreen {
 }
 
 struct SearchItemLabel: View {
-    let artwork: URL?
+    let artwork: Artwork
     let title: String
     let subtitle: String?
-    
+
     var body: some View {
         HStack {
             artworkView
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
-                
+
                 if let subtitle {
                     Text(subtitle)
                         .font(.subheadline)
@@ -81,13 +78,10 @@ struct SearchItemLabel: View {
             }
         }
     }
-    
+
     var artworkView: some View {
         ZStack {
-            Artwork(
-                url: artwork,
-                cornerRadius: 5
-            )
+            ArtworkView(artwork, cornerRadius: 5)
 //            if let activity = model.activity {
 //                Color.black.opacity(0.4)
 //                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
@@ -100,9 +94,6 @@ struct SearchItemLabel: View {
 
 struct SearchItemView: View {
     let item: APISearchResultItem
-//    let artwork: URL?
-//    let title: String
-//    let subtitle: String?
     let onAdd: () -> Void
 
     var body: some View {
@@ -124,8 +115,6 @@ struct SearchItemView: View {
         }
         .padding(.vertical, 4)
     }
-
-
 }
 
 #Preview {

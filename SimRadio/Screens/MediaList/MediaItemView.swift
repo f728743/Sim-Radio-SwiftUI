@@ -42,8 +42,8 @@ struct MediaItemView: View {
 
     var artwork: some View {
         ZStack {
-            Artwork(
-                url: model.artwork,
+            ArtworkView(
+                model.artwork.map { .webImage($0) } ?? .radio,
                 cornerRadius: 5
             )
             if let activity = model.activity {

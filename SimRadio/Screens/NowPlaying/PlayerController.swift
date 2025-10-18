@@ -11,7 +11,7 @@ import UIKit
 @Observable @MainActor
 class PlayerController {
     struct Display: Hashable {
-        let artwork: URL?
+        let artwork: Artwork
         let title: String
         let subtitle: String
     }
@@ -111,7 +111,7 @@ private extension PlayerController {
     func updateDisplay(withMeta meta: MediaMeta?) async {
         if let meta {
             display = .init(
-                artwork: meta.artwork,
+                artwork: .radio(meta.artwork),
                 title: meta.title,
                 subtitle: meta.description ?? ""
             )
@@ -132,7 +132,7 @@ private extension PlayerController {
 extension PlayerController.Display {
     static var placeholder: Self {
         .init(
-            artwork: nil,
+            artwork: .radio,
             title: "",
             subtitle: ""
         )

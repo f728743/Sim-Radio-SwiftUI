@@ -44,8 +44,8 @@ private extension CompactNowPlaying {
     @ViewBuilder
     func artwork(cornerRadius: CGFloat) -> some View {
         if !hideArtworkOnExpanded || !expanded {
-            Artwork(
-                url: model.display.artwork,
+            ArtworkView(
+                model.display.artwork,
                 cornerRadius: cornerRadius,
                 background: Color(.systemGray4)
             )

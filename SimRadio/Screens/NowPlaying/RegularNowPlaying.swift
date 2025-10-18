@@ -53,8 +53,8 @@ private extension RegularNowPlaying {
     @ViewBuilder
     var artwork: some View {
         let small = !model.state.isPlaying
-        Artwork(
-            url: model.display.artwork,
+        ArtworkView(
+            model.display.artwork,
             cornerRadius: expanded ? 10 : 7,
             background: Color(.palette.playerCard.artworkBackground)
         )

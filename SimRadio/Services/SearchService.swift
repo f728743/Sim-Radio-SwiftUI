@@ -22,11 +22,11 @@ final class SearchService: Sendable {
 enum APISearchResultItem: Identifiable {
     var id: String {
         switch self {
-        case .realStation(let item): item.stationuuid
-        case .simRadio(let item): item.id
+        case let .realStation(item): item.stationuuid
+        case let .simRadio(item): item.id
         }
     }
-    
+
     case realStation(APIRealStationDTO)
     case simRadio(APISimRadioSeriesDTO)
 }
@@ -70,19 +70,28 @@ struct APISimRadioSeriesDTO: Codable {
 
 extension APISearchResponseDTO {
     var items: [APISearchResultItem] {
-        simRadio.map { .simRadio($0)} + realRadio.map { .realStation($0)}
+        simRadio.map { .simRadio($0) } + realRadio.map { .realStation($0) }
     }
 }
 
 extension APISimRadioSeriesDTO {
-    var artwork: URL? {
-        guard let url = URL(string: logo) else { return nil }
-        return url
+    var artwork: Artwork {
+        let url = buildMediaURL(from: url, with: logo + ".png")
+        return .album(url)
     }
 }
 
+func buildMediaURL(from baseURL: String, with filename: String) -> URL? {
+    guard let baseURL = URL(string: baseURL) else {
+        return nil
+    }
+    let baseDirectory = baseURL.deletingLastPathComponent()
+    return baseDirectory.appendingPathComponent(filename)
+}
+
 extension APIRealStationDTO {
-    var artwork: URL? {
-        cachedFavicon.flatMap { URL(string: $0) }
+    var artwork: Artwork {
+        let url = cachedFavicon.flatMap { URL(string: $0) }
+        return .radio(url)
     }
 }

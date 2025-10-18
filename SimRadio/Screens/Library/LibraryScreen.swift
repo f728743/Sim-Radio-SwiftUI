@@ -84,7 +84,7 @@ private struct RecentlyAddedItem: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Artwork(url: item.meta.artwork)
+            ArtworkView(.radio(item.meta.artwork))
             VStack(alignment: .leading, spacing: 0) {
                 Text(item.meta.title)
                     .font(.system(size: 13, weight: .medium))

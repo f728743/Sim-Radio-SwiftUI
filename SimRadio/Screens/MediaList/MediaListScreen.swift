@@ -60,8 +60,8 @@ private extension MediaListScreen {
 
     func header(listMeta: MediaList.Meta) -> some View {
         VStack(spacing: 0) {
-            Artwork(
-                url: listMeta.artwork,
+            ArtworkView(
+                .radio(listMeta.artwork),
                 cornerRadius: 10
             )
             .padding(.horizontal, 52)

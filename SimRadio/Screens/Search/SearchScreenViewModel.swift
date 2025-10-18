@@ -60,7 +60,7 @@ class SearchScreenViewModel {
         }
     }
 
-    func playStation(_ station: APISearchResultItem) {
+    func playStation(_: APISearchResultItem) {
         // Останавливаем предыдущее воспроизведение
 //        audioPlayer?.pause()
 //        let urlStr = station.url.replacingOccurrences(of: "http://", with: "https://")

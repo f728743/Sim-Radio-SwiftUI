@@ -39,3 +39,12 @@ extension EdgeInsets {
         )
     }
 }
+
+extension EdgeInsets {
+    static let rowInsets: EdgeInsets = .init(
+        top: 0,
+        leading: ViewConst.screenPaddings,
+        bottom: 0,
+        trailing: ViewConst.screenPaddings
+    )
+}

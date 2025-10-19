@@ -42,7 +42,7 @@ private extension MediaListScreen {
                 header(listMeta: listMeta)
                     .padding(.top, 7)
                     .padding(.bottom, 26)
-                    .listRowInsets(.screenInsets)
+                    .listRowInsets(.rowInsets)
                     .listSectionSeparator(.hidden, edges: .top)
                     .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
             }
@@ -51,7 +51,7 @@ private extension MediaListScreen {
 
             footer
                 .padding(.top, 17)
-                .listRowInsets(.screenInsets)
+                .listRowInsets(.rowInsets)
                 .listSectionSeparator(.hidden, edges: .bottom)
                 .listRowBackground(Color(.palette.appBackground))
         }
@@ -129,7 +129,7 @@ private extension MediaListScreen {
             )
         )
         .contentShape(.rect)
-        .listRowInsets(.screenInsets)
+        .listRowInsets(.rowInsets)
         .listRowBackground(
             item.id == selection
                 ? Color(uiColor: .systemGray4)
@@ -168,15 +168,6 @@ private extension MediaListScreen {
             .foregroundStyle(Color(.palette.textTertiary))
             .font(.appFont.mediaListItemFooter)
     }
-}
-
-private extension EdgeInsets {
-    static let screenInsets: EdgeInsets = .init(
-        top: 0,
-        leading: ViewConst.screenPaddings,
-        bottom: 0,
-        trailing: ViewConst.screenPaddings
-    )
 }
 
 #Preview {

@@ -21,6 +21,7 @@ struct SearchScreen: View {
             )
             .task {
                 viewModel.searchService = SearchService(apiService: dependencies.apiService)
+                viewModel.searchText = "gta"
             }
     }
 }
@@ -43,15 +44,16 @@ private extension SearchScreen {
                 List(viewModel.items) { item in
                     SearchItemView(
                         item: item,
-                        onAdd: {
-                            viewModel.add(item)
+                        onEvent: { event in
+                            switch event {
+                            case let .add(station): viewModel.add(station)
+                            case let .play(station): viewModel.play(station)
+                            case let .open(series): viewModel.open(series)
+                            }
                         }
                     )
-                    .onTapGesture {
-                        viewModel.playStation(item)
-                    }
                 }
-                .listStyle(PlainListStyle())
+                .listStyle(.plain)
             }
         }
     }
@@ -60,60 +62,100 @@ private extension SearchScreen {
 struct SearchItemLabel: View {
     let artwork: Artwork
     let title: String
-    let subtitle: String?
+    var subtitle: String?
+    var kindDescription: String?
 
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             artworkView
-
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.headline)
+                    .font(.system(size: 15))
 
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.subheadline)
+                if !subtitleText.isEmpty {
+                    Text(subtitleText)
+                        .font(.system(size: 13))
                         .foregroundColor(.secondary)
                 }
             }
+            .lineLimit(1)
+        }
+        
+        var subtitleText: String {
+            [kindDescription, subtitle]
+                .compactMap { $0 }
+                .filter { !$0.isEmpty }
+                .joined(separator: " · ")
         }
     }
 
     var artworkView: some View {
-        ZStack {
-            ArtworkView(artwork, cornerRadius: 5)
-//            if let activity = model.activity {
-//                Color.black.opacity(0.4)
-//                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-//                MediaActivityIndicator(state: activity)
-//            }
-        }
-        .frame(width: 48, height: 48)
+        ArtworkView(artwork, cornerRadius: 4)
+            .frame(width: 56, height: 56)
     }
 }
 
 struct SearchItemView: View {
+    enum Event {
+        case add(station: APIRealStationDTO)
+        case play(station: APIRealStationDTO)
+        case open(series: APISimRadioSeriesDTO)
+    }
+
     let item: APISearchResultItem
-    let onAdd: () -> Void
+    let onEvent: (Event) -> Void
 
     var body: some View {
-        HStack {
+        Group {
             switch item {
             case let .simRadio(item):
-                SearchItemLabel(
-                    artwork: item.artwork,
-                    title: item.title,
-                    subtitle: nil
-                )
+                HStack(spacing: 0) {
+                    SearchItemLabel(
+                        artwork: item.artwork,
+                        title: item.title,
+                        kindDescription: "Sim Radio series"
+                    )
+                    Spacer()
+                    Button(
+                        action: {},
+                        label: {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(Color(.palette.textSecondary))
+                        }
+                    )
+                }
             case let .realStation(item):
-                SearchItemLabel(
-                    artwork: item.artwork,
-                    title: item.name,
-                    subtitle: nil
-                )
+                HStack(spacing: 0) {
+                    SearchItemLabel(
+                        artwork: item.artwork,
+                        title: item.name,
+                        subtitle: item.tags?.split(separator: ",").joined(separator: ", "),
+                        kindDescription: "Radio"
+                    )
+                    Spacer()
+                    Button(
+                        action: {},
+                        label: {
+                            ZStack {
+                                Circle()
+                                    .foregroundStyle(Color(.palette.buttonBackground))
+                                Image(systemName: "plus")
+                                    .font(.system(size: 19, weight: .semibold))
+                                    .foregroundStyle(Color(.palette.brand))
+                            }
+                            .frame(width: 32, height: 32)
+                        }
+                    )
+                }
             }
         }
-        .padding(.vertical, 4)
+        .frame(height: 76)
+        .contentShape(.rect)
+        .listRowInsets(.rowInsets)
+        .alignmentGuide(.listRowSeparatorLeading) {
+            $0[.leading]
+        }
     }
 }
 

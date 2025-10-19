@@ -25,7 +25,36 @@ class SearchScreenViewModel {
     var searchService: SearchService?
     private var searchTask: Task<Void, Never>?
 
-    func add(_: APISearchResultItem) {}
+    func add(_ station: APIRealStationDTO) {
+        print("add ", station.name)
+    }
+
+    func play(_ station: APIRealStationDTO) {
+        print("play ", station.name)
+        // Останавливаем предыдущее воспроизведение
+//        audioPlayer?.pause()
+//        let urlStr = station.url.replacingOccurrences(of: "http://", with: "https://")
+//        print("url: ", urlStr, station.id)
+//        guard let url = URL(string: urlStr) else { return }
+//
+//        let playerItem = AVPlayerItem(url: url)
+//        audioPlayer = AVPlayer(playerItem: playerItem)
+//        audioPlayer?.play()
+//        isPlaying = true
+//
+//        // Обработка окончания воспроизведения
+//        NotificationCenter.default.addObserver(
+//            forName: .AVPlayerItemDidPlayToEndTime,
+//            object: playerItem,
+//            queue: .main
+//        ) { _ in
+//            self.isPlaying = false
+//        }
+    }
+
+    func open(_ series: APISimRadioSeriesDTO) {
+        print("open ", series.title)
+    }
 
     func performSearch() {
         guard let searchService else { return }
@@ -59,28 +88,4 @@ class SearchScreenViewModel {
             isLoading = false
         }
     }
-
-    func playStation(_: APISearchResultItem) {
-        // Останавливаем предыдущее воспроизведение
-//        audioPlayer?.pause()
-//        let urlStr = station.url.replacingOccurrences(of: "http://", with: "https://")
-//        print("url: ", urlStr, station.id)
-//        guard let url = URL(string: urlStr) else { return }
-//
-//        let playerItem = AVPlayerItem(url: url)
-//        audioPlayer = AVPlayer(playerItem: playerItem)
-//        audioPlayer?.play()
-//        isPlaying = true
-//
-//        // Обработка окончания воспроизведения
-//        NotificationCenter.default.addObserver(
-//            forName: .AVPlayerItemDidPlayToEndTime,
-//            object: playerItem,
-//            queue: .main
-//        ) { _ in
-//            self.isPlaying = false
-//        }
-    }
-
-    private func playStation() {}
 }

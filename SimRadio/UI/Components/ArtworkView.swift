@@ -46,9 +46,10 @@ struct ArtworkView: View {
                 .aspectRatio(contentMode: .fit)
             switch artwork {
             case .radio:
-                    Image(.radio)
+                Image(.radio)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
+
             case let .webImage(url):
                 KFImage.url(url)
                     .resizable()

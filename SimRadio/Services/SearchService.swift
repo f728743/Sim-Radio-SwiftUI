@@ -53,14 +53,14 @@ struct APIRealStationDTO: Codable {
     let cachedFavicon: String?
 }
 
-struct APISimStationDTO: Codable {
+struct APISimStationDTO: Codable, Hashable {
     let id: String
     let logo: String
     let tags: String
     let title: String
 }
 
-struct APISimRadioSeriesDTO: Codable {
+struct APISimRadioSeriesDTO: Codable, Hashable {
     let id: String
     let url: String
     let title: String

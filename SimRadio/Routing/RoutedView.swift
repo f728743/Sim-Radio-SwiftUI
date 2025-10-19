@@ -16,6 +16,8 @@ struct RoutedView: View {
             MediaListScreen(items: items, listMeta: listMeta)
         case .downloaded:
             DownloadedScreen()
+        case let .seriesSearchResult(series):
+            SeriesSearchResultScreen(series: series)
         }
     }
 }

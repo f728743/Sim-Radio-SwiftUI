@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum TabBarItem: Hashable, CaseIterable {
-    case home
+    case library
     case radio
     case search
 }
@@ -16,7 +16,7 @@ enum TabBarItem: Hashable, CaseIterable {
 extension TabBarItem {
     var title: String {
         switch self {
-        case .home: "Home"
+        case .library: "Library"
         case .radio: "Radio"
         case .search: "Search"
         }
@@ -24,7 +24,8 @@ extension TabBarItem {
 
     var image: Image {
         switch self {
-        case .home: Image(_internalSystemName: "home.fill")
+//        case .home: Image(_internalSystemName: "home.fill")
+        case .library: Image(systemName: "rectangle.stack.badge.play")
         case .radio: Image(systemName: "dot.radiowaves.left.and.right")
         case .search: Image(systemName: "magnifyingglass")
         }

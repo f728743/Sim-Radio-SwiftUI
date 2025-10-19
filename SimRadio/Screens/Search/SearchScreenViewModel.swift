@@ -14,7 +14,9 @@ class SearchScreenViewModel {
     var isPlaying = false
     var searchText: String = "" {
         didSet {
-            performSearch()
+            if searchText != oldValue {
+                performSearch()
+            }
         }
     }
 
@@ -50,10 +52,6 @@ class SearchScreenViewModel {
 //        ) { _ in
 //            self.isPlaying = false
 //        }
-    }
-
-    func open(_ series: APISimRadioSeriesDTO) {
-        print("open ", series.title)
     }
 
     func performSearch() {

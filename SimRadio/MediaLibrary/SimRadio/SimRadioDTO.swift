@@ -19,6 +19,12 @@ enum SimRadioDTO {
         let title: String
         let subtitle: String?
         let logo: String
+        let cover: SeriesCover
+    }
+
+    struct SeriesCover: Codable {
+        let image: String
+        let title: String
     }
 
     struct TrackList: Codable {
@@ -162,6 +168,7 @@ enum SimRadioDTO {
 extension SimRadioDTO {
     enum Const {
         static let imageExtension = ".png"
+        static let largeImageExtension = ".jpg"
     }
 }
 

@@ -10,6 +10,7 @@ import SwiftUI
 enum Route: Hashable, Equatable {
     case mediaList(items: [Media], listMeta: MediaList.Meta?)
     case downloaded
+    case seriesSearchResult(series: APISimRadioSeriesDTO)
 }
 
 @Observable
@@ -22,6 +23,10 @@ class Router {
 
     func navigateToDownloaded() {
         path.append(Route.downloaded)
+    }
+
+    func navigateToSeriesSearchResult(series: APISimRadioSeriesDTO) {
+        path.append(Route.seriesSearchResult(series: series))
     }
 
     func popToRoot() {

@@ -52,10 +52,6 @@ class SearchScreenViewModel {
 //        }
     }
 
-    func open(_ series: APISimRadioSeriesDTO) {
-        print("open ", series.title)
-    }
-
     func performSearch() {
         guard let searchService else { return }
         searchTask?.cancel()

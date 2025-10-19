@@ -10,6 +10,9 @@ import SwiftUI
 struct SearchScreen: View {
     @State private var viewModel = SearchScreenViewModel()
     @Environment(Dependencies.self) var dependencies
+    @Environment(Router.self) var router
+
+    @State var firstTime = true
 
     var body: some View {
         content
@@ -21,7 +24,11 @@ struct SearchScreen: View {
             )
             .task {
                 viewModel.searchService = SearchService(apiService: dependencies.apiService)
-                viewModel.searchText = "gta"
+
+                if firstTime { // TODO: remove
+                    firstTime = false
+                    viewModel.searchText = "gta"
+                }
             }
     }
 }
@@ -46,9 +53,12 @@ private extension SearchScreen {
                         item: item,
                         onEvent: { event in
                             switch event {
-                            case let .add(station): viewModel.add(station)
-                            case let .play(station): viewModel.play(station)
-                            case let .open(series): viewModel.open(series)
+                            case let .add(station):
+                                viewModel.add(station)
+                            case let .play(station):
+                                viewModel.play(station)
+                            case let .open(series):
+                                router.navigateToSeriesSearchResult(series: series)
                             }
                         }
                     )
@@ -59,31 +69,58 @@ private extension SearchScreen {
     }
 }
 
-struct SearchItemLabel: View {
+private struct SearchItemLabel<TrailingContent: View>: View {
     let artwork: Artwork
     let title: String
     var subtitle: String?
     var kindDescription: String?
+    let onTap: () -> Void
+    private let trailingContent: TrailingContent?
+
+    init(
+        artwork: Artwork,
+        title: String,
+        subtitle: String? = nil,
+        kindDescription: String? = nil,
+        onTap: @escaping () -> Void,
+        trailingContent: (() -> TrailingContent)? = nil,
+    ) {
+        self.artwork = artwork
+        self.title = title
+        self.subtitle = subtitle
+        self.kindDescription = kindDescription
+        self.onTap = onTap
+        self.trailingContent = trailingContent?()
+    }
 
     var body: some View {
-        HStack(spacing: 12) {
-            artworkView
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 15))
+        HStack(spacing: 0) {
+            HStack(spacing: 12) {
+                artworkView
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 15))
 
-                if !subtitleText.isEmpty {
-                    Text(subtitleText)
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
+                    if !subtitleText.isEmpty {
+                        Text(subtitleText)
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                    }
                 }
+                .lineLimit(1)
             }
-            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(.rect)
+            .onTapGesture {
+                onTap()
+            }
+            trailingContent
         }
-        
+        .frame(height: 76)
+
         var subtitleText: String {
             [kindDescription, subtitle]
-                .compactMap { $0 }
+                .compactMap(\.self)
                 .filter { !$0.isEmpty }
                 .joined(separator: " · ")
         }
@@ -95,7 +132,7 @@ struct SearchItemLabel: View {
     }
 }
 
-struct SearchItemView: View {
+private struct SearchItemView: View {
     enum Event {
         case add(station: APIRealStationDTO)
         case play(station: APIRealStationDTO)
@@ -109,49 +146,49 @@ struct SearchItemView: View {
         Group {
             switch item {
             case let .simRadio(item):
-                HStack(spacing: 0) {
-                    SearchItemLabel(
-                        artwork: item.artwork,
-                        title: item.title,
-                        kindDescription: "Sim Radio series"
-                    )
-                    Spacer()
-                    Button(
-                        action: {},
-                        label: {
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(Color(.palette.textSecondary))
-                        }
-                    )
-                }
+                SearchItemLabel(
+                    artwork: item.artwork,
+                    title: item.title,
+                    kindDescription: "Sim Radio series",
+                    onTap: {
+                        onEvent(.open(series: item))
+                    },
+                    trailingContent: {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Color(.palette.textSecondary))
+                    }
+                )
             case let .realStation(item):
-                HStack(spacing: 0) {
-                    SearchItemLabel(
-                        artwork: item.artwork,
-                        title: item.name,
-                        subtitle: item.tags?.split(separator: ",").joined(separator: ", "),
-                        kindDescription: "Radio"
-                    )
-                    Spacer()
-                    Button(
-                        action: {},
-                        label: {
-                            ZStack {
-                                Circle()
-                                    .foregroundStyle(Color(.palette.buttonBackground))
-                                Image(systemName: "plus")
-                                    .font(.system(size: 19, weight: .semibold))
-                                    .foregroundStyle(Color(.palette.brand))
+                SearchItemLabel(
+                    artwork: item.artwork,
+                    title: item.name,
+                    subtitle: item.tags?.split(separator: ",").joined(separator: ", "),
+                    kindDescription: "Radio",
+                    onTap: {
+                        onEvent(.play(station: item))
+                    },
+                    trailingContent: {
+                        Button(
+                            action: {
+                                onEvent(.add(station: item))
+                            },
+                            label: {
+                                ZStack {
+                                    Circle()
+                                        .foregroundStyle(Color(.palette.buttonBackground))
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 19, weight: .semibold))
+                                        .foregroundStyle(Color(.palette.brand))
+                                }
+                                .frame(width: 32, height: 32)
                             }
-                            .frame(width: 32, height: 32)
-                        }
-                    )
-                }
+                        )
+                        .buttonStyle(.plain)
+                    }
+                )
             }
         }
-        .frame(height: 76)
-        .contentShape(.rect)
         .listRowInsets(.rowInsets)
         .alignmentGuide(.listRowSeparatorLeading) {
             $0[.leading]

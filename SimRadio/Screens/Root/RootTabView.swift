@@ -34,13 +34,15 @@ private extension TabBarItem {
     @ViewBuilder
     var destinationView: some View {
         switch self {
-        case .home:
+        case .library:
             LibraryScreen()
                 .withRouter()
         case .radio:
             RadioScreen()
+                .withRouter()
         case .search:
             SearchScreen()
+                .withRouter()
         }
     }
 }

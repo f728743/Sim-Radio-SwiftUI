@@ -68,7 +68,7 @@ extension SeriesSearchResultScreenViewModel.Display {
                 title: dto.meta.cover.title,
                 image: origin
                     .deletingLastPathComponent()
-                    .appendingPathComponent(dto.meta.cover.image + SimRadioDTO.Const.largeImageExtension)
+                    .appendingPathComponent(dto.meta.cover.image)
             )
         )
     }

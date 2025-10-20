@@ -8,11 +8,21 @@
 import Foundation
 
 enum SimRadioDTO {
+    struct GameSeriesData {
+        let gameSeries: GameSeries
+        let media: GameSeriesMedia
+    }
+
     struct GameSeries: Codable {
         let meta: SeriesMeta
         let origin: String?
-        let trackLists: [TrackList]
+        let media: String
         let stations: [Station]
+    }
+
+    struct GameSeriesMedia: Codable {
+        let trackLists: [TrackList]
+        let stations: [StationMedia]
     }
 
     struct SeriesMeta: Codable {
@@ -79,6 +89,10 @@ enum SimRadioDTO {
         let isHidden: Bool?
         let id: ID
         let meta: StationMeta
+    }
+
+    struct StationMedia: Codable {
+        let id: Station.ID
         let trackLists: [TrackList.ID]
         let playlist: Playlist
     }
@@ -165,18 +179,11 @@ enum SimRadioDTO {
     }
 }
 
-extension SimRadioDTO {
-    enum Const {
-        static let imageExtension = ".png"
-        static let largeImageExtension = ".jpg"
-    }
-}
-
 extension SimStationMeta {
     init(origin: URL, data: SimRadioDTO.StationMeta) {
         let logo = origin
             .deletingLastPathComponent()
-            .appendingPathComponent(data.logo + SimRadioDTO.Const.imageExtension)
+            .appendingPathComponent(data.logo)
 
         self.init(
             title: data.title,

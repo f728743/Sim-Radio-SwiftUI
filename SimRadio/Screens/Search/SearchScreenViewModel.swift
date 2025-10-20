@@ -14,7 +14,9 @@ class SearchScreenViewModel {
     var isPlaying = false
     var searchText: String = "" {
         didSet {
-            performSearch()
+            if searchText != oldValue {
+                performSearch()
+            }
         }
     }
 

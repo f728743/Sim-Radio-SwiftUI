@@ -197,5 +197,9 @@ private struct SearchItemView: View {
 }
 
 #Preview {
+    @Previewable @State var dependencies = Dependencies.stub
+
     SearchScreen()
+        .withRouter()
+        .environment(dependencies)
 }

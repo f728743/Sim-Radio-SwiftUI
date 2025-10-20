@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 19.10.2025.
 //
 
+import Kingfisher
 import SwiftUI
 
 struct SeriesSearchResultScreen: View {
@@ -17,8 +18,24 @@ struct SeriesSearchResultScreen: View {
     }
 
     var body: some View {
-        Text("Series Search Result")
-            .padding(25)
+        ScrollView {
+            content
+        }
+        .ignoresSafeArea()
+        .task {
+            try? await viewModel.load()
+        }
+    }
+}
+
+private extension SeriesSearchResultScreen {
+    var content: some View {
+        VStack(spacing: 0) {
+            KFImage.url(viewModel.display?.cover.image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .aspectRatio(1.0, contentMode: .fit)
+        }
     }
 }
 

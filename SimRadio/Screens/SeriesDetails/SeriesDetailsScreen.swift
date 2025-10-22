@@ -21,6 +21,7 @@ struct SeriesDetailsScreen: View {
         ScrollView {
             scrollContent
         }
+        .contentMargins(.bottom, 200, for: .scrollContent)
         .ignoresSafeArea()
         .task {
             try? await viewModel.load()
@@ -51,7 +52,6 @@ private extension SeriesDetailsScreen {
             }
             .padding(.top, 30)
         }
-        .contentMargins(.bottom, 200, for: .scrollContent)
     }
 }
 

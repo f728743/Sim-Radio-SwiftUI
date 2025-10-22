@@ -14,20 +14,21 @@ struct SeriesDetailsFoundStations: View {
         VStack {
             SeriesDetailsSectionTitle("Found stations")
                 .padding(.horizontal, ViewConst.screenPaddings)
-            carusel
+            carousel
         }
     }
 
-    var carusel: some View {
+    var carousel: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Self.caruselSpacing) {
+            HStack(spacing: Self.carouselSpacing) {
                 ForEach(series.foundStationData) { item in
                     itemView(item)
                 }
             }
-            .padding(.horizontal, ViewConst.screenPaddings)
+            .scrollTargetLayout()
         }
-        .contentMargins(.bottom, 0, for: .scrollContent)
+        .scrollTargetBehavior(.viewAligned)
+        .contentMargins(ViewConst.screenPaddings, for: .scrollContent)
     }
 
     func itemView(_ station: APISimStationDTO) -> some View {
@@ -42,10 +43,10 @@ struct SeriesDetailsFoundStations: View {
         .lineLimit(1)
     }
 
-    static let caruselSpacing = CGFloat(12)
+    static let carouselSpacing = CGFloat(12)
     let itemWidth = ViewConst.itemWidth(
         forItemsPerScreen: 2,
-        spacing: Self.caruselSpacing,
+        spacing: Self.carouselSpacing,
         containerWidth: UIScreen.size.width
     )
 }

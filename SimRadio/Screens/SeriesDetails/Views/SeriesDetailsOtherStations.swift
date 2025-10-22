@@ -10,36 +10,37 @@ import SwiftUI
 struct SeriesDetailsOtherStations: View {
     let series: APISimRadioSeriesDTO
 
-    var columns: [GridItem] {
-        Array(repeating: GridItem(.fixed(itemWidth)), count: 4)
-    }
-    
+    let gridLayout = Array(repeating: GridItem(.flexible()), count: 4)
+
     var body: some View {
         VStack {
             SeriesDetailsSectionTitle("Other stations")
                 .padding(.horizontal, ViewConst.screenPaddings)
-            carusel
+            carousel
         }
     }
-    
-    var carusel: some View {
+
+    var carousel: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            LazyVGrid(columns: columns, alignment: .leading, spacing: Self.caruselSpacing) {
+            LazyHGrid(rows: gridLayout, alignment: .top, spacing: Self.carouselSpacing) {
                 ForEach(series.otherStationData) { station in
                     StationView(
                         artwork: station.artwork(seriesURL: series.url),
                         title: station.title
                     )
+                    .frame(width: itemWidth)
                 }
             }
-            .padding(.horizontal, ViewConst.screenPaddings)
+            .scrollTargetLayout()
         }
+        .scrollTargetBehavior(.viewAligned)
+        .contentMargins(ViewConst.screenPaddings, for: .scrollContent)
     }
 
-    static let caruselSpacing = CGFloat(12)
+    static let carouselSpacing = CGFloat(12)
     let itemWidth = ViewConst.itemWidth(
         forItemsPerScreen: 1,
-        spacing: Self.caruselSpacing,
+        spacing: Self.carouselSpacing,
         containerWidth: UIScreen.size.width
     )
 }

@@ -13,6 +13,7 @@ enum ViewConst {}
 extension ViewConst {
     static let playerCardPaddings: CGFloat = 32
     static let screenPaddings: CGFloat = 20
+    static let itemPeekAmount: CGFloat = 36
     static let tabbarHeight: CGFloat = safeAreaInsets.bottom + 92
     static var compactNowPlayingHeight: CGFloat {
         if #available(iOS 26.0, *) {
@@ -26,6 +27,16 @@ extension ViewConst {
         MainActor.assumeIsolated {
             EdgeInsets(UIApplication.keyWindow?.safeAreaInsets ?? .zero)
         }
+    }
+
+    static func itemWidth(
+        forItemsPerScreen count: Int,
+        spacing: CGFloat = 0,
+        containerWidth: CGFloat
+    ) -> CGFloat {
+        let totalSpacing = spacing * CGFloat(count)
+        let availableWidth = containerWidth - screenPaddings - itemPeekAmount - totalSpacing
+        return availableWidth / CGFloat(count)
     }
 }
 

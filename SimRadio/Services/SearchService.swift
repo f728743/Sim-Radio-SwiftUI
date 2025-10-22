@@ -53,7 +53,7 @@ struct APIRealStationDTO: Codable {
     let cachedFavicon: String?
 }
 
-struct APISimStationDTO: Codable, Hashable {
+struct APISimStationDTO: Codable, Hashable, Identifiable {
     let id: String
     let logo: String
     let tags: String
@@ -65,7 +65,10 @@ struct APISimRadioSeriesDTO: Codable, Hashable {
     let url: String
     let title: String
     let logo: String
+    let coverTitle: String
+    let coverLogo: String
     let stations: [APISimStationDTO]
+    let foundStations: [String]
 }
 
 extension APISearchResponseDTO {
@@ -76,8 +79,7 @@ extension APISearchResponseDTO {
 
 extension APISimRadioSeriesDTO {
     var artwork: Artwork {
-        let url = buildMediaURL(from: url, with: logo + ".png")
-        return .album(url)
+        .album(buildMediaURL(from: url, with: logo))
     }
 }
 

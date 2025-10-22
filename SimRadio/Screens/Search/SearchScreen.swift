@@ -27,7 +27,7 @@ struct SearchScreen: View {
 
                 if firstTime { // TODO: remove
                     firstTime = false
-                    viewModel.searchText = "gta"
+                    viewModel.searchText = "fm"
                 }
             }
     }

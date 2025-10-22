@@ -17,7 +17,7 @@ struct RoutedView: View {
         case .downloaded:
             DownloadedScreen()
         case let .seriesSearchResult(series):
-            SeriesSearchResultScreen(series: series)
+            SeriesDetailsScreen(series: series)
         }
     }
 }

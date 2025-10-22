@@ -48,7 +48,7 @@ private extension AppDelegate {
 
         let dataController = DataController()
 
-        let apiService = APIService(baseURL: "https://cx10577.tw1.ru")
+        let apiService = APIService(baseURL: "https://sim-radio.ru")
 
         dependencies = Dependencies(
             apiService: apiService,

@@ -62,6 +62,10 @@ extension APISimRadioSeriesDTO {
     var foundStationData: [APISimStationDTO] {
         stations.filter { foundStations.contains($0.id) }
     }
+    
+    var otherStationData: [APISimStationDTO] {
+        stations.filter { !foundStations.contains($0.id) }
+    }
 }
 
 extension APISimStationDTO {

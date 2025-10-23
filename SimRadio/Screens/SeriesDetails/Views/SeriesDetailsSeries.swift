@@ -13,7 +13,7 @@ struct SeriesDetailsSeries: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 12) {
             ArtworkView(series.artwork, cornerRadius: 9)
-                .frame(width: 98, height: 98)
+                .frame(width: 98)
             VStack(alignment: .leading, spacing: 0) {
                 Text(series.title)
                     .font(.system(size: 16))
@@ -41,4 +41,8 @@ struct SeriesDetailsSeries: View {
         .lineLimit(1)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
+
+#Preview {
+    SeriesDetailsSeries(series: .mock, onAdd: {})
 }

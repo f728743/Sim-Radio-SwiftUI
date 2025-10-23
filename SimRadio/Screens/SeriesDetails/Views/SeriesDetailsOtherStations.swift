@@ -49,12 +49,19 @@ private struct StationView: View {
     let artwork: Artwork
     let title: String
     var body: some View {
-        HStack {
-            ArtworkView(artwork)
-                .frame(width: 48, height: 48)
+        VStack(spacing: 0) {
+            HStack {
+                ArtworkView(artwork)
+                    .frame(width: 48)
 
-            Text(title)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                Text(title)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Divider()
         }
     }
+}
+
+#Preview {
+    SeriesDetailsOtherStations(series: .mock)
 }

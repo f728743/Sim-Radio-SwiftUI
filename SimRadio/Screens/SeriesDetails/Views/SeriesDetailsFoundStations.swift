@@ -50,3 +50,7 @@ struct SeriesDetailsFoundStations: View {
         containerWidth: UIScreen.size.width
     )
 }
+
+#Preview {
+    SeriesDetailsFoundStations(series: .mock)
+}

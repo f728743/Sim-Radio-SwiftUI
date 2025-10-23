@@ -56,5 +56,5 @@ private extension SeriesDetailsScreen {
 }
 
 #Preview {
-    SeriesDetailsScreen(series: .empty)
+    SeriesDetailsScreen(series: .mock)
 }

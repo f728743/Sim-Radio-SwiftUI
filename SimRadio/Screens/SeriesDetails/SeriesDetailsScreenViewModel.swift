@@ -36,21 +36,6 @@ class SeriesDetailsScreenViewModel {
 private extension SeriesDetailsScreenViewModel {}
 
 extension APISimRadioSeriesDTO {
-    static var empty: APISimRadioSeriesDTO {
-        .init(
-            id: "",
-            url: "",
-            title: "",
-            logo: "",
-            coverTitle: "",
-            coverLogo: "",
-            stations: [],
-            foundStations: []
-        )
-    }
-}
-
-extension APISimRadioSeriesDTO {
     var coverLogoURL: URL? {
         buildMediaURL(from: url, with: coverLogo)
     }

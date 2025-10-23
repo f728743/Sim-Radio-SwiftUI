@@ -31,6 +31,10 @@ class SeriesDetailsScreenViewModel {
     func addSeries() {
         print("add ", series.title)
     }
+
+    func playStation(_ station: APISimStationDTO) {
+        print("play ", station.title)
+    }
 }
 
 private extension SeriesDetailsScreenViewModel {}

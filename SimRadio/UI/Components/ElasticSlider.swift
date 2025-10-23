@@ -118,8 +118,8 @@ private extension ElasticSlider {
     }
 
     var track: some View {
-        GeometryReader { proxy in
-            let size = proxy.size
+        GeometryReader { geometry in
+            let size = geometry.size
             ZStack {
                 Capsule()
                     .fill(config.maximumTrackColor)

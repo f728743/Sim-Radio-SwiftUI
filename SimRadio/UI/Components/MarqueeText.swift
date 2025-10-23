@@ -20,8 +20,8 @@ struct MarqueeText: View {
     }
 
     var body: some View {
-        GeometryReader { geo in
-            let viewWidth = geo.size.width
+        GeometryReader { geometry in
+            let viewWidth = geometry.size.width
             let animatedTextVisible = textSize.width > viewWidth
             ZStack {
                 animatedText(viewWidth: viewWidth)

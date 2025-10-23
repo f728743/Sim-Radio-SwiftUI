@@ -1,5 +1,5 @@
 //
-//  SeriesDetailsCover.swift
+//  SeriesDetailsBar.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 22.10.2025.
@@ -8,29 +8,19 @@
 import Kingfisher
 import SwiftUI
 
-struct SeriesDetailsCover: View {
-    let imageURL: URL?
+struct SeriesDetailsBar: View {
     let title: String
+    let controsOpacity: CGFloat
     let onPlay: () -> Void
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            KFImage.url(imageURL)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .aspectRatio(1.0, contentMode: .fit)
-            coverBottomBar
-        }
-    }
-
-    var coverBottomBar: some View {
-        ZStack(alignment: .bottom) {
             LinearGradient(
-                gradient: Gradient(colors: [.black.opacity(0.0), .black.opacity(0.5)]),
+                gradient: Gradient(colors: [.black.opacity(0), .black.opacity(0.3)]),
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .frame(height: 60)
+            .frame(height: Const.height)
 
             HStack(spacing: 0) {
                 Text(title)
@@ -57,6 +47,11 @@ struct SeriesDetailsCover: View {
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 22)
+            .opacity(controsOpacity)
         }
+    }
+
+    enum Const {
+        static var height: CGFloat { 88 }
     }
 }

@@ -10,6 +10,7 @@ import SwiftUI
 
 struct SeriesDetailsScreen: View {
     @State private var viewModel: SeriesDetailsScreenViewModel
+    @State var scrollOffset: CGFloat = 0
 
     init(series: APISimRadioSeriesDTO) {
         _viewModel = State(
@@ -21,36 +22,71 @@ struct SeriesDetailsScreen: View {
         ScrollView {
             scrollContent
         }
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.contentOffset.y
+        } action: { _, newValue in
+            scrollOffset = newValue
+        }
         .contentMargins(.bottom, 200, for: .scrollContent)
         .ignoresSafeArea()
         .task {
             try? await viewModel.load()
         }
     }
+
+    var detailsBarOpacity: Double {
+        let imageHeight = UIScreen.size.width
+        let topOffset = imageHeight - scrollOffset - SeriesDetailsBar.Const.height
+        let high: CGFloat = 140
+        let low: CGFloat = 25
+
+        if topOffset >= high {
+            return 1
+        } else if topOffset <= low {
+            return 0
+        }
+        return (topOffset - low) / (high - low)
+    }
 }
 
 private extension SeriesDetailsScreen {
     var scrollContent: some View {
-        VStack(spacing: 0) {
-            SeriesDetailsCover(
-                imageURL: viewModel.series.coverLogoURL,
-                title: viewModel.series.title,
-                onPlay: viewModel.play
-            )
-            VStack(spacing: 0) {
-                SeriesDetailsSeries(
-                    series: viewModel.series,
-                    onAdd: viewModel.addSeries
-                )
-                .padding(.horizontal, ViewConst.screenPaddings)
-
-                SeriesDetailsFoundStations(series: viewModel.series)
-                    .padding(.top, 27)
-
-                SeriesDetailsOtherStations(series: viewModel.series)
-                    .padding(.top, 27)
+        VStack(spacing: -SeriesDetailsBar.Const.height) {
+            ParallaxHeaderView(height: UIScreen.size.width) {
+                KFImage.url(viewModel.series.coverLogoURL)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .aspectRatio(1.0, contentMode: .fill)
+                    .offset(y: max(scrollOffset, 0) / 4)
             }
-            .padding(.top, 30)
+            VStack(spacing: 0) {
+                SeriesDetailsBar(
+                    title: viewModel.series.title,
+                    controsOpacity: detailsBarOpacity,
+                    onPlay: viewModel.play
+                )
+                VStack(spacing: 0) {
+                    SeriesDetailsSeries(
+                        series: viewModel.series,
+                        onAdd: viewModel.addSeries
+                    )
+                    .padding(.horizontal, ViewConst.screenPaddings)
+                    .padding(.top, 30)
+
+                    SeriesDetailsFoundStations(
+                        series: viewModel.series,
+                        onTap: viewModel.playStation
+                    )
+                    .padding(.top, 47)
+
+                    SeriesDetailsOtherStations(
+                        series: viewModel.series,
+                        onTap: viewModel.playStation
+                    )
+                    .padding(.top, 27)
+                }
+                .background(Color(.systemBackground))
+            }
         }
     }
 }

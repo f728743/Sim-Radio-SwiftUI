@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SeriesDetailsFoundStations: View {
     let series: APISimRadioSeriesDTO
+    let onTap: (APISimStationDTO) -> Void
 
     var body: some View {
         VStack {
@@ -23,12 +24,15 @@ struct SeriesDetailsFoundStations: View {
             HStack(spacing: Self.carouselSpacing) {
                 ForEach(series.foundStationData) { item in
                     itemView(item)
+                        .onTapGesture {
+                            onTap(item)
+                        }
                 }
             }
             .scrollTargetLayout()
         }
         .scrollTargetBehavior(.viewAligned)
-        .contentMargins(ViewConst.screenPaddings, for: .scrollContent)
+        .contentMargins(.horizontal, ViewConst.screenPaddings, for: .scrollContent)
     }
 
     func itemView(_ station: APISimStationDTO) -> some View {
@@ -40,6 +44,7 @@ struct SeriesDetailsFoundStations: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(width: itemWidth)
+        .contentShape(.rect)
         .lineLimit(1)
     }
 
@@ -52,5 +57,5 @@ struct SeriesDetailsFoundStations: View {
 }
 
 #Preview {
-    SeriesDetailsFoundStations(series: .mock)
+    SeriesDetailsFoundStations(series: .mock, onTap: { _ in })
 }

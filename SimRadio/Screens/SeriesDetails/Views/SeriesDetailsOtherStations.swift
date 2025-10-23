@@ -26,7 +26,8 @@ struct SeriesDetailsOtherStations: View {
                 ForEach(series.otherStationData) { station in
                     StationView(
                         artwork: station.artwork(seriesURL: series.url),
-                        title: station.title
+                        title: station.title,
+                        subtitle: station.tags.split(separator: ",").joined(separator: ", ")
                     )
                     .frame(width: itemWidth)
                 }
@@ -48,16 +49,27 @@ struct SeriesDetailsOtherStations: View {
 private struct StationView: View {
     let artwork: Artwork
     let title: String
+    var subtitle: String?
+    
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                ArtworkView(artwork)
+            HStack(spacing: 12) {
+                ArtworkView(artwork, cornerRadius: 5)
                     .frame(width: 48)
 
-                Text(title)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(spacing: 0) {
+                    Text(title)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .font(.system(size: 16))
+                    
+                    Text(subtitle ?? "")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(.palette.textSecondary))
+                }
             }
             Divider()
+                .padding(.leading, 60)
         }
     }
 }

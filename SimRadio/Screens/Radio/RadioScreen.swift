@@ -12,6 +12,7 @@ struct RadioScreen: View {
         Text("Someday there will be a list of radio stations here.")
             .padding(25)
             .navigationTitle("Radio")
+            .toolbarTitleDisplayMode(.inlineLarge)
     }
 }
 

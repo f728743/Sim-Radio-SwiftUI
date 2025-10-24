@@ -30,6 +30,7 @@ struct LibraryScreen: View {
         .background(Color(.palette.appBackground))
         .listStyle(.plain)
         .navigationTitle("Library")
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             Button { viewModel.testPopulate() }
                 label: { ProfileToolbarButton() }

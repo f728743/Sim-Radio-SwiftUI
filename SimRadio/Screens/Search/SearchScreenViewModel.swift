@@ -33,25 +33,6 @@ class SearchScreenViewModel {
 
     func play(_ station: APIRealStationDTO) {
         print("play ", station.name)
-        // Останавливаем предыдущее воспроизведение
-//        audioPlayer?.pause()
-//        let urlStr = station.url.replacingOccurrences(of: "http://", with: "https://")
-//        print("url: ", urlStr, station.id)
-//        guard let url = URL(string: urlStr) else { return }
-//
-//        let playerItem = AVPlayerItem(url: url)
-//        audioPlayer = AVPlayer(playerItem: playerItem)
-//        audioPlayer?.play()
-//        isPlaying = true
-//
-//        // Обработка окончания воспроизведения
-//        NotificationCenter.default.addObserver(
-//            forName: .AVPlayerItemDidPlayToEndTime,
-//            object: playerItem,
-//            queue: .main
-//        ) { _ in
-//            self.isPlaying = false
-//        }
     }
 
     func performSearch() {

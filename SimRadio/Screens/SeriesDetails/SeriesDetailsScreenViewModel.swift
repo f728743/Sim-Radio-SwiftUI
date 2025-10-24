@@ -11,7 +11,9 @@ import SwiftUI
 @Observable @MainActor
 class SeriesDetailsScreenViewModel {
     let series: APISimRadioSeriesDTO
-    private var seriesMedia: SimRadioDTO.GameSeries?
+
+    weak var mediaState: MediaState?
+    weak var mediaPlayer: MediaPlayer?
 
     init(series: APISimRadioSeriesDTO) {
         self.series = series
@@ -19,25 +21,50 @@ class SeriesDetailsScreenViewModel {
 
     func load() async throws {
         guard let url = URL(string: series.url) else { return }
-        let jsonData = try await URLSession.shared.data(from: url)
-        let radio = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: jsonData.0)
-        seriesMedia = radio
+        try await mediaState?.addSimRadio(url: url, persistent: false)
     }
 
     func play() {
-        print("play ", series.title)
+        let stations = series.stations.map(\.id)
+        guard let first = stations.first else { return }
+        playStation(first, of: stations)
     }
 
     func addSeries() {
-        print("add ", series.title)
+        Task {
+            guard let url = URL(string: series.url) else { return }
+            try await mediaState?.addSimRadio(url: url, persistent: true)
+        }
     }
 
     func playStation(_ station: APISimStationDTO) {
-        print("play ", station.title)
+        let foundStations = series.foundStations
+        let otherStations = series.otherStationData.map(\.id)
+
+        if foundStations.contains(station.id) {
+            playStation(station.id, of: foundStations)
+        } else if otherStations.contains(station.id) {
+            playStation(station.id, of: otherStations)
+        }
     }
 }
 
-private extension SeriesDetailsScreenViewModel {}
+private extension SeriesDetailsScreenViewModel {
+    func playStation(_ stationID: String, of stationIDs: [String]) {
+        guard let url = URL(string: series.url) else { return }
+        mediaPlayer?.play(
+            .media(stationID, url: url),
+            of: stationIDs.map { .media($0, url: url) },
+            mode: nil
+        )
+    }
+}
+
+private extension MediaID {
+    static func media(_ stationID: String, url: URL) -> Self {
+        .simRadio(.init(series: .init(origin: url), value: stationID))
+    }
+}
 
 extension APISimRadioSeriesDTO {
     var coverLogoURL: URL? {

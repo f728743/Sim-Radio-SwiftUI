@@ -16,11 +16,6 @@ extension Palette {
         Palette.PlayerCard.self
     }
 
-    static let appBackground: UIColor = .dynamic(
-        light: .white,
-        dark: .black
-    )
-
     static let brand: UIColor = .dynamic(
         light: UIColor(red: 0.384, green: 0.553, blue: 0.247, alpha: 1),
         dark: UIColor(red: 0.384, green: 0.553, blue: 0.247, alpha: 1)

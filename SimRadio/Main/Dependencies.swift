@@ -11,14 +11,14 @@ import Observation
 class Dependencies: Observable {
     let apiService: APIService
     let dataController: DataController
-    let mediaState: DefaultMediaState
+    let mediaState: MediaState
     let mediaPlayer: MediaPlayer
     let playerController: PlayerController
 
     init(
         apiService: APIService,
         dataController: DataController,
-        mediaState: DefaultMediaState,
+        mediaState: MediaState,
         mediaPlayer: MediaPlayer,
         playerController: PlayerController
     ) {
@@ -36,7 +36,7 @@ extension Dependencies {
         return Dependencies(
             apiService: APIService(baseURL: ""),
             dataController: DataController(),
-            mediaState: .stub,
+            mediaState: DefaultMediaState.stub,
             mediaPlayer: mediaPlayer,
             playerController: PlayerController(),
         )

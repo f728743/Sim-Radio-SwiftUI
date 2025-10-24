@@ -18,23 +18,16 @@ struct LibraryScreen: View {
             navigationLink(title: "Downloaded", icon: "arrow.down.circle")
                 .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
                 .listSectionSeparator(.hidden, edges: .top)
-                .listRowBackground(Color(.palette.appBackground))
                 .onTapGesture {
                     router.navigateToDownloaded()
                 }
             recentlyAdded
                 .listRowInsets(.init(top: 25, leading: 20, bottom: 0, trailing: 20))
                 .listSectionSeparator(.hidden, edges: .bottom)
-                .listRowBackground(Color(.palette.appBackground))
         }
-        .background(Color(.palette.appBackground))
         .listStyle(.plain)
         .navigationTitle("Library")
         .toolbarTitleDisplayMode(.inlineLarge)
-        .toolbar {
-            Button { viewModel.testPopulate() }
-                label: { ProfileToolbarButton() }
-        }
         .task {
             viewModel.mediaState = dependencies.mediaState
         }

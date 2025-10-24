@@ -34,19 +34,6 @@ class DefaultSimRadioLibrary {
 }
 
 extension DefaultSimRadioLibrary: SimRadioLibrary {
-    func testPopulate() async {
-        await testPopulateNew()
-    }
-
-    func testPopulateNew() async {
-        let baseURL = "https://media.githubusercontent.com/media/maxerohingta/"
-        let simRadioURLs = [
-            "convert_gta5_audio/refs/heads/main/converted_m4a/sim_radio.json",
-            "convert_gta4_audio/refs/heads/main/result/sim_radio.json"
-        ].compactMap { URL(string: "\(baseURL)\($0)") }
-        await addSimRadio(urls: simRadioURLs)
-    }
-
     func downloadStation(_ stationID: SimStation.ID) async {
         if let state = mediaState?.simDownloadStatus[stationID]?.state, state == .paused {
             await resumeDownloading(stationID)
@@ -105,6 +92,24 @@ extension DefaultSimRadioLibrary: SimRadioLibrary {
         Task {
             await loadSimRadio()
         }
+    }
+
+    func addSimRadio(url: URL, persistent: Bool = true) async throws {
+        let seriesJSON = try await URLSession.shared.data(from: url)
+        let series = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: seriesJSON.0)
+
+        let newSimRadio = SimRadioMedia(origin: url, dto: series)
+        guard newSimRadio.series.keys.count == 1,
+              let seriesID = newSimRadio.series.keys.first
+        else { return }
+
+        let stations = Array(newSimRadio.stations.keys)
+        if persistent {
+            await removeDownload(stations)
+            try saveJsonData(origin: url, dto: series)
+            storage.addSeries(id: seriesID)
+        }
+        notifyAdded(newSimRadio)
     }
 }
 
@@ -200,22 +205,6 @@ private extension DefaultSimRadioLibrary {
                 print(error)
             }
         }
-    }
-
-    func addSimRadio(url: URL) async throws {
-        let seriesJSON = try await URLSession.shared.data(from: url)
-        let series = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: seriesJSON.0)
-
-        let newSimRadio = SimRadioMedia(origin: url, dto: series)
-        guard newSimRadio.series.keys.count == 1,
-              let seriesID = newSimRadio.series.keys.first
-        else { return }
-
-        let stations = Array(newSimRadio.stations.keys)
-        await removeDownload(stations)
-        try saveJsonData(origin: url, dto: series)
-        storage.addSeries(id: seriesID)
-        notifyAdded(newSimRadio)
     }
 
     func updateStationsDownloadState() async {

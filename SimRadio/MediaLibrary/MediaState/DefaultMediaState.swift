@@ -55,8 +55,8 @@ class DefaultMediaState: MediaState {
         await simRadioLibrary.load()
     }
 
-    func testPopulate() async {
-        await simRadioLibrary.testPopulate()
+    func addSimRadio(url: URL, persistent: Bool) async throws {
+        try await simRadioLibrary.addSimRadio(url: url, persistent: persistent)
     }
 
     func download(_ mediaID: MediaID) async {

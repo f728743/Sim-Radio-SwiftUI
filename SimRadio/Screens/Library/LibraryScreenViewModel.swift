@@ -9,13 +9,7 @@ import Observation
 
 @Observable @MainActor
 class LibraryScreenViewModel {
-    var mediaState: DefaultMediaState?
-
-    func testPopulate() {
-        Task {
-            await mediaState?.testPopulate()
-        }
-    }
+    var mediaState: MediaState?
 
     var recentlyAdded: [MediaList] {
         guard let mediaState else { return [] }

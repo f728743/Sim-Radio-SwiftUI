@@ -11,7 +11,7 @@ struct SearchScreen: View {
     @State private var viewModel = SearchScreenViewModel()
     @Environment(Dependencies.self) var dependencies
     @Environment(Router.self) var router
-
+    @State private var isSearchPresented = false
     @State var firstTime = true
 
     var body: some View {
@@ -20,12 +20,12 @@ struct SearchScreen: View {
             .toolbarTitleDisplayMode(.inlineLarge)
             .searchable(
                 text: $viewModel.searchText,
+                isPresented: $isSearchPresented,
                 placement: .navigationBarDrawer(displayMode: .automatic),
                 prompt: Text("Search for radio stations...")
             )
             .task {
                 viewModel.searchService = SearchService(apiService: dependencies.apiService)
-
                 if firstTime { // TODO: remove
                     firstTime = false
                     viewModel.searchText = "fm"
@@ -67,6 +67,12 @@ private extension SearchScreen {
                 .listStyle(.plain)
             }
         }
+        .background(Color(.systemBackground))
+        .simultaneousGesture(
+            DragGesture().onChanged { _ in
+                isSearchPresented = false
+            }
+        )
     }
 }
 

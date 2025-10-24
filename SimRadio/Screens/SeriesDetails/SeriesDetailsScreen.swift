@@ -9,6 +9,7 @@ import Kingfisher
 import SwiftUI
 
 struct SeriesDetailsScreen: View {
+    @Environment(Dependencies.self) var dependencies
     @State private var viewModel: SeriesDetailsScreenViewModel
     @State var scrollOffset: CGFloat = 0
 
@@ -30,6 +31,8 @@ struct SeriesDetailsScreen: View {
         .contentMargins(.bottom, 200, for: .scrollContent)
         .ignoresSafeArea()
         .task {
+            viewModel.mediaState = dependencies.mediaState
+            viewModel.mediaPlayer = dependencies.mediaPlayer
             try? await viewModel.load()
         }
     }

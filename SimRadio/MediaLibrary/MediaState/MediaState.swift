@@ -5,9 +5,20 @@
 //  Created by Alexey Vorobyov on 22.08.2025.
 //
 
+import Foundation
+
 @MainActor
 protocol MediaState: AnyObject {
     var mediaList: [MediaList] { get }
+    var downloadedMedia: [Media] { get }
+    var downloadStatus: [MediaID: MediaDownloadStatus] { get }
+
+    func load() async
+    func addSimRadio(url: URL, persistent: Bool) async throws
+
+    func download(_ mediaID: MediaID) async
+    func removeDownload(_ mediaID: MediaID) async
+    func pauseDownload(_ mediaID: MediaID) async
 }
 
 extension MediaState {

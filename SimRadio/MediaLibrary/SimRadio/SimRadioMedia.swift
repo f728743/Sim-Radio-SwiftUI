@@ -183,9 +183,9 @@ extension SimRadioMedia {
         case missing
     }
 
-    init(origin: URL, dto: SimRadioDTO.GameSeriesData) {
+    init(origin: URL, dto: SimRadioDTO.GameSeries) {
         let series = SimGameSeries(origin: origin, dto: dto)
-        let trackLists: [TrackList] = dto.media.trackLists.map { trackListDTO in
+        let trackLists: [TrackList] = dto.trackLists.map { trackListDTO in
             .init(
                 id: .init(series: .init(origin: origin), value: trackListDTO.id.value),
                 tracks: trackListDTO.tracks.map { trackDTO in
@@ -204,10 +204,10 @@ extension SimRadioMedia {
                 }
             )
         }
-        let stations: [SimStation] = dto.gameSeries.stations
+        let stations: [SimStation] = dto.stations
             .filter { $0.isHidden != true }
             .compactMap { station in
-                guard let seriesMedia = dto.media.stations.first(where: { $0.id == station.id }) else { return nil }
+                guard let seriesMedia = dto.stations.first(where: { $0.id == station.id }) else { return nil }
                 return SimStation(
                     id: .init(series: .init(origin: origin), value: station.id.value),
                     meta: .init(origin: origin, data: station.meta),
@@ -283,19 +283,19 @@ extension SimRadioMedia {
 }
 
 extension SimGameSeries {
-    init(origin: URL, dto: SimRadioDTO.GameSeriesData) {
+    init(origin: URL, dto: SimRadioDTO.GameSeries) {
         let logo = origin
             .deletingLastPathComponent()
-            .appendingPathComponent(dto.gameSeries.meta.logo)
+            .appendingPathComponent(dto.meta.logo)
 
         self.init(
             id: .init(origin: origin),
             meta: .init(
                 artwork: logo,
-                title: dto.gameSeries.meta.title,
-                subtitle: dto.gameSeries.meta.subtitle
+                title: dto.meta.title,
+                subtitle: dto.meta.subtitle
             ),
-            stationsIDs: dto.gameSeries.stations.map {
+            stationsIDs: dto.stations.map {
                 .init(series: .init(origin: origin), value: $0.id.value)
             }
         )

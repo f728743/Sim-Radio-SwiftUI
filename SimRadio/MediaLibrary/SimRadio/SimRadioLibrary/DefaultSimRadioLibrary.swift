@@ -188,14 +188,8 @@ private extension DefaultSimRadioLibrary {
         let fileURL = id.jsonFileURL
         let seriesJSON = try await URLSession.shared.data(from: fileURL)
         let series = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: seriesJSON.0)
-        let mediaFileURL = fileURL
-            .deletingLastPathComponent()
-            .appendingPathComponent(series.media)
-        let mediaJSON = try await URLSession.shared.data(from: mediaFileURL)
-        let media = try JSONDecoder().decode(SimRadioDTO.GameSeriesMedia.self, from: mediaJSON.0)
         guard let url = series.origin.map({ URL(string: $0) }) ?? nil else { return }
-        let seriesData = SimRadioDTO.GameSeriesData(gameSeries: series, media: media)
-        notifyAdded(SimRadioMedia(origin: url, dto: seriesData))
+        notifyAdded(SimRadioMedia(origin: url, dto: series))
     }
 
     func addSimRadio(urls: [URL]) async {
@@ -211,21 +205,15 @@ private extension DefaultSimRadioLibrary {
     func addSimRadio(url: URL) async throws {
         let seriesJSON = try await URLSession.shared.data(from: url)
         let series = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: seriesJSON.0)
-        let mediaURL = url
-            .deletingLastPathComponent()
-            .appendingPathComponent(series.media)
-        let mediaJSON = try await URLSession.shared.data(from: mediaURL)
-        let media = try JSONDecoder().decode(SimRadioDTO.GameSeriesMedia.self, from: mediaJSON.0)
 
-        let seriesData = SimRadioDTO.GameSeriesData(gameSeries: series, media: media)
-        let newSimRadio = SimRadioMedia(origin: url, dto: seriesData)
+        let newSimRadio = SimRadioMedia(origin: url, dto: series)
         guard newSimRadio.series.keys.count == 1,
               let seriesID = newSimRadio.series.keys.first
         else { return }
 
         let stations = Array(newSimRadio.stations.keys)
         await removeDownload(stations)
-        try saveJsonData(origin: url, dto: seriesData)
+        try saveJsonData(origin: url, dto: series)
         storage.addSeries(id: seriesID)
         notifyAdded(newSimRadio)
     }
@@ -258,31 +246,24 @@ private extension DefaultSimRadioLibrary {
         )
     }
 
-    func saveJsonData(origin: URL, dto: SimRadioDTO.GameSeriesData) throws {
+    func saveJsonData(origin: URL, dto: SimRadioDTO.GameSeries) throws {
         let directory = SimGameSeries.ID(origin: origin).directoryURL
         try directory.ensureDirectoryExists()
         let seriesFileURL = directory.appending(path: SimGameSeries.defaultFileName, directoryHint: .notDirectory)
-        let mediaFileURL = seriesFileURL
-            .deletingLastPathComponent()
-            .appendingPathComponent(dto.gameSeries.media)
 
         let series = SimRadioDTO.GameSeries(
-            meta: dto.gameSeries.meta,
+            meta: dto.meta,
             origin: origin.absoluteString,
-            media: dto.gameSeries.media,
-            stations: dto.gameSeries.stations
+            stations: dto.stations,
+            trackLists: dto.trackLists
         )
 
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.withoutEscapingSlashes]
         let jsonSeries = try encoder.encode(series)
-        let jsonMedia = try encoder.encode(dto.media)
 
         try seriesFileURL.removeFileIfExists()
         try jsonSeries.write(to: seriesFileURL)
-
-        try mediaFileURL.removeFileIfExists()
-        try jsonMedia.write(to: mediaFileURL)
     }
 
     func resumeDownloading(_ stationID: SimStation.ID) async {

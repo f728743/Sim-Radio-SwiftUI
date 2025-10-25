@@ -21,7 +21,7 @@ class SeriesDetailsScreenViewModel {
 
     func load() async throws {
         guard let url = URL(string: series.url) else { return }
-        try await mediaState?.addSimRadio(url: url, persistent: false)
+        try await mediaState?.addSimRadio(url: url, persisted: false)
     }
 
     func play() {
@@ -33,7 +33,7 @@ class SeriesDetailsScreenViewModel {
     func addSeries() {
         Task {
             guard let url = URL(string: series.url) else { return }
-            try await mediaState?.addSimRadio(url: url, persistent: true)
+            try await mediaState?.addSimRadio(url: url, persisted: true)
         }
     }
 

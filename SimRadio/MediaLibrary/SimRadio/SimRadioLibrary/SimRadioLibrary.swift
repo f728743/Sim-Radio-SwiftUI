@@ -11,7 +11,7 @@ import Foundation
 protocol SimRadioLibrary {
     func load() async
 
-    func addSimRadio(url: URL, persistent: Bool) async throws
+    func addSimRadio(url: URL, persisted: Bool) async throws
 
     func downloadStation(_ stationID: SimStation.ID) async
     func removeDownload(_ stationID: SimStation.ID) async

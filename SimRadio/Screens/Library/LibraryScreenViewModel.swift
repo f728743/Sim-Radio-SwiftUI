@@ -13,6 +13,6 @@ class LibraryScreenViewModel {
 
     var recentlyAdded: [MediaList] {
         guard let mediaState else { return [] }
-        return mediaState.mediaList
+        return mediaState.persistedMediaList
     }
 }

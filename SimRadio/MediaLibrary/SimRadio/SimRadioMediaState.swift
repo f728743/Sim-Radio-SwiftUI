@@ -8,6 +8,7 @@
 @MainActor
 protocol SimRadioMediaState: AnyObject, Sendable {
     var simRadio: SimRadioMedia { get }
+    var nonPersistedSimSeries: [SimGameSeries.ID] { get }
     var simDownloadStatus: [SimStation.ID: MediaDownloadStatus] { get }
 }
 

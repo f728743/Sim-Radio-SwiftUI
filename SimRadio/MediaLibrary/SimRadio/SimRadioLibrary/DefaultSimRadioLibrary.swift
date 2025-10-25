@@ -94,7 +94,7 @@ extension DefaultSimRadioLibrary: SimRadioLibrary {
         }
     }
 
-    func addSimRadio(url: URL, persistent: Bool = true) async throws {
+    func addSimRadio(url: URL, persisted: Bool) async throws {
         let seriesJSON = try await URLSession.shared.data(from: url)
         let series = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: seriesJSON.0)
 
@@ -104,12 +104,12 @@ extension DefaultSimRadioLibrary: SimRadioLibrary {
         else { return }
 
         let stations = Array(newSimRadio.stations.keys)
-        if persistent {
+        if persisted {
             await removeDownload(stations)
             try saveJsonData(origin: url, dto: series)
             storage.addSeries(id: seriesID)
         }
-        notifyAdded(newSimRadio)
+        addToLibrary(newSimRadio, persisted: persisted)
     }
 }
 
@@ -194,17 +194,7 @@ private extension DefaultSimRadioLibrary {
         let seriesJSON = try await URLSession.shared.data(from: fileURL)
         let series = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: seriesJSON.0)
         guard let url = series.origin.map({ URL(string: $0) }) ?? nil else { return }
-        notifyAdded(SimRadioMedia(origin: url, dto: series))
-    }
-
-    func addSimRadio(urls: [URL]) async {
-        for url in urls {
-            do {
-                try await addSimRadio(url: url)
-            } catch {
-                print(error)
-            }
-        }
+        addToLibrary(SimRadioMedia(origin: url, dto: series), persisted: true)
     }
 
     func updateStationsDownloadState() async {
@@ -222,16 +212,25 @@ private extension DefaultSimRadioLibrary {
         }
     }
 
-    func notifyAdded(_ new: SimRadioMedia) {
-        guard let mediaState else { return }
+    func addToLibrary(_ new: SimRadioMedia, persisted: Bool) {
+        guard let mediaState, let seriesID = new.series.keys.first else { return }
         let curren = mediaState.simRadio
+        if !persisted {
+            guard !curren.series.keys.contains(seriesID) else { return }
+        }
+
+        let nonPersistedSeries = persisted
+            ? mediaState.nonPersistedSimSeries.filter { $0 != seriesID }
+            : mediaState.nonPersistedSimSeries + [seriesID]
+
         delegate?.simRadioLibrary(
             self,
             didChange: SimRadioMedia(
                 series: curren.series.merging(new.series) { _, new in new },
                 trackLists: curren.trackLists.merging(new.trackLists) { _, new in new },
                 stations: curren.stations.merging(new.stations) { _, new in new }
-            )
+            ),
+            nonPersistedSeries: nonPersistedSeries
         )
     }
 

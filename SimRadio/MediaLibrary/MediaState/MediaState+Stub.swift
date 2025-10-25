@@ -9,7 +9,7 @@ extension DefaultMediaState {
     static var stub: DefaultMediaState = {
         let simRadioLibrary = SimRadioLibraryStub()
         let mediaState = DefaultMediaState(simRadioLibrary: simRadioLibrary)
-        mediaState.simRadioLibrary(simRadioLibrary, didChange: .stub)
+        mediaState.simRadioLibrary(simRadioLibrary, didChange: .stub, nonPersistedSeries: [])
         return mediaState
     }()
 }

@@ -9,7 +9,7 @@ import Foundation
 
 class SimRadioLibraryStub: SimRadioLibrary {
     func load() async {}
-    func addSimRadio(url _: URL, persistent _: Bool) async throws {}
+    func addSimRadio(url _: URL, persisted _: Bool) async throws {}
 
     func downloadStation(_: SimStation.ID) async {}
     func removeDownload(_: SimStation.ID) async {}

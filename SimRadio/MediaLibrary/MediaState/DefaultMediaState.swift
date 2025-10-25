@@ -18,13 +18,15 @@ protocol SimRadioLibraryDelegate: AnyObject {
 
     func simRadioLibrary(
         _ library: SimRadioLibrary,
-        didChange media: SimRadioMedia
+        didChange media: SimRadioMedia,
+        nonPersistedSeries: [SimGameSeries.ID]
     )
 }
 
 @Observable @MainActor
 class DefaultMediaState: MediaState {
     var simRadio: SimRadioMedia = .empty
+    var nonPersistedSimSeries: [SimGameSeries.ID] = []
 
     private(set) var downloadStatus: [MediaID: MediaDownloadStatus] = [:]
     var simRadioLibrary: any SimRadioLibrary
@@ -34,29 +36,48 @@ class DefaultMediaState: MediaState {
     }
 
     var mediaList: [MediaList] {
-        let simRadioMedia = simRadio.series.values.map { series in
-            MediaList(
-                id: .simRadioSeries(series.id),
-                meta: series.meta,
-                items: series.stationsIDs.compactMap {
-                    guard let station: SimStation = simRadio.stations[$0] else { return nil }
-                    return Media(
-                        id: .simRadio(station.id),
-                        meta: .init(station.meta)
-                    )
-                }
-            )
-        }
+        let media = simRadio.series.values
+            .map { series in
+                MediaList(
+                    id: .simRadioSeries(series.id),
+                    meta: series.meta,
+                    items: series.stationsIDs.compactMap {
+                        guard let station: SimStation = simRadio.stations[$0] else { return nil }
+                        return Media(
+                            id: .simRadio(station.id),
+                            meta: .init(station.meta)
+                        )
+                    }
+                )
+            }
+        return media
+    }
 
-        return simRadioMedia
+    var persistedMediaList: [MediaList] {
+        let persistedMedia = simRadio.series.values
+            .filter { !nonPersistedSimSeries.contains($0.id) }
+            .map { series in
+                MediaList(
+                    id: .simRadioSeries(series.id),
+                    meta: series.meta,
+                    items: series.stationsIDs.compactMap {
+                        guard let station: SimStation = simRadio.stations[$0] else { return nil }
+                        return Media(
+                            id: .simRadio(station.id),
+                            meta: .init(station.meta)
+                        )
+                    }
+                )
+            }
+        return persistedMedia
     }
 
     func load() async {
         await simRadioLibrary.load()
     }
 
-    func addSimRadio(url: URL, persistent: Bool) async throws {
-        try await simRadioLibrary.addSimRadio(url: url, persistent: persistent)
+    func addSimRadio(url: URL, persisted: Bool) async throws {
+        try await simRadioLibrary.addSimRadio(url: url, persisted: persisted)
     }
 
     func download(_ mediaID: MediaID) async {
@@ -99,9 +120,11 @@ extension DefaultMediaState: SimRadioLibraryDelegate {
 
     func simRadioLibrary(
         _: any SimRadioLibrary,
-        didChange media: SimRadioMedia
+        didChange media: SimRadioMedia,
+        nonPersistedSeries: [SimGameSeries.ID]
     ) {
         simRadio = media
+        nonPersistedSimSeries = nonPersistedSeries
     }
 }
 

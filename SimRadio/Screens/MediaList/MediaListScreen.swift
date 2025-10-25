@@ -126,7 +126,7 @@ private extension MediaListScreen {
         .listRowBackground(
             item.id == selection
                 ? Color(uiColor: .systemGray4)
-            : Color(.systemBackground)
+                : Color(.systemBackground)
         )
         .alignmentGuide(.listRowSeparatorLeading) {
             isLastItem ? $0[.leading] : $0[.leading] + 60

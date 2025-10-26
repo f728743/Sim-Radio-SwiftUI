@@ -16,6 +16,7 @@ struct RealStation: Codable {
     let title: String
     let logo: URL?
     let stream: URL
+    let streamResolved: URL?
     let tags: String?
     let language: String?
     let country: String?

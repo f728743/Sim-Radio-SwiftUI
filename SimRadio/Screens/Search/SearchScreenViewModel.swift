@@ -59,13 +59,21 @@ class SearchScreenViewModel {
 
         searchTask = Task { @MainActor in
             do {
-                // Дебаунс 500ms
                 try await Task.sleep(nanoseconds: 500_000_000)
 
                 guard !Task.isCancelled else { return }
 
                 let result = try await searchService.search(query: searchText)
                 items = result.items
+
+                let realStations = result.items.compactMap {
+                    if case let .realStation(dto) = $0 {
+                        return (dto.url, dto.name)
+                    }
+                    return nil
+                }
+
+                print("found \(realStations) real stations")
             } catch {
                 if !Task.isCancelled {
                     print("API call Error: \(error.localizedDescription)")
@@ -86,6 +94,7 @@ extension RealStation {
             title: dto.name,
             logo: dto.cachedFavicon.flatMap { URL(string: $0) },
             stream: stream,
+            streamResolved: URL(string: dto.urlResolved),
             tags: dto.tags.map { prettyPrintTags($0) },
             language: dto.language,
             country: dto.country,

@@ -43,6 +43,7 @@ struct APIRealStationDTO: Codable {
     let stationuuid: String
     let name: String
     let url: String
+    let urlResolved: String
     let favicon: String?
     let votes: Int?
     let clickcount: Int?

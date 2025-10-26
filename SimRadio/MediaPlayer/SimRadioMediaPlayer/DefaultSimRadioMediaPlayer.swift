@@ -58,6 +58,8 @@ extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
                 return []
             }
             return stationData.station.playlistRules.availableModes
+        case .realRadio:
+            return []
         }
     }
 }
@@ -145,6 +147,8 @@ private extension DefaultSimRadioMediaPlayer {
                 at: startingTime,
                 modeID: mode
             )
+        case .realRadio:
+            throw PlayerItemLoadingError.playerItemCreatingError
         }
     }
 

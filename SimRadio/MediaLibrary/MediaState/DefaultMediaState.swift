@@ -8,30 +8,21 @@
 import Foundation
 import Observation
 
-@MainActor
-protocol SimRadioLibraryDelegate: AnyObject {
-    func simRadioLibrary(
-        _ library: SimRadioLibrary,
-        didChangeDownloadStatus status: MediaDownloadStatus?,
-        for stationID: SimStation.ID
-    )
-
-    func simRadioLibrary(
-        _ library: SimRadioLibrary,
-        didChange media: SimRadioMedia,
-        nonPersistedSeries: [SimGameSeries.ID]
-    )
-}
-
+/// Observable wrapper around various libraries
 @Observable @MainActor
 class DefaultMediaState: MediaState {
     var simRadio: SimRadioMedia = .empty
     var nonPersistedSimSeries: [SimGameSeries.ID] = []
 
+    var realRadio: RealRadioMedia = .empty
+    var nonPersistedRealRadios: [RealStation.ID] = []
+
     private(set) var downloadStatus: [MediaID: MediaDownloadStatus] = [:]
     var simRadioLibrary: any SimRadioLibrary
 
-    init(simRadioLibrary: any SimRadioLibrary) {
+    init(
+        simRadioLibrary: any SimRadioLibrary
+    ) {
         self.simRadioLibrary = simRadioLibrary
     }
 
@@ -80,6 +71,8 @@ class DefaultMediaState: MediaState {
         try await simRadioLibrary.addSimRadio(url: url, persisted: persisted)
     }
 
+    func addRealRadio(_: APIRealStationDTO, persisted _: Bool) async throws {}
+
     func download(_ mediaID: MediaID) async {
         let current = downloadStatus[mediaID]
         guard current == nil || current?.state == .paused else { return }
@@ -87,6 +80,8 @@ class DefaultMediaState: MediaState {
         switch mediaID {
         case let .simRadio(stationID):
             await simRadioLibrary.downloadStation(stationID)
+        case .realRadio:
+            break
         }
     }
 
@@ -96,6 +91,8 @@ class DefaultMediaState: MediaState {
         switch mediaID {
         case let .simRadio(stationID):
             await simRadioLibrary.removeDownload(stationID)
+        case .realRadio:
+            break
         }
     }
 
@@ -105,6 +102,8 @@ class DefaultMediaState: MediaState {
         switch mediaID {
         case let .simRadio(stationID):
             await simRadioLibrary.pauseDownload(stationID)
+        case .realRadio:
+            break
         }
     }
 }
@@ -146,6 +145,8 @@ extension DefaultMediaState {
                 id: id,
                 meta: .init(station.meta)
             )
+        case .realRadio:
+            return nil // TODO: !
         }
     }
 }

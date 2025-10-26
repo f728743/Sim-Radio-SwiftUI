@@ -10,8 +10,16 @@ import Foundation
 
 @Observable @MainActor
 class SearchScreenViewModel {
-    var audioPlayer: AVPlayer?
-    var isPlaying = false
+    var items: [APISearchResultItem] = []
+    var isLoading: Bool = false
+    var errorMessage: String?
+
+    weak var mediaState: MediaState?
+    weak var mediaPlayer: MediaPlayer?
+    var searchService: SearchService?
+
+    private var searchTask: Task<Void, Never>?
+
     var searchText: String = "" {
         didSet {
             if searchText != oldValue {
@@ -20,19 +28,26 @@ class SearchScreenViewModel {
         }
     }
 
-    var items: [APISearchResultItem] = []
-    var isLoading: Bool = false
-    var errorMessage: String?
-
-    var searchService: SearchService?
-    private var searchTask: Task<Void, Never>?
-
     func add(_ station: APIRealStationDTO) {
-        print("add ", station.name)
+        Task {
+            try await mediaState?.addRealRadio(station, persisted: true)
+        }
     }
 
     func play(_ station: APIRealStationDTO) {
-        print("play ", station.name)
+        Task {
+            try await mediaState?.addRealRadio(station, persisted: false)
+            mediaPlayer?.play(
+                .realRadio(.init(stationUUID: station.stationuuid)),
+                of: items.compactMap {
+                    switch $0 {
+                    case let .realStation(dto): .realRadio(.init(stationUUID: dto.stationuuid))
+                    default: nil
+                    }
+                },
+                mode: nil
+            )
+        }
     }
 
     func performSearch() {

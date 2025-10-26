@@ -38,6 +38,7 @@ enum MediaListID: Hashable, Equatable {
 
 enum MediaID: Hashable {
     case simRadio(SimStation.ID)
+    case realRadio(RealStation.ID)
 }
 
 struct MediaList: Identifiable, Hashable, Equatable {

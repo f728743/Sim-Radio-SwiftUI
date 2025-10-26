@@ -247,6 +247,7 @@ extension MediaID {
     var isSimRadio: Bool {
         switch self {
         case .simRadio: true
+        default: false
         }
     }
 }

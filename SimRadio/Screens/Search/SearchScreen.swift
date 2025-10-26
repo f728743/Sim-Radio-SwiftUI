@@ -26,6 +26,9 @@ struct SearchScreen: View {
             )
             .task {
                 viewModel.searchService = SearchService(apiService: dependencies.apiService)
+                viewModel.mediaState = dependencies.mediaState
+                viewModel.mediaPlayer = dependencies.mediaPlayer
+
                 if firstTime { // TODO: remove
                     firstTime = false
                     viewModel.searchText = "fm"

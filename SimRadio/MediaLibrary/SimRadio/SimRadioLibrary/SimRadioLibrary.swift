@@ -17,3 +17,18 @@ protocol SimRadioLibrary {
     func removeDownload(_ stationID: SimStation.ID) async
     func pauseDownload(_ stationID: SimStation.ID) async
 }
+
+@MainActor
+protocol SimRadioLibraryDelegate: AnyObject {
+    func simRadioLibrary(
+        _ library: SimRadioLibrary,
+        didChangeDownloadStatus status: MediaDownloadStatus?,
+        for stationID: SimStation.ID
+    )
+
+    func simRadioLibrary(
+        _ library: SimRadioLibrary,
+        didChange media: SimRadioMedia,
+        nonPersistedSeries: [SimGameSeries.ID]
+    )
+}

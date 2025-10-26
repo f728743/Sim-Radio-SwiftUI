@@ -24,7 +24,9 @@ class MediaPlayer {
         let mode: MediaPlaybackMode.ID?
     }
 
-    var simRadio: SimRadioMediaPlayer?
+    var simPlayer: SimRadioMediaPlayer?
+    var realPlayer: RealRadioMediaPlayer?
+
     weak var mediaState: MediaState?
     private(set) var items: [MediaID] = []
 
@@ -74,7 +76,7 @@ class MediaPlayer {
         }
     }
 
-    func play(_ mediaID: MediaID, of items: [MediaID], mode: MediaPlaybackMode.ID?) {
+    func play(_ mediaID: MediaID, of items: [MediaID], mode: MediaPlaybackMode.ID? = nil) {
         guard let index = items.firstIndex(of: mediaID) else {
             print("MediaPlayer Error: there is no mediaID \(mediaID) in items.")
             return
@@ -152,8 +154,11 @@ private extension MediaPlayer {
             stopCurrentPlayerActivity()
         }
 
-        if mediaID.isSimRadio {
-            simRadio?.playStation(withID: mediaID, mode: mode)
+        switch mediaID {
+        case let .realRadio(id):
+            realPlayer?.playStation(withID: id)
+        case .simRadio:
+            simPlayer?.playStation(withID: mediaID, mode: mode)
         }
 
         state = .playing(media: mediaID, mode: mode)
@@ -165,8 +170,11 @@ private extension MediaPlayer {
 
     func stopCurrentPlayerActivity() {
         if state.isPlaying, let mediaID = state.currentMediaID {
-            if mediaID.isSimRadio {
-                simRadio?.stop()
+            switch mediaID {
+            case .realRadio:
+                realPlayer?.stop()
+            case .simRadio:
+                simPlayer?.stop()
             }
         }
     }
@@ -201,7 +209,7 @@ private extension MediaPlayer {
             return
         }
         if mediaID.isSimRadio {
-            playbackModes = simRadio?.availableModes(stationID: mediaID) ?? []
+            playbackModes = simPlayer?.availableModes(stationID: mediaID) ?? []
         }
     }
 
@@ -299,6 +307,12 @@ extension MediaPlayer: SimRadioMediaPlayerDelegate {
 
     func simRadioMediaPlayer(_: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
         updateMeta(trackMarker: marker)
+    }
+}
+
+extension MediaPlayer: RealRadioMediaPlayerDelegate {
+    func realRadioMediaPlayer(_: any RealRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
+        palyIndicatorSpectrum = spectrum
     }
 }
 

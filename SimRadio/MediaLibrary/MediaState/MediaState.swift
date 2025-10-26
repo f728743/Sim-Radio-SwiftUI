@@ -16,7 +16,7 @@ protocol MediaState: AnyObject {
 
     func load() async
     func addSimRadio(url: URL, persisted: Bool) async throws
-    func addRealRadio(_ station: APIRealStationDTO, persisted: Bool) async throws
+    func addRealRadio(_ station: RealStation, persisted: Bool) async throws
 
     func download(_ mediaID: MediaID) async
     func removeDownload(_ mediaID: MediaID) async

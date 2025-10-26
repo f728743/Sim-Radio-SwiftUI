@@ -10,14 +10,14 @@ import Foundation
 @MainActor
 protocol RealRadioLibrary {
     func load() async
-    func addRealRadio(_: APIRealStationDTO, persisted: Bool) async throws
+    func addRealRadio(_: RealStation, persisted: Bool) async throws
 }
 
 @MainActor
-protocol RealLibraryDelegate: AnyObject {
+protocol RealRadioLibraryDelegate: AnyObject {
     func realRadioLibrary(
         _ library: RealRadioLibrary,
         didChange media: RealRadioMedia,
-        nonPersistedSeries: [RealStation.ID]
+        nonPersistedStations: [RealStation.ID]
     )
 }

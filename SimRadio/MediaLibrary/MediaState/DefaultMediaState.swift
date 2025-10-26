@@ -15,15 +15,18 @@ class DefaultMediaState: MediaState {
     var nonPersistedSimSeries: [SimGameSeries.ID] = []
 
     var realRadio: RealRadioMedia = .empty
-    var nonPersistedRealRadios: [RealStation.ID] = []
+    var nonPersistedRealStations: [RealStation.ID] = []
 
     private(set) var downloadStatus: [MediaID: MediaDownloadStatus] = [:]
     var simRadioLibrary: any SimRadioLibrary
+    var realRadioLibrary: any RealRadioLibrary
 
     init(
-        simRadioLibrary: any SimRadioLibrary
+        simRadioLibrary: any SimRadioLibrary,
+        realRadioLibrary: any RealRadioLibrary
     ) {
         self.simRadioLibrary = simRadioLibrary
+        self.realRadioLibrary = realRadioLibrary
     }
 
     var mediaList: [MediaList] {
@@ -71,7 +74,9 @@ class DefaultMediaState: MediaState {
         try await simRadioLibrary.addSimRadio(url: url, persisted: persisted)
     }
 
-    func addRealRadio(_: APIRealStationDTO, persisted _: Bool) async throws {}
+    func addRealRadio(_ radio: RealStation, persisted: Bool) async throws {
+        try await realRadioLibrary.addRealRadio(radio, persisted: persisted)
+    }
 
     func download(_ mediaID: MediaID) async {
         let current = downloadStatus[mediaID]
@@ -108,25 +113,6 @@ class DefaultMediaState: MediaState {
     }
 }
 
-extension DefaultMediaState: SimRadioLibraryDelegate {
-    func simRadioLibrary(
-        _: any SimRadioLibrary,
-        didChangeDownloadStatus status: MediaDownloadStatus?,
-        for stationID: SimStation.ID
-    ) {
-        downloadStatus[.simRadio(stationID)] = status
-    }
-
-    func simRadioLibrary(
-        _: any SimRadioLibrary,
-        didChange media: SimRadioMedia,
-        nonPersistedSeries: [SimGameSeries.ID]
-    ) {
-        simRadio = media
-        nonPersistedSimSeries = nonPersistedSeries
-    }
-}
-
 extension DefaultMediaState {
     var downloadedMedia: [Media] {
         downloadStatus
@@ -148,6 +134,49 @@ extension DefaultMediaState {
         case .realRadio:
             return nil // TODO: !
         }
+    }
+}
+
+extension DefaultMediaState: SimRadioMediaState {
+    var simDownloadStatus: [SimStation.ID: MediaDownloadStatus] {
+        Dictionary(uniqueKeysWithValues: downloadStatus.compactMap {
+            if case let .simRadio(id) = $0.key {
+                return (id, $0.value)
+            }
+            return nil
+        })
+    }
+}
+
+extension DefaultMediaState: SimRadioLibraryDelegate {
+    func simRadioLibrary(
+        _: any SimRadioLibrary,
+        didChangeDownloadStatus status: MediaDownloadStatus?,
+        for stationID: SimStation.ID
+    ) {
+        downloadStatus[.simRadio(stationID)] = status
+    }
+
+    func simRadioLibrary(
+        _: any SimRadioLibrary,
+        didChange media: SimRadioMedia,
+        nonPersistedSeries: [SimGameSeries.ID]
+    ) {
+        simRadio = media
+        nonPersistedSimSeries = nonPersistedSeries
+    }
+}
+
+extension DefaultMediaState: RealRadioMediaState {}
+
+extension DefaultMediaState: RealRadioLibraryDelegate {
+    func realRadioLibrary(
+        _: RealRadioLibrary,
+        didChange media: RealRadioMedia,
+        nonPersistedStations: [RealStation.ID]
+    ) {
+        realRadio = media
+        nonPersistedRealStations = nonPersistedStations
     }
 }
 

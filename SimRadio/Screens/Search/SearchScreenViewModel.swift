@@ -28,25 +28,19 @@ class SearchScreenViewModel {
         }
     }
 
-    func add(_ station: APIRealStationDTO) {
+    func add(_ dto: APIRealStationDTO) {
         Task {
-            try await mediaState?.addRealRadio(station, persisted: true)
+            guard let realStation = RealStation(dto) else { return }
+            try await mediaState?.addRealRadio(realStation, persisted: true)
         }
     }
 
-    func play(_ station: APIRealStationDTO) {
+    func play(_ dto: APIRealStationDTO) {
         Task {
-            try await mediaState?.addRealRadio(station, persisted: false)
-            mediaPlayer?.play(
-                .realRadio(.init(stationUUID: station.stationuuid)),
-                of: items.compactMap {
-                    switch $0 {
-                    case let .realStation(dto): .realRadio(.init(stationUUID: dto.stationuuid))
-                    default: nil
-                    }
-                },
-                mode: nil
-            )
+            guard let realStation = RealStation(dto) else { return }
+            try await mediaState?.addRealRadio(realStation, persisted: false)
+            let media: MediaID = .realRadio(realStation.id)
+            mediaPlayer?.play(media, of: [media])
         }
     }
 
@@ -82,4 +76,29 @@ class SearchScreenViewModel {
             isLoading = false
         }
     }
+}
+
+extension RealStation {
+    init?(_ dto: APIRealStationDTO) {
+        guard let stream = URL(string: dto.url) else { return nil }
+        self.init(
+            id: .init(stationUUID: dto.stationuuid),
+            title: dto.name,
+            logo: dto.cachedFavicon.flatMap { URL(string: $0) },
+            stream: stream,
+            tags: dto.tags.map { prettyPrintTags($0) },
+            language: dto.language,
+            country: dto.country,
+            votes: dto.votes,
+            clickCount: dto.clickcount,
+            clickTrend: dto.clicktrend
+        )
+    }
+}
+
+func prettyPrintTags(_ tags: String) -> String {
+    tags
+        .split(separator: ",")
+        .map(\.capitalized)
+        .joined(separator: ", ")
 }

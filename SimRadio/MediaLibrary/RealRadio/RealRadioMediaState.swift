@@ -8,5 +8,5 @@
 @MainActor
 protocol RealRadioMediaState: AnyObject, Sendable {
     var realRadio: RealRadioMedia { get }
-    var nonPersistedSimSeries: [RealStation.ID] { get }
+    var nonPersistedRealStations: [RealStation.ID] { get }
 }

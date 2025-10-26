@@ -27,17 +27,6 @@ extension SimRadioMedia {
     }
 }
 
-extension DefaultMediaState: SimRadioMediaState {
-    var simDownloadStatus: [SimStation.ID: MediaDownloadStatus] {
-        Dictionary(uniqueKeysWithValues: downloadStatus.compactMap {
-            if case let .simRadio(id) = $0.key {
-                return (id, $0.value)
-            }
-            return nil
-        })
-    }
-}
-
 extension SimRadioMediaState {
     func stationData(for stationID: SimStation.ID) -> SimRadioStationData? {
         guard let stationData = simRadio.stationData(for: stationID) else { return nil }

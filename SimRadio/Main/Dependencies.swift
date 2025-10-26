@@ -50,18 +50,31 @@ extension Dependencies {
             simRadioDownload: simRadioDownload
         )
 
-        let mediaState = DefaultMediaState(simRadioLibrary: simRadioLibrary)
+        let realRadioLibrary = DefaultRealRadioLibrary()
+
+        let mediaState = DefaultMediaState(
+            simRadioLibrary: simRadioLibrary,
+            realRadioLibrary: realRadioLibrary
+        )
 
         simRadioDownload.mediaState = mediaState
         simRadioLibrary.delegate = mediaState
         simRadioLibrary.mediaState = mediaState
 
-        let simRadioPlayer = DefaultSimRadioMediaPlayer()
-        simRadioPlayer.mediaState = mediaState
+        realRadioLibrary.delegate = mediaState
+        realRadioLibrary.mediaState = mediaState
+
+        let simPlayer = DefaultSimRadioMediaPlayer()
+        simPlayer.mediaState = mediaState
+
+        let realPlayer = DefaultRealRadioMediaPlayer()
+        realPlayer.mediaState = mediaState
 
         let mediaPlayer = MediaPlayer()
-        mediaPlayer.simRadio = simRadioPlayer
-        simRadioPlayer.delegate = mediaPlayer
+        mediaPlayer.simPlayer = simPlayer
+        simPlayer.delegate = mediaPlayer
+        mediaPlayer.realPlayer = realPlayer
+        realPlayer.delegate = mediaPlayer
         mediaPlayer.mediaState = mediaState
 
         let playerController = PlayerController()

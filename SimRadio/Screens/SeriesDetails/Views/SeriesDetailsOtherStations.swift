@@ -36,7 +36,7 @@ struct SeriesDetailsOtherStations: View {
                     StationView(
                         artwork: element.artwork(seriesURL: series.url),
                         title: element.title,
-                        subtitle: element.tags.split(separator: ",").joined(separator: ", "),
+                        subtitle: prettyPrintTags(element.tags),
                         withDivider: needDivider(index: index, itemCount: stations.count)
                     )
                     .frame(width: itemWidth)

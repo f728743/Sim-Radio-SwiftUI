@@ -38,7 +38,7 @@ struct SearchItemView: View {
                 SearchItemLabel(
                     artwork: item.artwork,
                     title: item.name,
-                    subtitle: item.tags?.split(separator: ",").joined(separator: ", "),
+                    subtitle: item.tags.map { prettyPrintTags($0) },
                     kindDescription: "Radio",
                     onTap: {
                         onEvent(.play(station: item))

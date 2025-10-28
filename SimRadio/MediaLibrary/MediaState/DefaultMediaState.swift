@@ -30,7 +30,7 @@ class DefaultMediaState: MediaState {
     }
 
     var mediaList: [MediaList] {
-        let media = simRadio.series.values
+        let simRadioMedia = simRadio.series.values
             .map { series in
                 MediaList(
                     id: .simRadioSeries(series.id),
@@ -44,7 +44,17 @@ class DefaultMediaState: MediaState {
                     }
                 )
             }
-        return media
+        let realRadioMedia = MediaList(
+            id: .realRadioList,
+            meta: .init(artwork: nil, title: "Radio", subtitle: nil),
+            items: realRadio.stations.values.map { station in
+                Media(
+                    id: .realRadio(station.id),
+                    meta: .init(station)
+                )
+            }
+        )
+        return simRadioMedia + [realRadioMedia]
     }
 
     var persistedMediaList: [MediaList] {
@@ -119,20 +129,24 @@ extension DefaultMediaState {
             .map(\.self)
             .filter { $0.value.state == .completed }
             .compactMap {
-                media(withId: $0.key)
+                media(withID: $0.key)
             }
     }
 
-    func media(withId id: Media.ID) -> Media? {
+    func media(withID id: Media.ID) -> Media? {
         switch id {
-        case let .simRadio(stationId):
-            guard let station = simRadio.stations[stationId] else { return nil }
+        case let .simRadio(stationID):
+            guard let station = simRadio.stations[stationID] else { return nil }
             return Media(
                 id: id,
                 meta: .init(station.meta)
             )
-        case .realRadio:
-            return nil // TODO: !
+        case let .realRadio(stationID):
+            guard let station = realRadio.stations[stationID] else { return nil }
+            return Media(
+                id: id,
+                meta: .init(station)
+            )
         }
     }
 }
@@ -189,6 +203,20 @@ extension MediaMeta {
             description: meta.host.map { "Hosted by \($0) – \(meta.genre)" } ?? meta.genre,
             artist: meta.host,
             genre: meta.genre,
+            isLiveStream: true
+        )
+    }
+}
+
+extension MediaMeta {
+    init(_ station: RealStation) {
+        self.init(
+            artwork: station.logo,
+            title: station.title,
+            subtitle: station.country,
+            description: station.tags,
+            artist: nil,
+            genre: station.tags,
             isLiveStream: true
         )
     }

@@ -72,8 +72,6 @@ class SearchScreenViewModel {
                     }
                     return nil
                 }
-
-                print("found \(realStations) real stations")
             } catch {
                 if !Task.isCancelled {
                     print("API call Error: \(error.localizedDescription)")

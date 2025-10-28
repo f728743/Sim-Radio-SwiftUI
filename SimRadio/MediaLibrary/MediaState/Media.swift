@@ -34,6 +34,7 @@ struct MediaMeta: Equatable, Hashable {
 enum MediaListID: Hashable, Equatable {
     case emptyMediaListID
     case simRadioSeries(SimGameSeries.ID)
+    case realRadioList
 }
 
 enum MediaID: Hashable {

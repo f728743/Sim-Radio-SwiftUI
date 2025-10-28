@@ -52,11 +52,6 @@ extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
     private func createPlayerItem(with url: URL) async throws -> AVPlayerItem {
         let asset = AVURLAsset(url: url)
         let item = AVPlayerItem(asset: asset)
-
-        // Load audio tracks
-        guard let audioTrack = try await asset.loadTracks(withMediaType: .audio).first else {
-            return item
-        }
         return item
     }
 }

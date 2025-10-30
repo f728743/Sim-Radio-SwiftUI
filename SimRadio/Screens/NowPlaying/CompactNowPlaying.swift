@@ -9,13 +9,7 @@ import Kingfisher
 import SwiftUI
 
 struct CompactNowPlaying: View {
-    enum Mode {
-        case standard
-        case small
-    }
-
     @Environment(PlayerController.self) var model
-    var mode: Mode = .standard
     @Binding var expanded: Bool
     var hideArtworkOnExpanded: Bool = true
     var animationNamespace: Namespace.ID
@@ -56,63 +50,12 @@ private extension CompactNowPlaying {
         }
     }
 
-    @ViewBuilder
-    var nowPlaying: some View {
-        if mode == .standard {
-            standardNowPlaying
-        } else {
-            smallNowPlaying
-        }
-    }
-
-    var standardNowPlaying: some View {
-        HStack(spacing: 8) {
-            artwork(cornerRadius: 7)
-                .frame(width: 40, height: 40)
-
-            Text(model.display.title)
-                .lineLimit(1)
-                .font(.appFont.miniPlayerTitle)
-                .padding(.trailing, -18)
-
-            Spacer(minLength: 0)
-
-            PlayerButton(
-                label: {
-                    PlayerButtonLabel(type: model.playPauseButton, size: 20)
-                },
-                onEnded: {
-                    model.onPlayPause()
-                }
-            )
-            .playerButtonStyle(.miniPlayer)
-
-            PlayerButton(
-                label: {
-                    PlayerButtonLabel(
-                        type: model.forwardButton,
-                        size: 30,
-                        animationTrigger: forwardAnimationTrigger
-                    )
-                },
-                onEnded: {
-                    model.onForward()
-                    DispatchQueue.main.async {
-                        forwardAnimationTrigger.toggle(bouncing: true)
-                    }
-                }
-            )
-            .playerButtonStyle(.miniPlayer)
-        }
-        .padding(.horizontal, 8)
-    }
-
     var inlinedBottomAccessory: Bool {
         let padding = UIScreen.size.width - viewWidth
         return padding > 60
     }
 
-    var smallNowPlaying: some View {
+    var nowPlaying: some View {
         HStack(spacing: 0) {
             artwork(cornerRadius: 5)
                 .frame(width: 30, height: 30)

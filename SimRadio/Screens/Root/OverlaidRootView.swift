@@ -22,7 +22,6 @@ struct OverlaidRootView: View {
             .tabBarMinimizeBehavior(.onScrollDown)
             .tabViewBottomAccessory {
                 CompactNowPlaying(
-                    mode: .small,
                     expanded: $expandSheet,
                     animationNamespace: animationNamespace
                 )
@@ -38,7 +37,7 @@ struct OverlaidRootView: View {
                 ExpandableNowPlaying(
                     show: .constant(true),
                     expanded: $expandSheet,
-                    mode: .overlay(collapsedFrame: nowPlayingFrame)
+                    collapsedFrame: nowPlayingFrame
                 )
                 // Hack to fix the status bar color not updating correctly in iOS 26
                 .toolbarColorScheme(colorScheme, for: .navigationBar)

@@ -10,18 +10,12 @@ import SwiftUI
 
 struct StationPlaceholderView: View {
     let name: String?
-    @State var size: CGFloat = .zero
 
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         backgroundView
             .aspectRatio(1.0, contentMode: .fit)
-            .onGeometryChange(
-                for: CGFloat.self,
-                of: { $0.size.width },
-                action: { size = $0 }
-            )
             .overlay {
                 Image(.radio)
                     .resizable()
@@ -39,35 +33,44 @@ private extension StationPlaceholderView {
     }
 
     var shadowColor: Color {
-        useGradient ? Color(.sRGBLinear, white: 0, opacity: 0.33) : .clear
+        neewShadow ? Color(.sRGBLinear, white: 0, opacity: 0.33) : .clear
     }
 
-    var useGradient: Bool {
-        size > 50 && name != nil
-    }
-
-    var color: Color {
-        guard let name else { return .clear }
-        let hash = SHA256.hash(data: Data(name.utf8))
-        let bytes = Array(hash)
-        let index = Int(bytes.first ?? 0) % Color.spectrum.count
-        return Color.spectrum[index]
+    var neewShadow: Bool {
+        name != nil
     }
 
     @ViewBuilder
     var backgroundView: some View {
-        if useGradient {
+        if let name {
             LinearGradient(
-                colors: [
-                    color.adjust(brightness: 0.15),
-                    color.adjust(brightness: -0.15)
-                ],
+                colors: name.textColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
         } else {
-            color
+            Color.clear
         }
+    }
+}
+
+extension String {
+    var textColors: [Color] {
+        let hash = SHA256.hash(data: Data(utf8))
+        let bytes = Array(hash)
+        let index = Int(bytes.first ?? 0) % Color.spectrum.count
+        
+        let offset = Int(bytes.dropFirst().first ?? 0) % 3 - 1
+        var secondIndex = index + offset
+        if secondIndex < 0 {
+            secondIndex = Color.spectrum.count + secondIndex
+        } else if secondIndex >= Color.spectrum.count {
+            secondIndex = secondIndex % Color.spectrum.count
+        }
+        
+        let first = Color.spectrum[index]
+        let second = Color.spectrum[secondIndex]
+        return [first, second]
     }
 }
 

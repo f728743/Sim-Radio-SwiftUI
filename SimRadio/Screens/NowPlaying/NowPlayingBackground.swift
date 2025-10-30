@@ -8,12 +8,6 @@
 import SwiftUI
 
 struct NowPlayingBackground: View {
-    enum Mode {
-        case standard
-        case small
-    }
-
-    var mode: Mode = .standard
     let colors: [Color]
     let expanded: Bool
     let isFullExpanded: Bool
@@ -33,12 +27,6 @@ struct NowPlayingBackground: View {
         }
         .clipShape(.rect(cornerRadius: playerCornerRadius))
         .frame(height: expanded ? nil : ViewConst.compactNowPlayingHeight)
-        .shadow(
-            color: .primary.opacity(needShadow ? 0.2 : 0),
-            radius: 8,
-            x: 0,
-            y: 2
-        )
     }
 }
 
@@ -52,17 +40,13 @@ private extension NowPlayingBackground {
     }
 
     var collapsedPlayerCornerRadius: CGFloat {
-        mode == .standard ? 14 : ViewConst.compactNowPlayingHeight / 2
+         ViewConst.compactNowPlayingHeight / 2
     }
 
-    var needShadow: Bool {
-        colorScheme == .light && mode == .standard
-    }
 }
 
 #Preview {
     NowPlayingBackground(
-        mode: .small,
         colors: [],
         expanded: false,
         isFullExpanded: false

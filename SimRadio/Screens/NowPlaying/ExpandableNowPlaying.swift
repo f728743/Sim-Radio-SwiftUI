@@ -13,17 +13,11 @@ enum PlayerMatchedGeometry {
 }
 
 struct ExpandableNowPlaying: View {
-    enum Mode {
-        case deck
-        case overlay(collapsedFrame: CGRect)
-    }
-
     @Binding var show: Bool
     @Binding var expanded: Bool
-    var mode: Mode = .deck
+    var collapsedFrame: CGRect
     @Environment(PlayerController.self) var model
     @State private var offsetY: CGFloat = 0.0
-    @State private var mainWindow: UIWindow?
     @State private var needRestoreProgressOnActive: Bool = false
     @State private var windowProgress: CGFloat = 0.0
     @State private var progressTrackState: CGFloat = 0.0
@@ -32,11 +26,6 @@ struct ExpandableNowPlaying: View {
 
     var body: some View {
         expandableNowPlaying
-            .onAppear {
-                if let window = UIApplication.keyWindow, mode.isDeck {
-                    mainWindow = window
-                }
-            }
             .onChange(of: expanded) {
                 if expanded {
                     stacked(progress: 1, withAnimation: true)
@@ -45,22 +34,6 @@ struct ExpandableNowPlaying: View {
             .onPreferenceChange(NowPlayingExpandProgressPreferenceKey.self) { [$expandProgress] value in
                 $expandProgress.wrappedValue = value
             }
-    }
-}
-
-extension ExpandableNowPlaying.Mode {
-    var isDeck: Bool {
-        if case .deck = self {
-            return true
-        }
-        return false
-    }
-
-    var isOverlay: Bool {
-        if case .overlay = self {
-            return true
-        }
-        return false
     }
 }
 
@@ -78,13 +51,11 @@ private extension ExpandableNowPlaying {
             let size = $0.size
             ZStack(alignment: .top) {
                 NowPlayingBackground(
-                    mode: mode.isOverlay ? .small : .standard,
                     colors: model.colors.map { Color($0) },
                     expanded: expanded,
                     isFullExpanded: isFullyExpanded
                 )
                 CompactNowPlaying(
-                    mode: mode.isOverlay ? .small : .standard,
                     expanded: $expanded,
                     animationNamespace: animationNamespace
                 )
@@ -112,7 +83,7 @@ private extension ExpandableNowPlaying {
             )
             .ignoresSafeArea()
         }
-        .opacity(isFullyCollapsed && mode.isOverlay ? 0 : 1)
+        .opacity(isFullyCollapsed ? 0 : 1)
     }
 
     func handleGestureChange(value: PanGesture.Value, viewSize: CGSize) {
@@ -146,17 +117,12 @@ private extension ExpandableNowPlaying {
         } else {
             progressTrackState = progress
         }
-        mainWindow?.stacked(
-            progress: progress,
-            animationDuration: withAnimation ? Animation.playerExpandAnimationDuration : nil
-        )
     }
 
     func resetStackedWithAnimation() {
         withAnimation(.playerExpandAnimation) {
             progressTrackState = 0
         }
-        mainWindow?.resetStackedWithAnimation(duration: Animation.playerExpandAnimationDuration)
     }
 
     var insets: EdgeInsets {
@@ -164,23 +130,12 @@ private extension ExpandableNowPlaying {
             return .init(top: 0, leading: 0, bottom: 0, trailing: 0)
         }
 
-        switch mode {
-        case let .overlay(frame):
             return .init(
                 top: 0,
-                leading: frame.minX,
-                bottom: UIScreen.size.height - frame.maxY,
-                trailing: UIScreen.size.width - frame.maxX
+                leading: collapsedFrame.minX,
+                bottom: UIScreen.size.height - collapsedFrame.maxY,
+                trailing: UIScreen.size.width - collapsedFrame.maxX
             )
-
-        case .deck:
-            return .init(
-                top: 0,
-                leading: 12,
-                bottom: ViewConst.safeAreaInsets.bottom + ViewConst.compactNowPlayingHeight,
-                trailing: 12
-            )
-        }
     }
 }
 

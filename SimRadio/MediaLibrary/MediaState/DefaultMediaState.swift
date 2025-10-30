@@ -84,8 +84,8 @@ class DefaultMediaState: MediaState {
         try await simRadioLibrary.addSimRadio(url: url, persisted: persisted)
     }
 
-    func addRealRadio(_ radio: RealStation, persisted: Bool) async throws {
-        try await realRadioLibrary.addRealRadio(radio, persisted: persisted)
+    func addRealRadio(_ stations: [RealStation], persisted: Bool) async throws {
+        try await realRadioLibrary.addRealRadio(stations, persisted: persisted)
     }
 
     func download(_ mediaID: MediaID) async {

@@ -31,16 +31,22 @@ class SearchScreenViewModel {
     func add(_ dto: APIRealStationDTO) {
         Task {
             guard let realStation = RealStation(dto) else { return }
-            try await mediaState?.addRealRadio(realStation, persisted: true)
+            try await mediaState?.addRealRadio([realStation], persisted: true)
         }
     }
 
     func play(_ dto: APIRealStationDTO) {
         Task {
+            let allStations = items.compactMap {
+                if case let .realStation(station) = $0 {
+                    return RealStation(station)
+                }
+                return nil
+            }
+
             guard let realStation = RealStation(dto) else { return }
-            try await mediaState?.addRealRadio(realStation, persisted: false)
-            let media: MediaID = .realRadio(realStation.id)
-            mediaPlayer?.play(media, of: [media])
+            try await mediaState?.addRealRadio(allStations, persisted: false)
+            mediaPlayer?.play(.realRadio(realStation.id), of: allStations.map { .realRadio($0.id) })
         }
     }
 

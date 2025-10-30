@@ -6,6 +6,7 @@
 //
 
 import Combine
+import SwiftUI
 import UIKit
 
 @Observable @MainActor
@@ -111,20 +112,26 @@ private extension PlayerController {
     func updateDisplay(withMeta meta: MediaMeta?) async {
         if let meta {
             display = .init(
-                artwork: .radio(meta.artwork),
+                artwork: .radio(meta.artwork, name: meta.title),
                 title: meta.title,
                 subtitle: meta.description ?? ""
             )
-            let colors = await meta.artwork?
-                .image?
-                .dominantColorFrequencies(with: .high)?
-                .map(\.color)
-            if let colors {
-                self.colors = colors
-            }
+            colors = await meta.colors.map { UIColor($0) }
         } else {
             display = .placeholder
             colors = []
+        }
+    }
+}
+
+extension MediaMeta {
+    var colors: [Color] {
+        get async {
+            guard let artwork else { return title.textColors }
+            return await artwork
+                .image?
+                .dominantColorFrequencies(with: .high)?
+                .map { Color(uiColor: $0.color) } ?? [.graySecondary]
         }
     }
 }

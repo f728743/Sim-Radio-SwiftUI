@@ -13,6 +13,7 @@ extension Color {
         .appCoral,
         .appOrange,
         .appYellow,
+        .appLime,
         .appMint,
         .appSky,
         .appIndigo,

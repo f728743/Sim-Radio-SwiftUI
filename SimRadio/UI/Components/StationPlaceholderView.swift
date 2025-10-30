@@ -59,15 +59,15 @@ extension String {
         let hash = SHA256.hash(data: Data(utf8))
         let bytes = Array(hash)
         let index = Int(bytes.first ?? 0) % Color.spectrum.count
-        
-        let offset = Int(bytes.dropFirst().first ?? 0) % 3 - 1
+
+        let offset = Int(bytes.dropFirst().first ?? 0) % 5 - 2
         var secondIndex = index + offset
         if secondIndex < 0 {
             secondIndex = Color.spectrum.count + secondIndex
         } else if secondIndex >= Color.spectrum.count {
             secondIndex = secondIndex % Color.spectrum.count
         }
-        
+
         let first = Color.spectrum[index]
         let second = Color.spectrum[secondIndex]
         return [first, second]
@@ -82,12 +82,11 @@ extension String {
             }
         }
         .frame(height: 90)
-        StationPlaceholderView(name: "Classic FM")
+        StationPlaceholderView(name: "Radio Rock")
             .frame(width: 40)
-            .background(Color.red)
-        StationPlaceholderView(name: "Classic FM")
+        StationPlaceholderView(name: "Radio Rock")
             .frame(width: 100)
-        StationPlaceholderView(name: "Rock Nation")
+        StationPlaceholderView(name: "Classical Music")
             .frame(height: 100)
     }
     .padding()

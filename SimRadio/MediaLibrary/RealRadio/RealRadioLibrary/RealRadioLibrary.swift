@@ -10,7 +10,7 @@ import Foundation
 @MainActor
 protocol RealRadioLibrary {
     func load() async
-    func addRealRadio(_: RealStation, persisted: Bool) async throws
+    func addRealRadio(_: [RealStation], persisted: Bool) async throws
 }
 
 @MainActor

@@ -130,12 +130,12 @@ private extension ExpandableNowPlaying {
             return .init(top: 0, leading: 0, bottom: 0, trailing: 0)
         }
 
-            return .init(
-                top: 0,
-                leading: collapsedFrame.minX,
-                bottom: UIScreen.size.height - collapsedFrame.maxY,
-                trailing: UIScreen.size.width - collapsedFrame.maxX
-            )
+        return .init(
+            top: 0,
+            leading: collapsedFrame.minX,
+            bottom: UIScreen.size.height - collapsedFrame.maxY,
+            trailing: UIScreen.size.width - collapsedFrame.maxX
+        )
     }
 }
 

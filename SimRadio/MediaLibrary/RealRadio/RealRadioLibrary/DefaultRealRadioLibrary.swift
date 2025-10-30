@@ -36,8 +36,8 @@ private extension DefaultRealRadioLibrary {
 extension DefaultRealRadioLibrary: RealRadioLibrary {
     func load() async {}
 
-    func addRealRadio(_ station: RealStation, persisted: Bool) async throws {
-        let new = RealRadioMedia(stations: [station.id: station])
+    func addRealRadio(_ stations: [RealStation], persisted: Bool) async throws {
+        let new = RealRadioMedia(stations: Dictionary(uniqueKeysWithValues: stations.map { ($0.id, $0) }))
         addToLibrary(new, persisted: persisted)
     }
 }

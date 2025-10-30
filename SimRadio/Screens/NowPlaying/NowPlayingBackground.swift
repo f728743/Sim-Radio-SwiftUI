@@ -40,9 +40,8 @@ private extension NowPlayingBackground {
     }
 
     var collapsedPlayerCornerRadius: CGFloat {
-         ViewConst.compactNowPlayingHeight / 2
+        ViewConst.compactNowPlayingHeight / 2
     }
-
 }
 
 #Preview {

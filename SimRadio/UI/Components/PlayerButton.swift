@@ -100,7 +100,7 @@ struct PlayerButtonConfig {
         labelColor: Color = .init(UIColor.label),
         tint: Color = .init(UIColor.tintColor),
         pressedColor: Color = .init(UIColor.secondaryLabel),
-        disabledColor: Color = .init(UIColor.secondaryLabel)
+        disabledColor: Color = .iconSecondary
     ) {
         self.updateInterval = updateInterval
         self.size = size

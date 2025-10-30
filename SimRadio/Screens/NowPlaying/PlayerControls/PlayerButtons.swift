@@ -31,6 +31,7 @@ struct PlayerButtons: View {
                     model.onBackward()
                 }
             )
+            .disabled(!model.commandProfile.isSwitchTrackEnabled)
 
             PlayerButton(
                 label: {
@@ -56,6 +57,7 @@ struct PlayerButtons: View {
                     model.onForward()
                 }
             )
+            .disabled(!model.commandProfile.isSwitchTrackEnabled)
         }
         .playerButtonStyle(.expandedPlayer)
     }

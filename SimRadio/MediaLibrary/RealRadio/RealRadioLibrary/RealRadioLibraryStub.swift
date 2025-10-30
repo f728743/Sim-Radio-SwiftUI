@@ -8,4 +8,5 @@
 class RealRadioLibraryStub: RealRadioLibrary {
     func load() async {}
     func addRealRadio(_: RealStation, persisted _: Bool) async throws {}
+    func addRealRadio(_: [RealStation], persisted _: Bool) async throws {}
 }

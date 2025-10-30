@@ -107,6 +107,7 @@ private extension CompactNowPlaying {
                             }
                         }
                     )
+                    .disabled(!model.commandProfile.isSwitchTrackEnabled)
                 }
             }
             .playerButtonStyle(.miniPlayer)

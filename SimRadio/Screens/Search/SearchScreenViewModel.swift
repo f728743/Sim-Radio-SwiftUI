@@ -51,35 +51,34 @@ class SearchScreenViewModel {
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             items = []
             errorMessage = nil
+            isLoading = false
             return
         }
 
-        isLoading = true
         errorMessage = nil
-
         searchTask = Task { @MainActor in
             do {
+                isLoading = true
                 try await Task.sleep(nanoseconds: 500_000_000)
 
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled else {
+                    return
+                }
 
                 let result = try await searchService.search(query: searchText)
-                items = result.items
-
-                let realStations = result.items.compactMap {
-                    if case let .realStation(dto) = $0 {
-                        return (dto.url, dto.name)
-                    }
-                    return nil
+                guard !Task.isCancelled else {
+                    return
                 }
+                items = result.items
+                isLoading = false
             } catch {
                 if !Task.isCancelled {
                     print("API call Error: \(error.localizedDescription)")
                     errorMessage = error.localizedDescription
                     items = []
+                    isLoading = false
                 }
             }
-            isLoading = false
         }
     }
 }

@@ -22,7 +22,7 @@ struct SearchScreen: View {
                 text: $viewModel.searchText,
                 isPresented: $isSearchPresented,
                 placement: .navigationBarDrawer(displayMode: .automatic),
-                prompt: Text("Search for radio stations...")
+                prompt: Text(promptText)
             )
             .task {
                 viewModel.searchService = SearchService(apiService: dependencies.apiService)
@@ -31,7 +31,7 @@ struct SearchScreen: View {
 
                 if firstTime { // TODO: remove
                     firstTime = false
-                    viewModel.searchText = "fm"
+                    viewModel.searchText = "Soma"
                 }
             }
     }
@@ -76,6 +76,10 @@ private extension SearchScreen {
                 isSearchPresented = false
             }
         )
+    }
+
+    var promptText: String {
+        viewModel.searchText.isEmpty ? "Search for radio stations..." : viewModel.searchText
     }
 }
 

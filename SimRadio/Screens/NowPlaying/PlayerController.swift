@@ -132,7 +132,7 @@ private extension PlayerController {
 extension PlayerController.Display {
     static var placeholder: Self {
         .init(
-            artwork: .radio,
+            artwork: .radio(),
             title: "",
             subtitle: ""
         )

@@ -5,7 +5,45 @@
 //  Created by Alexey Vorobyov on 04.12.2024.
 //
 
+import SwiftUI
 import UIKit
+
+extension Color {
+    static let spectrum: [Color] = [
+        .appCoral,
+        .appOrange,
+        .appYellow,
+        .appMint,
+        .appSky,
+        .appIndigo,
+        .appPurple,
+        .appPink
+    ]
+
+    static let iconPrimary: Color = .primary
+    static let iconSecondary: Color = .graySecondary
+}
+
+extension Color {
+    func adjust(
+        hue: CGFloat = 0,
+        saturation: CGFloat = 0,
+        brightness: CGFloat = 0,
+        opacity: CGFloat = 0
+    ) -> Color {
+        let uiColor = UIColor(self)
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard uiColor.getHue(&h, saturation: &s, brightness: &b, alpha: &a) else {
+            return self
+        }
+        return Color(
+            hue: (h + hue).clamped(to: 0 ... 1),
+            saturation: (s + saturation).clamped(to: 0 ... 1),
+            brightness: (b + brightness).clamped(to: 0 ... 1),
+            opacity: (a + opacity).clamped(to: 0 ... 1)
+        )
+    }
+}
 
 enum Palette {
     enum PlayerCard {}

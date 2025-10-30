@@ -43,7 +43,7 @@ struct MediaItemView: View {
     var artwork: some View {
         ZStack {
             ArtworkView(
-                model.artwork.map { .webImage($0) } ?? .radio,
+                model.artwork.map { .webImage($0) } ?? .radio(name: model.title),
                 cornerRadius: 5
             )
             if let activity = model.activity {

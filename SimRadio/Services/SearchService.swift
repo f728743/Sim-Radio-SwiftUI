@@ -95,6 +95,6 @@ func buildMediaURL(from baseURL: String, with filename: String) -> URL? {
 extension APIRealStationDTO {
     var artwork: Artwork {
         let url = cachedFavicon.flatMap { URL(string: $0) }
-        return .radio(url)
+        return .radio(url, name: name)
     }
 }

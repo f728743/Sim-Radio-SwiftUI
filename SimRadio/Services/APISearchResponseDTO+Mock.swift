@@ -181,5 +181,18 @@ extension APISimRadioSeriesDTO {
             ]
         )
     }
+    #else
+    static var mock: APISimRadioSeriesDTO {
+        APISimRadioSeriesDTO(
+            id: "",
+            url: "",
+            title: "",
+            logo: "",
+            coverTitle: "",
+            coverLogo: "",
+            stations: [],
+            foundStations: []
+        )
+    }
     #endif
 }

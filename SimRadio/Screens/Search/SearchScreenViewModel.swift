@@ -36,6 +36,7 @@ class SearchScreenViewModel {
     }
 
     func play(_ dto: APIRealStationDTO) {
+        print("play", dto.name)
         Task {
             let allStations = items.compactMap {
                 if case let .realStation(station) = $0 {

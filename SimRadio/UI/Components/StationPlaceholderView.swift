@@ -60,7 +60,9 @@ extension String {
         let bytes = Array(hash)
         let index = Int(bytes.first ?? 0) % Color.spectrum.count
 
-        let offset = Int(bytes.dropFirst().first ?? 0) % 5 - 2
+        let raw = Int(bytes.dropFirst().first ?? 0) % 4
+        let offset = [-2, -1, 1, 2][raw]
+
         var secondIndex = index + offset
         if secondIndex < 0 {
             secondIndex = Color.spectrum.count + secondIndex

@@ -64,13 +64,15 @@ private extension PlayerControls {
             VStack(alignment: .leading, spacing: 4) {
                 let fade = ViewConst.playerCardPaddings
                 let cfg = MarqueeText.Config(leftFade: fade, rightFade: fade)
-                MarqueeText(model.display.title, config: cfg)
+                let title = model.display.title.isEmpty ? " " : model.display.title
+                let subtitle = model.display.subtitle.isEmpty ? " " : model.display.subtitle
+                MarqueeText(title, config: cfg)
                     .transformEffect(.identity)
                     .font(.title3)
                     .fontWeight(.semibold)
                     .foregroundStyle(Color(palette.opaque))
                     .id(model.display)
-                MarqueeText(model.display.subtitle, config: cfg)
+                MarqueeText(subtitle, config: cfg)
                     .transformEffect(.identity)
                     .foregroundStyle(Color(palette.opaque))
                     .blendMode(.overlay)

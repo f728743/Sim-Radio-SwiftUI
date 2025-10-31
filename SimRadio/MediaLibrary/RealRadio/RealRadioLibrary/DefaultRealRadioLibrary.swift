@@ -13,20 +13,21 @@ class DefaultRealRadioLibrary {
 
 private extension DefaultRealRadioLibrary {
     func addToLibrary(_ new: RealRadioMedia, persisted: Bool) {
-        guard let mediaState, let stationID = new.stations.keys.first else { return }
+        guard let mediaState else { return }
+        let stationIDs = Set(new.stations.keys)
+        let idsToAdd = stationIDs.subtracting(mediaState.realRadio.stations.keys)
+        
         let curren = mediaState.realRadio
-        if !persisted {
-            guard !curren.stations.keys.contains(stationID) else { return }
-        }
 
         let nonPersistedStations = persisted
-            ? mediaState.nonPersistedRealStations.filter { $0 != stationID }
-            : mediaState.nonPersistedRealStations + [stationID]
+        ? mediaState.nonPersistedRealStations.filter { idsToAdd.contains($0) }
+        : mediaState.nonPersistedRealStations + idsToAdd
 
+        let stationsToAdd = new.stations.filter { idsToAdd.contains($0.key)}
         delegate?.realRadioLibrary(
             self,
             didChange: RealRadioMedia(
-                stations: curren.stations.merging(new.stations) { _, new in new },
+                stations: curren.stations.merging(stationsToAdd) { _, new in new },
             ),
             nonPersistedStations: nonPersistedStations
         )

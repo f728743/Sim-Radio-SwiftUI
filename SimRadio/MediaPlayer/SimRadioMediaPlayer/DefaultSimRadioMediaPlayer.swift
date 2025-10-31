@@ -17,6 +17,10 @@ class DefaultSimRadioMediaPlayer {
     private var nextPlayableItem: NextPlayableItem?
     private var observer: NSObjectProtocol?
     private var playToEndTask: Task<Void, Never>?
+    private var playTask: Task<Void, Never>?
+
+    private var currentRequestedStationID: MediaID?
+    private var currentRequestedMode: MediaPlaybackMode.ID?
 
     private var timeObserverToken: Any?
     private var currentMarkers: [AudioFragmentMarker]?
@@ -32,21 +36,50 @@ class DefaultSimRadioMediaPlayer {
 
 extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
     func playStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?) {
-        Task {
+        playTask?.cancel()
+
+        // Save the ID of the new request
+        // This will serve as a "generation identifier"
+        currentRequestedStationID = stationID
+        currentRequestedMode = mode
+
+        playTask = Task { [weak self] in
+            guard let self else { return }
+
+            // If the task ID doesn't match the last requested ID,
+            // then this task is outdated and should be terminated
+            guard currentRequestedStationID == stationID, currentRequestedMode == mode else {
+                // This task is outdated, just exit
+                return
+            }
+
+            queuePlayer.removeAllItems()
+            playToEndTask?.cancel()
+            playToEndTask = nil
+
             do {
                 try await doPlayStation(withID: stationID, mode: mode)
             } catch {
-                print(error)
+                if !Task.isCancelled {
+                    // Log error only if it's from the *current* task
+                    if currentRequestedStationID == stationID, currentRequestedMode == mode {
+                        print("Playback error: \(error)")
+                    }
+                }
             }
         }
     }
 
     func stop() {
         queuePlayer.removeAllItems()
+        playTask?.cancel()
+        playTask = nil
         playToEndTask?.cancel()
         playToEndTask = nil
         removePeriodicTimeObserver()
         currentMarkers = nil
+        currentRequestedStationID = nil
+        currentRequestedMode = nil
     }
 
     func availableModes(stationID: MediaID) -> [MediaPlaybackMode] {
@@ -94,9 +127,12 @@ private extension DefaultSimRadioMediaPlayer {
 
     func doPlayStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?) async throws {
         removePeriodicTimeObserver()
+        try Task.checkCancellation()
+        guard currentRequestedStationID == stationID, currentRequestedMode == mode else {
+            throw CancellationError()
+        }
 
         let startingDate = Date()
-//        let startingDate = Date("03.05.2025 00:02:35")
         let startingTime = CMTime(seconds: startingDate.currentSecondOfDay)
 
         let playlistItem = try await makePlaylistItem(
@@ -105,6 +141,10 @@ private extension DefaultSimRadioMediaPlayer {
             at: .init(seconds: startingDate.currentSecondOfDay),
             mode: mode
         )
+        try Task.checkCancellation()
+        guard currentRequestedStationID == stationID, currentRequestedMode == mode else {
+            throw CancellationError()
+        }
 
         currentMarkers = playlistItem.track.markers
         lastBroadcastedMarker = nil
@@ -114,8 +154,10 @@ private extension DefaultSimRadioMediaPlayer {
             playlistItem: playlistItem,
             tapProcessor: audioTapProcessor
         )
-
-        addPeriodicTimeObserver()
+        try Task.checkCancellation()
+        guard currentRequestedStationID == stationID, currentRequestedMode == mode else {
+            throw CancellationError()
+        }
 
         queuePlayer.insert(playerItem, after: nil)
         queuePlayer.play()
@@ -129,6 +171,13 @@ private extension DefaultSimRadioMediaPlayer {
         ) else {
             throw PlayerItemLoadingError.playerItemCreatingError
         }
+
+        // Check before updating nextPlayableItem
+        try Task.checkCancellation()
+        guard currentRequestedStationID == stationID, currentRequestedMode == mode else {
+            throw CancellationError()
+        }
+
         self.nextPlayableItem = nextPlayableItem
         queuePlayer.insert(nextPlayableItem.item, after: nil)
     }

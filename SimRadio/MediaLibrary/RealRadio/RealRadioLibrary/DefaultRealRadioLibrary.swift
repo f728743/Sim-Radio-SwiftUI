@@ -16,14 +16,14 @@ private extension DefaultRealRadioLibrary {
         guard let mediaState else { return }
         let stationIDs = Set(new.stations.keys)
         let idsToAdd = stationIDs.subtracting(mediaState.realRadio.stations.keys)
-        
+
         let curren = mediaState.realRadio
 
         let nonPersistedStations = persisted
-        ? mediaState.nonPersistedRealStations.filter { idsToAdd.contains($0) }
-        : mediaState.nonPersistedRealStations + idsToAdd
+            ? mediaState.nonPersistedRealStations.filter { idsToAdd.contains($0) }
+            : mediaState.nonPersistedRealStations + idsToAdd
 
-        let stationsToAdd = new.stations.filter { idsToAdd.contains($0.key)}
+        let stationsToAdd = new.stations.filter { idsToAdd.contains($0.key) }
         delegate?.realRadioLibrary(
             self,
             didChange: RealRadioMedia(

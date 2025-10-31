@@ -94,7 +94,6 @@ private extension PlayerController {
                 guard let self else { return }
                 if selectedMode == nil {
                     selectedMode = modes.first?.id
-                    print("new mode: \(String(describing: selectedMode))")
                 }
                 self.modes = modes
             }

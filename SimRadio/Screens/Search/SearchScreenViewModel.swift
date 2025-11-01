@@ -89,25 +89,6 @@ class SearchScreenViewModel {
     }
 }
 
-extension RealStation {
-    init?(_ dto: APIRealStationDTO) {
-        guard let stream = URL(string: dto.url) else { return nil }
-        self.init(
-            id: .init(stationUUID: dto.stationuuid),
-            title: dto.name,
-            logo: dto.cachedFavicon.flatMap { URL(string: $0) },
-            stream: stream,
-            streamResolved: URL(string: dto.urlResolved),
-            tags: dto.tags.map { prettyPrintTags($0) },
-            language: dto.language,
-            country: dto.country,
-            votes: dto.votes,
-            clickCount: dto.clickcount,
-            clickTrend: dto.clicktrend
-        )
-    }
-}
-
 func prettyPrintTags(_ tags: String) -> String {
     tags
         .split(separator: ",")

@@ -78,6 +78,7 @@ class DefaultMediaState: MediaState {
 
     func load() async {
         await simRadioLibrary.load()
+        await realRadioLibrary.load()
     }
 
     func addSimRadio(url: URL, persisted: Bool) async throws {

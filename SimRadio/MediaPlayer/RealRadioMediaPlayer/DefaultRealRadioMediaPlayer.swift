@@ -22,7 +22,7 @@ extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
             return
         }
 
-        guard let streamURL = station.streamResolved?.toHTTPS else {
+        guard let streamURL = station.streamResolved.toHTTPS else {
             print("Error: no stream")
             return
         }

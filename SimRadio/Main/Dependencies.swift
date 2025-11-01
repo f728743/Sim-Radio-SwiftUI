@@ -44,6 +44,7 @@ extension Dependencies {
 
     static func make() -> Dependencies {
         let simRadioDownload = DefaultSimRadioDownload()
+        let dataController = DataController()
 
         let simRadioLibrary = DefaultSimRadioLibrary(
             storage: UserDefaultsRadioStorage(),
@@ -63,6 +64,7 @@ extension Dependencies {
 
         realRadioLibrary.delegate = mediaState
         realRadioLibrary.mediaState = mediaState
+        realRadioLibrary.dataController = dataController
 
         let simPlayer = DefaultSimRadioMediaPlayer()
         simPlayer.mediaState = mediaState
@@ -80,8 +82,6 @@ extension Dependencies {
         let playerController = PlayerController()
         playerController.player = mediaPlayer
         playerController.mediaState = mediaState
-
-        let dataController = DataController()
 
         let apiService = APIService(baseURL: "https://sim-radio.ru")
 

@@ -13,6 +13,7 @@ struct DownloadedScreen: View {
 
     var body: some View {
         content
+            .navigationTitle("Downloaded")
             .task {
                 viewModel.mediaState = dependencies.mediaState
             }
@@ -37,7 +38,7 @@ private extension DownloadedScreen {
             Image(systemName: "icloud.and.arrow.down")
                 .font(.system(size: 48))
                 .foregroundStyle(Color(.palette.stroke))
-            Text("Download Stations to Listen to Offline")
+            Text("Download Sim Stations to Listen to Offline")
                 .font(.system(size: 22, weight: .semibold))
                 .padding(.top, 16)
             Text("Downloaded Stations will appear here.")

@@ -1,5 +1,5 @@
 //
-//  RadioScreen.swift
+//  SimRadioScreen.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 24.09.2025.
@@ -7,20 +7,20 @@
 
 import SwiftUI
 
-struct RadioScreen: View {
+struct SimRadioScreen: View {
     @Environment(Dependencies.self) var dependencies
-    @State private var viewModel = RadioScreenViewModel()
+    @State private var viewModel = SimRadioScreenViewModel()
 
     var body: some View {
         content
-            .navigationTitle("Radio")
+            .navigationTitle("Sim Radio")
             .task {
                 viewModel.mediaState = dependencies.mediaState
             }
     }
 }
 
-private extension RadioScreen {
+private extension SimRadioScreen {
     @ViewBuilder
     var content: some View {
         if viewModel.items.isEmpty {
@@ -35,13 +35,13 @@ private extension RadioScreen {
 
     var empty: some View {
         VStack(spacing: 0) {
-            Image(systemName: "dot.radiowaves.left.and.right")
+            Image(systemName: "gamecontroller")
                 .font(.system(size: 48))
                 .foregroundStyle(Color(.palette.stroke))
-            Text("No radio stations added")
+            Text("No sim radio stations added")
                 .font(.system(size: 22, weight: .semibold))
                 .padding(.top, 16)
-            Text("Add radio stations to come back to them later and they'll show up here.")
+            Text("Add sim radio stations to come back to them later and they'll show up here.")
                 .font(.system(size: 17, weight: .regular))
                 .padding(.top, 8)
                 .foregroundStyle(Color(.palette.textTertiary))

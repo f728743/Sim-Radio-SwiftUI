@@ -10,6 +10,8 @@ import SwiftUI
 enum Route: Hashable, Equatable {
     case mediaList(items: [Media], listMeta: MediaList.Meta?)
     case downloaded
+    case simRadio
+    case radio
     case seriesSearchResult(series: APISimRadioSeriesDTO)
 }
 
@@ -19,6 +21,14 @@ class Router {
 
     func navigateToMedia(items: [Media], listMeta: MediaList.Meta?) {
         path.append(Route.mediaList(items: items, listMeta: listMeta))
+    }
+
+    func navigateToRadio() {
+        path.append(Route.radio)
+    }
+
+    func navigateToSimRadio() {
+        path.append(Route.simRadio)
     }
 
     func navigateToDownloaded() {

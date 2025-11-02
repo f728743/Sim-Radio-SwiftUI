@@ -15,12 +15,25 @@ struct LibraryScreen: View {
 
     var body: some View {
         List {
-            navigationLink(title: "Downloaded", icon: "arrow.down.circle")
+            navigationLink(title: "Sim Radio", icon: "gamecontroller")
                 .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
                 .listSectionSeparator(.hidden, edges: .top)
                 .onTapGesture {
+                    router.navigateToSimRadio()
+                }
+
+            navigationLink(title: "Radio", icon: "dot.radiowaves.left.and.right")
+                .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
+                .onTapGesture {
+                    router.navigateToRadio()
+                }
+
+            navigationLink(title: "Downloaded", icon: "arrow.down.circle")
+                .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
+                .onTapGesture {
                     router.navigateToDownloaded()
                 }
+
             recentlyAdded
                 .listRowInsets(.init(top: 25, leading: 20, bottom: 0, trailing: 20))
                 .listSectionSeparator(.hidden, edges: .bottom)
@@ -59,6 +72,7 @@ private extension LibraryScreen {
         HStack(spacing: 11) {
             Image(systemName: icon)
                 .font(.system(size: 22))
+                .frame(width: 36)
                 .foregroundStyle(Color(.palette.brand))
             Text(title)
                 .font(.system(size: 20))

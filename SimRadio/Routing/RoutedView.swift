@@ -14,6 +14,10 @@ struct RoutedView: View {
         switch route {
         case let .mediaList(items, listMeta):
             MediaListScreen(items: items, listMeta: listMeta)
+        case .simRadio:
+            SimRadioScreen()
+        case .radio:
+            RadioScreen()
         case .downloaded:
             DownloadedScreen()
         case let .seriesSearchResult(series):

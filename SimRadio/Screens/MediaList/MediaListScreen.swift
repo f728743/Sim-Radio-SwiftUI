@@ -34,12 +34,18 @@ private extension MediaListScreen {
     var content: some View {
         List {
             if let listMeta = viewModel.listMeta {
-                header(listMeta: listMeta)
-                    .padding(.top, 7)
-                    .padding(.bottom, 26)
-                    .listRowInsets(.rowInsets)
-                    .listSectionSeparator(.hidden, edges: .top)
-                    .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
+                MediaListHeaderView(
+                    item: .init(
+                        title: listMeta.title,
+                        subtitle: listMeta.subtitle,
+                        artwork: .album(listMeta.artwork)
+                    )
+                )
+                .padding(.top, 7)
+                .padding(.bottom, 26)
+                .listRowInsets(.rowInsets)
+                .listSectionSeparator(.hidden, edges: .top)
+                .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
             }
 
             list
@@ -50,58 +56,6 @@ private extension MediaListScreen {
                 .listSectionSeparator(.hidden, edges: .bottom)
         }
         .listStyle(.plain)
-    }
-
-    func header(listMeta: MediaList.Meta) -> some View {
-        VStack(spacing: 0) {
-            ArtworkView(
-                .radio(listMeta.artwork),
-                cornerRadius: 10
-            )
-            .padding(.horizontal, 52)
-
-            Text(listMeta.title)
-                .font(.appFont.mediaListHeaderTitle)
-                .padding(.top, 18)
-
-            if let subtitle = listMeta.subtitle {
-                Text(subtitle)
-                    .font(.appFont.mediaListHeaderSubtitle)
-                    .foregroundStyle(Color(.palette.textSecondary))
-                    .padding(.top, 2)
-            }
-
-            buttons
-                .padding(.top, 14)
-        }
-    }
-
-    var buttons: some View {
-        HStack(spacing: 16) {
-            Button {
-                print("Play")
-            }
-            label: {
-                buttonLabel("Play", systemImage: "play.fill")
-            }
-
-            Button {
-                print("Shuffle")
-            }
-            label: {
-                buttonLabel("Shuffle", systemImage: "shuffle")
-            }
-        }
-        .buttonStyle(AppleMusicButtonStyle())
-    }
-
-    func buttonLabel(_ title: String, systemImage icon: String) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 16))
-            Text(title)
-                .font(.appFont.button)
-        }
     }
 
     var list: some View {

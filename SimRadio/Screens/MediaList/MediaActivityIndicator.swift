@@ -20,7 +20,6 @@ struct MediaActivityIndicator: View {
         AudioSpectrumView(
             size: .init(width: 16, height: 22),
             spectrum: spectrumValues,
-            color: .white
         )
     }
 

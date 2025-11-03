@@ -22,10 +22,9 @@ struct MediaItemView: View {
     var body: some View {
         HStack(spacing: 12) {
             artwork
-
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.title)
-                    .font(.appFont.mediaListItemTitle)
+                    .font(.system(size: 16))
                 Text(model.subtitle ?? "")
                     .font(.appFont.mediaListItemSubtitle)
                     .foregroundStyle(Color(.palette.textTertiary))

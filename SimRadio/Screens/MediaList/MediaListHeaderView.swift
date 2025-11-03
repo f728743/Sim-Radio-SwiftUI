@@ -8,30 +8,30 @@
 import SwiftUI
 
 struct MediaListHeaderView: View {
-    let listMeta: MediaList.Meta
-
+    let item: LibraryItem.Label
+    
     var body: some View {
         VStack(spacing: 0) {
             ArtworkView(
-                .radio(listMeta.artwork),
+                item.artwork,
                 cornerRadius: 10
             )
-            .padding(.horizontal, 52)
+            .padding(.horizontal, 48)
 
-            Text(listMeta.title)
-                .font(.appFont.mediaListHeaderTitle)
-                .padding(.top, 18)
+            Text(item.title)
+                .font(.system(size: 22, weight: .bold))
+                .padding(.top, 23)
 
-            if let subtitle = listMeta.subtitle {
+            if let subtitle = item.subtitle {
                 Text(subtitle)
                     .font(.appFont.mediaListHeaderSubtitle)
-                    .foregroundStyle(Color(.palette.textSecondary))
-                    .padding(.top, 2)
+                    .foregroundStyle(Color.textAccent)
+                    .padding(.top, 4)
             }
-
             buttons
                 .padding(.top, 14)
         }
+        .multilineTextAlignment(.center)
     }
 }
 
@@ -63,4 +63,17 @@ private extension MediaListHeaderView {
                 .font(.appFont.button)
         }
     }
+}
+
+#Preview {
+    @Previewable @State var dependencies = Dependencies.stub
+    let item: Media = dependencies.mediaState.mediaList.first!.items.first!
+    MediaListHeaderView(
+        item: .init(
+            title: item.meta.title,
+            subtitle: item.meta.subtitle,
+            artwork: .radio(item.meta.artwork)
+        )
+    )
+    .environment(dependencies)
 }

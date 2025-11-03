@@ -14,7 +14,7 @@ struct AppleMusicButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .background(Color(.palette.buttonBackground))
             .foregroundStyle(Color(.palette.brand))
-            .clipShape(.rect(cornerRadius: 10))
+            .clipShape(.capsule)
             .opacity(configuration.isPressed ? 0.65 : 1)
     }
 }

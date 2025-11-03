@@ -23,6 +23,9 @@ extension Color {
 
     static let iconPrimary: Color = .primary
     static let iconSecondary: Color = .graySecondary
+    
+    static let textPrimary: Color = .primary
+    static let textAccent: Color = .brand
 }
 
 extension Color {

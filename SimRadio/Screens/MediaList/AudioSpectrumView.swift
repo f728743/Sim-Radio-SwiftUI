@@ -10,7 +10,6 @@ import SwiftUI
 struct AudioSpectrumView: View {
     let size: CGSize
     let spectrum: [Float]
-    let color: Color
 
     var body: some View {
         let barWidth: CGFloat = spectrum.count > 0
@@ -18,7 +17,6 @@ struct AudioSpectrumView: View {
         HStack(alignment: .center, spacing: barWidth - barWidth * 3 / 4) {
             ForEach(Array(spectrum.enumerated()), id: \.offset) { _, value in
                 BarView(value: value)
-                    .fill(color)
             }
         }
         .frame(width: size.width, height: size.height)
@@ -45,7 +43,7 @@ private struct BarView: Shape {
     AudioSpectrumView(
         size: .init(width: 160, height: 160),
         spectrum: [0.3, 0.8, 0.4, 0.6, 0.0],
-        color: .red
     )
+    .foregroundStyle(Color(.systemRed))
     .background(Color.gray.tertiary)
 }

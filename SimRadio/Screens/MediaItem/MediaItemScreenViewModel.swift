@@ -27,6 +27,17 @@ class MediaItemScreenViewModel {
     init(item: Media) {
         self.item = item
     }
+    
+    func downloadStatus(for itemID: MediaID) -> MediaDownloadStatus? {
+        mediaState?.downloadStatus[itemID]
+    }
+
+    func mediaActivity(_ mediaID: MediaID) -> MediaActivity? {
+        switch state {
+        case let .paused(pausedMediaID, _): pausedMediaID == mediaID ? .paused : nil
+        case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(palyIndicatorSpectrum) : nil
+        }
+    }
 }
 
 private extension MediaItemScreenViewModel {

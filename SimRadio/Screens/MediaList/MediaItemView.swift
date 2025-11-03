@@ -49,6 +49,7 @@ struct MediaItemView: View {
                 Color.black.opacity(0.4)
                     .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
                 MediaActivityIndicator(state: activity)
+                    .foregroundStyle(Color.white)
             }
         }
         .frame(width: 48, height: 48)

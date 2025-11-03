@@ -38,6 +38,11 @@ class MediaItemScreenViewModel {
         case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(palyIndicatorSpectrum) : nil
         }
     }
+    
+    func onSelect(media: Media.ID) {
+        guard let player else { return }
+        player.play(media, of: [item.id], mode: nil)
+    }
 }
 
 private extension MediaItemScreenViewModel {

@@ -10,6 +10,7 @@ import SwiftUI
 struct MediaItemScreen: View {
     @Environment(Dependencies.self) var dependencies
     @State private var viewModel: MediaItemScreenViewModel
+    @State private var selection: Media.ID?
 
     init(item: Media) {
         _viewModel = State(
@@ -39,12 +40,12 @@ private extension MediaItemScreen {
                     artwork: .radio(meta.artwork)
                 )
             )
+            .listRowInsets(.rowInsets)
+            .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
+            .alignmentGuide(.listRowSeparatorTrailing) { $0[.trailing] + ViewConst.screenPaddings}
             .padding(.top, 14)
             .padding(.bottom, 25)
-            .listRowInsets(.rowInsets)
-            .listSectionSeparator(.hidden, edges: .top)
-            .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
-                        
+                                    
             ItemView(
                 model: .init(
                     title: viewModel.item.meta.title,
@@ -54,6 +55,16 @@ private extension MediaItemScreen {
                 index: 1
             )
             .listRowInsets(.rowInsets)
+            .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
+            .alignmentGuide(.listRowSeparatorTrailing) { $0[.trailing] + ViewConst.screenPaddings}
+            .onTapGesture {
+                viewModel.onSelect(media: item.id)
+                selection = item.id
+                Task {
+                    try? await Task.sleep(for: .milliseconds(80))
+                    selection = nil
+                }
+            }
         }
         .listStyle(.plain)
     }
@@ -89,6 +100,7 @@ private struct ItemView: View {
         }
         .font(.system(size: 16))
         .frame(height: 50)
+        .contentShape(.rect)
     }
 }
 

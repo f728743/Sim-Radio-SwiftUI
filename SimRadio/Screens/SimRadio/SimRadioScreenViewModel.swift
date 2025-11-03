@@ -12,6 +12,9 @@ import SwiftUI
 class SimRadioScreenViewModel {
     var mediaState: MediaState?
     var items: [Media] {
-        mediaState?.downloadedMedia ?? []
+        let res = (mediaState?.persistedMediaList ?? [])
+            .flatMap(\.items)
+            .filter(\.id.isSimRadio)
+        return res
     }
 }

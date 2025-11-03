@@ -12,6 +12,9 @@ import SwiftUI
 class RadioScreenViewModel {
     var mediaState: MediaState?
     var items: [Media] {
-        mediaState?.downloadedMedia ?? []
+        let res = (mediaState?.persistedMediaList ?? [])
+            .flatMap(\.items)
+            .filter(\.id.isRealRadio)
+        return res
     }
 }

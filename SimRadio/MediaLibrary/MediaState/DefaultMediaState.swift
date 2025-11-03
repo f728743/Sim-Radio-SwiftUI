@@ -57,8 +57,8 @@ class DefaultMediaState: MediaState {
         return simRadioMedia + [realRadioMedia]
     }
 
-    var persistedMediaList: [MediaList] {
-        let persistedMedia = simRadio.series.values
+    var persistedMediaList: [MediaList] { // TODO: get rid, use mediaList(persisted: Bool)
+        let persistedSimRadioMedia = simRadio.series.values
             .filter { !nonPersistedSimSeries.contains($0.id) }
             .map { series in
                 MediaList(
@@ -73,7 +73,20 @@ class DefaultMediaState: MediaState {
                     }
                 )
             }
-        return persistedMedia
+
+        let persistedRealRadioMedia = MediaList(
+            id: .realRadioList,
+            meta: .init(artwork: nil, title: "Radio", subtitle: nil),
+            items: realRadio.stations.values
+                .filter { !nonPersistedRealStations.contains($0.id) }
+                .map { station in
+                    Media(
+                        id: .realRadio(station.id),
+                        meta: .init(station)
+                    )
+                }
+        )
+        return persistedSimRadioMedia + [persistedRealRadioMedia]
     }
 
     func load() async {

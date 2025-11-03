@@ -59,9 +59,15 @@ private extension LibraryScreen {
                 spacing: 16
             ) {
                 ForEach(viewModel.recentlyAdded) { item in
-                    RecentlyAddedItem(item: item)
+                    RecentlyAddedItem(label: item.label)
                         .onTapGesture {
-                            router.navigateToMedia(items: item.items, listMeta: item.meta)
+                            switch item {
+                            case let .mediaList(list):
+                                router.navigateToMedia(items: list.items, listMeta: list.meta)
+                            case let .mediaItem(item):
+                                router.navigateToMedia(item: item)
+                            }
+//                            router.navigateToMedia(items: item.items, listMeta: item.meta)
                         }
                 }
             }
@@ -88,17 +94,17 @@ private extension LibraryScreen {
 }
 
 private struct RecentlyAddedItem: View {
-    let item: MediaList
+    let label: LibraryItem.Label
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            ArtworkView(.radio(item.meta.artwork))
+            ArtworkView(label.artwork)
             VStack(alignment: .leading, spacing: 0) {
-                Text(item.meta.title)
+                Text(label.title)
                     .font(.system(size: 13, weight: .medium))
                     .lineLimit(1)
 
-                Text(item.meta.subtitle ?? "")
+                Text(label.subtitle ?? "")
                     .font(.appFont.mediaListItemSubtitle)
                     .foregroundStyle(Color(.palette.textSecondary))
                     .lineLimit(1)

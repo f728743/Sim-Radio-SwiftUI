@@ -11,8 +11,16 @@ import Observation
 class LibraryScreenViewModel {
     var mediaState: MediaState?
 
-    var recentlyAdded: [MediaList] {
+    var recentlyAdded: [LibraryItem] {
         guard let mediaState else { return [] }
-        return mediaState.persistedMediaList
+        let mediaList = mediaState.persistedMediaList
+
+        let simSeriesItems = mediaList
+            .filter(\.id.isSimRadioSeries)
+            .map { LibraryItem.mediaList($0) }
+        let realRadioItems = mediaList
+            .filter(\.id.isRealRadioList)
+            .flatMap { $0.items.map { LibraryItem.mediaItem($0) } }
+        return simSeriesItems + realRadioItems
     }
 }

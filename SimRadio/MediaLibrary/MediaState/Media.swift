@@ -12,56 +12,32 @@ struct Media: Identifiable, Hashable, Equatable {
     let meta: MediaMeta
 }
 
-struct MediaPlaybackMode: Identifiable {
-    struct ID: Hashable {
-        let value: String
-    }
-
-    let id: ID
-    let title: String
-}
-
-struct MediaMeta: Equatable, Hashable {
-    let artwork: URL?
-    let title: String
-    let subtitle: String?
-    let description: String?
-    let artist: String?
-    let genre: String?
-    let isLiveStream: Bool
-}
-
-enum MediaListID: Hashable, Equatable {
-    case emptyMediaListID
-    case simRadioSeries(SimGameSeries.ID)
-    case realRadioList
-}
-
 enum MediaID: Hashable {
     case simRadio(SimStation.ID)
     case realRadio(RealStation.ID)
 }
 
-struct MediaList: Identifiable, Hashable, Equatable {
-    let id: MediaListID
-    let meta: Meta
-    let items: [Media]
-
-    struct Meta: Hashable, Equatable {
-        let artwork: URL?
-        let title: String
-        let subtitle: String?
+extension MediaID {
+    var isSimRadio: Bool {
+        switch self {
+        case .simRadio: true
+        default: false
+        }
     }
-}
 
-extension MediaList {
-    static let empty: MediaList = .init(
-        id: .emptyMediaListID,
-        meta: .init(
-            artwork: nil,
-            title: "",
-            subtitle: nil
-        ),
-        items: []
-    )
+    var isRealRadio: Bool {
+        switch self {
+        case .realRadio: true
+        default: false
+        }
+    }
+
+    var asString: String {
+        switch self {
+        case let .simRadio(id):
+            "simRadio.\(id)"
+        case let .realRadio(id):
+            "realRadio.\(id)"
+        }
+    }
 }

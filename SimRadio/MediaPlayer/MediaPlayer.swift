@@ -251,15 +251,6 @@ extension MediaPlayerState {
     }
 }
 
-extension MediaID {
-    var isSimRadio: Bool {
-        switch self {
-        case .simRadio: true
-        default: false
-        }
-    }
-}
-
 // MARK: - AudioSessionDelegate Implementation
 
 extension MediaPlayer: AudioSessionDelegate {

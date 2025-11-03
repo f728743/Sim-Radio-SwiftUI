@@ -25,10 +25,13 @@ protocol MediaState: AnyObject {
 
 extension MediaState {
     func metaOfMedia(withID id: MediaID) -> MediaMeta? {
+        media(withID: id)?.meta
+    }
+    
+    func media(withID id: MediaID) -> Media? {
         mediaList
             .flatMap(\.items)
-            .first { $0.id == id }?
-            .meta
+            .first { $0.id == id }
     }
 }
 

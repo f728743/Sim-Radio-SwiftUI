@@ -57,6 +57,7 @@ private struct RouterViewModifier: ViewModifier {
                 .environment(router)
                 .navigationDestination(for: Route.self) { route in
                     RoutedView(route: route)
+                        .environment(router)
                 }
         }
     }

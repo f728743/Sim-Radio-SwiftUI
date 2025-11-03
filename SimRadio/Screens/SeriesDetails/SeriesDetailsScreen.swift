@@ -9,6 +9,7 @@ import Kingfisher
 import SwiftUI
 
 struct SeriesDetailsScreen: View {
+    @Environment(Router.self) var router
     @Environment(Dependencies.self) var dependencies
     @State private var viewModel: SeriesDetailsScreenViewModel
     @State var scrollOffset: CGFloat = 0
@@ -78,7 +79,10 @@ private extension SeriesDetailsScreen {
 
                     SeriesDetailsFoundStations(
                         series: viewModel.series,
-                        onTap: viewModel.playStation
+                        onTap: { station in
+                            guard let item = viewModel.media(station.id) else { return }
+                            router.navigateToMedia(item: item)                            
+                        }
                     )
                     .padding(.top, 47)
 

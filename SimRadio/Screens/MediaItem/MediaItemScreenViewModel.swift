@@ -43,6 +43,11 @@ class MediaItemScreenViewModel {
         guard let player else { return }
         player.play(media, of: [item.id], mode: nil)
     }
+
+    func onPlay() {
+        guard let player else { return }
+        player.play(item.id, of: [item.id], mode: nil)
+    }
 }
 
 private extension MediaItemScreenViewModel {

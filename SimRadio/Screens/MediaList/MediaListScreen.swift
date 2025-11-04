@@ -37,7 +37,13 @@ private extension MediaListScreen {
                         title: listMeta.title,
                         subtitle: listMeta.subtitle,
                         artwork: .album(listMeta.artwork)
-                    )
+                    ),
+                    onEvent: { event in
+                        switch event {
+                        case .play: viewModel.onPlay()
+                        case .shuffle: viewModel.onShuffle()
+                        }
+                    }
                 )
                 .padding(.top, 7)
                 .padding(.bottom, 26)

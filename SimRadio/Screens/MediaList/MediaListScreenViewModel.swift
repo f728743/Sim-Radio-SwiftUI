@@ -40,6 +40,19 @@ class MediaListScreenViewModel {
         player.play(media, of: items.map(\.id), mode: nil)
     }
 
+    func onPlay() {
+        guard let player, let item = items.first else { return }
+        player.play(item.id, of: items.map(\.id), mode: nil)
+    }
+
+    func onShuffle() {
+        guard let player, !items.isEmpty else { return }
+        let shuffledItems = items.map(\.id).shuffled()
+        guard let itemID = shuffledItems.first else { return }
+
+        player.play(itemID, of: shuffledItems, mode: nil)
+    }
+
     func swipeButtons(media: Media.ID) -> [SwipeButton] {
         switch downloadStatus(for: media)?.state {
         case .completed: [.delete]

@@ -38,7 +38,10 @@ private extension MediaItemScreen {
                     title: meta.title,
                     subtitle: meta.subtitle,
                     artwork: .radio(meta.artwork)
-                )
+                ),
+                onEvent: { _ in
+                    viewModel.onPlay()
+                }
             )
             .listRowInsets(.rowInsets)
             .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }

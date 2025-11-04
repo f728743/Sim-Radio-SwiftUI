@@ -8,7 +8,13 @@
 import SwiftUI
 
 struct MediaListHeaderView: View {
+    enum Event {
+        case play
+        case shuffle
+    }
+
     let item: LibraryItem.Label
+    let onEvent: (Event) -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,14 +45,14 @@ private extension MediaListHeaderView {
     var buttons: some View {
         HStack(spacing: 16) {
             Button {
-                print("Play")
+                onEvent(.play)
             }
             label: {
                 buttonLabel("Play", systemImage: "play.fill")
             }
 
             Button {
-                print("Shuffle")
+                onEvent(.shuffle)
             }
             label: {
                 buttonLabel("Shuffle", systemImage: "shuffle")
@@ -73,7 +79,8 @@ private extension MediaListHeaderView {
             title: item.meta.title,
             subtitle: item.meta.subtitle,
             artwork: .radio(item.meta.artwork)
-        )
+        ),
+        onEvent: { _ in }
     )
     .environment(dependencies)
 }

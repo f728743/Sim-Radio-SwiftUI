@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MediaListHeaderView: View {
     let item: LibraryItem.Label
-    
+
     var body: some View {
         VStack(spacing: 0) {
             ArtworkView(

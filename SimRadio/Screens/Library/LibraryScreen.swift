@@ -67,7 +67,6 @@ private extension LibraryScreen {
                             case let .mediaItem(item):
                                 router.navigateToMedia(item: item)
                             }
-//                            router.navigateToMedia(items: item.items, listMeta: item.meta)
                         }
                 }
             }

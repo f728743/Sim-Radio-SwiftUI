@@ -42,10 +42,11 @@ private extension MediaItemScreen {
             )
             .listRowInsets(.rowInsets)
             .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
-            .alignmentGuide(.listRowSeparatorTrailing) { $0[.trailing] + ViewConst.screenPaddings}
+            .alignmentGuide(.listRowSeparatorTrailing) { $0[.trailing] + ViewConst.screenPaddings }
+            .listSectionSeparator(.hidden, edges: .top)
             .padding(.top, 14)
             .padding(.bottom, 25)
-                                    
+
             ItemView(
                 model: .init(
                     title: viewModel.item.meta.title,
@@ -56,7 +57,7 @@ private extension MediaItemScreen {
             )
             .listRowInsets(.rowInsets)
             .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
-            .alignmentGuide(.listRowSeparatorTrailing) { $0[.trailing] + ViewConst.screenPaddings}
+            .alignmentGuide(.listRowSeparatorTrailing) { $0[.trailing] + ViewConst.screenPaddings }
             .onTapGesture {
                 viewModel.onSelect(media: item.id)
                 selection = item.id
@@ -76,6 +77,7 @@ private struct ItemView: View {
         var downloadStatus: MediaDownloadStatus?
         var activity: MediaActivity?
     }
+
     let model: Model
     let index: Int
 

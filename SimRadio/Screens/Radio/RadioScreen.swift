@@ -34,19 +34,11 @@ private extension RadioScreen {
     }
 
     var empty: some View {
-        VStack(spacing: 0) {
-            Image(systemName: "dot.radiowaves.left.and.right")
-                .font(.system(size: 48))
-                .foregroundStyle(Color(.palette.stroke))
-            Text("No radio stations added")
-                .font(.system(size: 22, weight: .semibold))
-                .padding(.top, 16)
-            Text("Add radio stations to come back to them later and they'll show up here.")
-                .font(.system(size: 17, weight: .regular))
-                .padding(.top, 8)
-                .foregroundStyle(Color(.palette.textTertiary))
-        }
-        .multilineTextAlignment(.center)
+        EmptyScreenView(
+            imageSystemName: "dot.radiowaves.left.and.right",
+            title: "No radio stations added",
+            description: "Add radio stations to come back to them later and they'll show up here."
+        )
     }
 }
 

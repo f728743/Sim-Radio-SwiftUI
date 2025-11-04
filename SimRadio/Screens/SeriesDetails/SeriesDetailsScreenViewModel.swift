@@ -47,10 +47,10 @@ class SeriesDetailsScreenViewModel {
             playStation(station.id, of: otherStations)
         }
     }
-    
+
     func media(_ stationID: String) -> Media? {
         guard let url = URL(string: series.url) else { return nil }
-        let result = mediaState?.media(withID: .media(stationID, url: url))              
+        let result = mediaState?.media(withID: .media(stationID, url: url))
         return result
     }
 }

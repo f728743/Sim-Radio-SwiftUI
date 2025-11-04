@@ -34,19 +34,11 @@ private extension SimRadioScreen {
     }
 
     var empty: some View {
-        VStack(spacing: 0) {
-            Image(systemName: "gamecontroller")
-                .font(.system(size: 48))
-                .foregroundStyle(Color(.palette.stroke))
-            Text("No sim radio stations added")
-                .font(.system(size: 22, weight: .semibold))
-                .padding(.top, 16)
-            Text("Add sim radio stations to come back to them later and they'll show up here.")
-                .font(.system(size: 17, weight: .regular))
-                .padding(.top, 8)
-                .foregroundStyle(Color(.palette.textTertiary))
-        }
-        .multilineTextAlignment(.center)
+        EmptyScreenView(
+            imageSystemName: "gamecontroller",
+            title: "No sim radio stations added",
+            description: "Add sim radio stations to come back to them later and they'll show up here."
+        )
     }
 }
 

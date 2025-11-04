@@ -27,7 +27,7 @@ extension MediaState {
     func metaOfMedia(withID id: MediaID) -> MediaMeta? {
         media(withID: id)?.meta
     }
-    
+
     func media(withID id: MediaID) -> Media? {
         mediaList
             .flatMap(\.items)

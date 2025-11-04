@@ -81,7 +81,7 @@ private extension SeriesDetailsScreen {
                         series: viewModel.series,
                         onTap: { station in
                             guard let item = viewModel.media(station.id) else { return }
-                            router.navigateToMedia(item: item)                            
+                            router.navigateToMedia(item: item)
                         }
                     )
                     .padding(.top, 47)

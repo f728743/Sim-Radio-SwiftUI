@@ -34,19 +34,11 @@ private extension DownloadedScreen {
     }
 
     var empty: some View {
-        VStack(spacing: 0) {
-            Image(systemName: "icloud.and.arrow.down")
-                .font(.system(size: 48))
-                .foregroundStyle(Color(.palette.stroke))
-            Text("Download Sim Stations to Listen to Offline")
-                .font(.system(size: 22, weight: .semibold))
-                .padding(.top, 16)
-            Text("Downloaded Stations will appear here.")
-                .font(.system(size: 17, weight: .regular))
-                .padding(.top, 8)
-                .foregroundStyle(Color(.palette.textTertiary))
-        }
-        .multilineTextAlignment(.center)
+        EmptyScreenView(
+            imageSystemName: "icloud.and.arrow.down",
+            title: "Download Sim Stations to Listen to Offline",
+            description: "Downloaded Stations will appear here."
+        )
     }
 }
 

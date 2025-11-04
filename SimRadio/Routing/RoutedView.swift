@@ -16,6 +16,8 @@ struct RoutedView: View {
             MediaListScreen(items: items, listMeta: listMeta)
         case let .mediaItem(item):
             MediaItemScreen(item: item)
+        case .simRadio:
+            SimRadioScreen()
         case .simRadioAllStations:
             SimRadioAllStationsScreen()
         case .radio:

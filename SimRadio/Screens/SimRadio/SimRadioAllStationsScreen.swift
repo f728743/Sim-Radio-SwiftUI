@@ -13,7 +13,7 @@ struct SimRadioAllStationsScreen: View {
 
     var body: some View {
         content
-            .navigationTitle("Sim Radio")
+            .navigationTitle("All Sim Stations")
             .task {
                 viewModel.mediaState = dependencies.mediaState
             }
@@ -35,7 +35,7 @@ private extension SimRadioAllStationsScreen {
 
     var empty: some View {
         EmptyScreenView(
-            imageSystemName: "gamecontroller",
+            systemImage: "gamecontroller",
             title: "No sim radio stations added",
             description: "Add sim radio stations to come back to them later and they'll show up here."
         )

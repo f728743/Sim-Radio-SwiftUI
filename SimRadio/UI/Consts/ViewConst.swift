@@ -14,14 +14,7 @@ extension ViewConst {
     static let playerCardPaddings: CGFloat = 32
     static let screenPaddings: CGFloat = 20
     static let itemPeekAmount: CGFloat = 36
-    static let tabbarHeight: CGFloat = safeAreaInsets.bottom + 92
-    static var compactNowPlayingHeight: CGFloat {
-        if #available(iOS 26.0, *) {
-            48
-        } else {
-            56
-        }
-    }
+    static let compactNowPlayingHeight: CGFloat = 48
 
     static var safeAreaInsets: EdgeInsets {
         MainActor.assumeIsolated {

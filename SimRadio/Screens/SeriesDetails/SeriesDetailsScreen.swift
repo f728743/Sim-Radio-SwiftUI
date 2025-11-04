@@ -29,8 +29,8 @@ struct SeriesDetailsScreen: View {
         } action: { _, newValue in
             scrollOffset = newValue
         }
-        .contentMargins(.bottom, 200, for: .scrollContent)
-        .ignoresSafeArea()
+        .contentMargins(.bottom, ViewConst.screenPaddings, for: .scrollContent)
+        .ignoresSafeArea(edges: [.top])
         .task {
             viewModel.mediaState = dependencies.mediaState
             viewModel.mediaPlayer = dependencies.mediaPlayer

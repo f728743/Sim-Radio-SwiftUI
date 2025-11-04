@@ -35,7 +35,7 @@ private extension RadioScreen {
 
     var empty: some View {
         EmptyScreenView(
-            imageSystemName: "dot.radiowaves.left.and.right",
+            systemImage: "dot.radiowaves.left.and.right",
             title: "No radio stations added",
             description: "Add radio stations to come back to them later and they'll show up here."
         )

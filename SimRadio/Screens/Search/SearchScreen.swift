@@ -68,6 +68,7 @@ private extension SearchScreen {
                     )
                 }
                 .listStyle(.plain)
+                .contentMargins(.bottom, ViewConst.screenPaddings, for: .scrollContent)
             }
         }
         .background(Color(.systemBackground))

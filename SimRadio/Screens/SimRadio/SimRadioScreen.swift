@@ -1,46 +1,33 @@
 //
-//  LibraryScreen.swift
+//  SimRadioScreen.swift
 //  SimRadio
 //
-//  Created by Alexey Vorobyov on 06.04.2025.
+//  Created by Alexey Vorobyov on 24.09.2025.
 //
 
-import Kingfisher
 import SwiftUI
 
-struct LibraryScreen: View {
+struct SimRadioScreen: View {
     @Environment(Router.self) var router
     @Environment(Dependencies.self) var dependencies
-    @State private var viewModel = LibraryScreenViewModel()
+    @State private var viewModel = SimRadioScreenViewModel()
 
     var body: some View {
         List {
-            NavigationLink(title: "Sim Radio", systemImage: "gamecontroller")
+            NavigationLink(title: "All Sim Stations", systemImage: "play.square.stack")
                 .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
                 .listSectionSeparator(.hidden, edges: .top)
                 .onTapGesture {
-                    router.navigateToSimRadio()
+                    router.navigateToSimRadioAllStations()
                 }
 
-            NavigationLink(title: "Radio", systemImage: "dot.radiowaves.left.and.right")
-                .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
-                .onTapGesture {
-                    router.navigateToRadio()
-                }
-
-            NavigationLink(title: "Downloaded", systemImage: "arrow.down.circle")
-                .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
-                .onTapGesture {
-                    router.navigateToDownloaded()
-                }
-
-            recentlyAdded
+            simSeries
                 .listRowInsets(.init(top: 25, leading: 20, bottom: 0, trailing: 20))
                 .listSectionSeparator(.hidden, edges: .bottom)
         }
         .listStyle(.plain)
         .contentMargins(.bottom, ViewConst.screenPaddings, for: .scrollContent)
-        .navigationTitle("Library")
+        .navigationTitle("Sim Radio")
         .toolbarTitleDisplayMode(.inlineLarge)
         .task {
             viewModel.mediaState = dependencies.mediaState
@@ -48,11 +35,11 @@ struct LibraryScreen: View {
     }
 }
 
-private extension LibraryScreen {
-    var recentlyAdded: some View {
+private extension SimRadioScreen {
+    var simSeries: some View {
         LibraryItemsGrid(
-            title: "Recently Added",
-            items: viewModel.recentlyAdded,
+            title: "Sim Series",
+            items: viewModel.simSeries,
             onTap: { item in
                 switch item {
                 case let .mediaList(list):
@@ -68,7 +55,7 @@ private extension LibraryScreen {
 #Preview {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
-    LibraryScreen()
+    SimRadioScreen()
         .withRouter()
         .environment(dependencies)
         .environment(playerController)

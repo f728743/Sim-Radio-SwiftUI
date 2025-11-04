@@ -65,7 +65,7 @@ class SearchScreenViewModel {
         searchTask = Task { @MainActor in
             do {
                 isLoading = true
-                try await Task.sleep(nanoseconds: 500_000_000)
+                try await Task.sleep(for: .milliseconds(500))
 
                 guard !Task.isCancelled else {
                     return

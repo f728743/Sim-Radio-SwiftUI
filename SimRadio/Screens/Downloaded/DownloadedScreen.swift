@@ -35,7 +35,7 @@ private extension DownloadedScreen {
 
     var empty: some View {
         EmptyScreenView(
-            imageSystemName: "icloud.and.arrow.down",
+            systemImage: "icloud.and.arrow.down",
             title: "Download Sim Stations to Listen to Offline",
             description: "Downloaded Stations will appear here."
         )

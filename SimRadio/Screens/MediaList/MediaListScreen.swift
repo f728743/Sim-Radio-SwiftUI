@@ -21,8 +21,6 @@ struct MediaListScreen: View {
 
     var body: some View {
         content
-            .contentMargins(.bottom, ViewConst.tabbarHeight + 27, for: .scrollContent)
-            .contentMargins(.bottom, ViewConst.tabbarHeight, for: .scrollIndicators)
             .task {
                 viewModel.mediaState = dependencies.mediaState
                 viewModel.player = dependencies.mediaPlayer
@@ -56,6 +54,7 @@ private extension MediaListScreen {
                 .listSectionSeparator(.hidden, edges: .bottom)
         }
         .listStyle(.plain)
+        .contentMargins(.bottom, ViewConst.screenPaddings, for: .scrollContent)
     }
 
     var list: some View {

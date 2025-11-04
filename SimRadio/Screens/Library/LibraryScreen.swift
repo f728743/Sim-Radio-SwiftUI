@@ -19,7 +19,7 @@ struct LibraryScreen: View {
                 .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
                 .listSectionSeparator(.hidden, edges: .top)
                 .onTapGesture {
-                    router.navigateToSimRadio()
+                    router.navigateToSimRadioAllStations()
                 }
 
             navigationLink(title: "Radio", icon: "dot.radiowaves.left.and.right")

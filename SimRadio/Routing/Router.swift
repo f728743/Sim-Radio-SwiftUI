@@ -11,7 +11,7 @@ enum Route: Hashable, Equatable {
     case mediaList(_ items: [Media], listMeta: MediaList.Meta?)
     case mediaItem(_ item: Media)
     case downloaded
-    case simRadio
+    case simRadioAllStations
     case radio
     case seriesSearchResult(series: APISimRadioSeriesDTO)
 }
@@ -32,8 +32,8 @@ class Router {
         path.append(Route.radio)
     }
 
-    func navigateToSimRadio() {
-        path.append(Route.simRadio)
+    func navigateToSimRadioAllStations() {
+        path.append(Route.simRadioAllStations)
     }
 
     func navigateToDownloaded() {

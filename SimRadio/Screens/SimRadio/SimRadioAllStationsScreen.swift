@@ -1,5 +1,5 @@
 //
-//  SimRadioScreen.swift
+//  SimRadioAllStationsScreen.swift
 //  SimRadio
 //
 //  Created by Alexey Vorobyov on 24.09.2025.
@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-struct SimRadioScreen: View {
+struct SimRadioAllStationsScreen: View {
     @Environment(Dependencies.self) var dependencies
-    @State private var viewModel = SimRadioScreenViewModel()
+    @State private var viewModel = SimRadioAllStationsScreenViewModel()
 
     var body: some View {
         content
@@ -20,7 +20,7 @@ struct SimRadioScreen: View {
     }
 }
 
-private extension SimRadioScreen {
+private extension SimRadioAllStationsScreen {
     @ViewBuilder
     var content: some View {
         if viewModel.items.isEmpty {
@@ -44,6 +44,6 @@ private extension SimRadioScreen {
 
 #Preview {
     @Previewable @State var dependencies = Dependencies.stub
-    RadioScreen()
+    SimRadioAllStationsScreen()
         .environment(dependencies)
 }

@@ -24,10 +24,10 @@ class VolumeSliderViewModel: ObservableObject {
     private func observeVolumeChanges() {
         volumeObservation = audioSession.observe(\.outputVolume, options: [.new, .initial]) { [weak self] _, change in
             guard let self, let newVolume = change.newValue else { return }
-            DispatchQueue.main.async {
-                guard !self.isSliderActive else { return }
+            Task { @MainActor [weak self] in
+                guard let self, !self.isSliderActive else { return }
                 let value = Double(newVolume)
-                if abs(self.currentVolume - value) > 0.001 {
+                if abs(currentVolume - value) > 0.001 {
                     withAnimation {
                         self.currentVolume = value
                     }

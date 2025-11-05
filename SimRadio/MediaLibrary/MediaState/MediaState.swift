@@ -9,8 +9,7 @@ import Foundation
 
 @MainActor
 protocol MediaState: AnyObject {
-    var mediaList: [MediaList] { get }
-    var persistedMediaList: [MediaList] { get }
+    func mediaList(persisted: Bool) -> [MediaList]
     var downloadedMedia: [Media] { get }
     var downloadStatus: [MediaID: MediaDownloadStatus] { get }
 
@@ -29,7 +28,7 @@ extension MediaState {
     }
 
     func media(withID id: MediaID) -> Media? {
-        mediaList
+        mediaList(persisted: false)
             .flatMap(\.items)
             .first { $0.id == id }
     }
@@ -38,7 +37,7 @@ extension MediaState {
 extension MediaState {
     var defaultPlayItems: (media: MediaID, items: [MediaID])? {
         guard
-            let list = mediaList.filter({ !$0.items.isEmpty }).randomElement(),
+            let list = mediaList(persisted: false).filter({ !$0.items.isEmpty }).randomElement(),
             let item = list.items.randomElement()
         else { return nil }
         return (item.id, list.items.map(\.id))

@@ -15,4 +15,5 @@ struct MediaMeta: Equatable, Hashable {
     let artist: String?
     let genre: String?
     let isLiveStream: Bool
+    let timestamp: Date?
 }

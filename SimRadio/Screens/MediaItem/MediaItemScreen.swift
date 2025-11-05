@@ -112,7 +112,7 @@ private struct ItemView: View {
 #Preview {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub
-    let item: Media = dependencies.mediaState.mediaList.first!.items.first!
+    let item: Media = dependencies.mediaState.mediaList(persisted: false).first!.items.first!
     MediaItemScreen(item: item)
         .environment(dependencies)
         .environment(playerController)

@@ -126,8 +126,8 @@ private extension MediaListScreen {
     @Previewable @State var dependencies = Dependencies.stub
 
     MediaListScreen(
-        items: dependencies.mediaState.mediaList.first?.items ?? [],
-        listMeta: dependencies.mediaState.mediaList.first?.meta
+        items: dependencies.mediaState.mediaList(persisted: false).first?.items ?? [],
+        listMeta: dependencies.mediaState.mediaList(persisted: false).first?.meta
     )
     .environment(dependencies)
 }

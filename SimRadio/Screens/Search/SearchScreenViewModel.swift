@@ -30,7 +30,7 @@ class SearchScreenViewModel {
 
     func add(_ dto: APIRealStationDTO) {
         Task {
-            guard let realStation = RealStation(dto) else { return }
+            guard let realStation = RealStation(dto, timestamp: Date()) else { return }
             try await mediaState?.addRealRadio([realStation], persisted: true)
         }
     }
@@ -39,12 +39,12 @@ class SearchScreenViewModel {
         Task {
             let allStations = items.compactMap {
                 if case let .realStation(station) = $0 {
-                    return RealStation(station)
+                    return RealStation(station, timestamp: nil)
                 }
                 return nil
             }
 
-            guard let realStation = RealStation(dto) else { return }
+            guard let realStation = RealStation(dto, timestamp: nil) else { return }
             try await mediaState?.addRealRadio(allStations, persisted: false)
             mediaPlayer?.play(.realRadio(realStation.id), of: allStations.map { .realRadio($0.id) })
         }

@@ -73,7 +73,7 @@ private extension MediaListHeaderView {
 
 #Preview {
     @Previewable @State var dependencies = Dependencies.stub
-    let item: Media = dependencies.mediaState.mediaList.first!.items.first!
+    let item: Media = dependencies.mediaState.mediaList(persisted: false).first!.items.first!
     MediaListHeaderView(
         item: .init(
             title: item.meta.title,

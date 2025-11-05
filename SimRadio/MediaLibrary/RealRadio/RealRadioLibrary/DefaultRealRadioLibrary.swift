@@ -45,7 +45,7 @@ private extension DefaultRealRadioLibrary {
         delegate?.realRadioLibrary(
             self,
             didChange: RealRadioMedia(
-                stations: curren.stations.merging(stationsToAdd) { _, new in new },
+                stations: curren.stations.merging(stationsToAdd) { old, _ in old },
             ),
             nonPersistedStations: nonPersistedStations
         )
@@ -56,7 +56,7 @@ private extension DefaultRealRadioLibrary {
         let data = try JSONEncoder().encode(station)
         let json = String(data: data, encoding: .utf8)
 
-        let managedObject = Station(context: context)
+        let managedObject = ManagedStation(context: context)
         managedObject.id = station.id.stationUUID
         managedObject.name = station.title
         managedObject.tags = station.tags
@@ -70,7 +70,7 @@ extension DefaultRealRadioLibrary: RealRadioLibrary {
         guard let context = dataController?.container.viewContext,
               let mediaState else { return }
         let curren = mediaState.realRadio
-        let fetchRequest: NSFetchRequest<Station> = Station.fetchRequest()
+        let fetchRequest: NSFetchRequest<ManagedStation> = ManagedStation.fetchRequest()
         do {
             let managedObjects = try context.fetch(fetchRequest)
             let stations = managedObjects.compactMap { RealStation(from: $0) }
@@ -78,7 +78,7 @@ extension DefaultRealRadioLibrary: RealRadioLibrary {
             let stationIDs = Set(stations.map(\.id))
 
             let newMediaState = RealRadioMedia(
-                stations: curren.stations.merging(stationDictionary) { _, new in new },
+                stations: curren.stations.merging(stationDictionary) { old, _ in old },
             )
 
             let newNonPersistedRealStations = mediaState.nonPersistedRealStations.filter { !stationIDs.contains($0) }
@@ -99,7 +99,7 @@ extension DefaultRealRadioLibrary: RealRadioLibrary {
 }
 
 extension RealStation {
-    init?(from managedObject: Station) {
+    init?(from managedObject: ManagedStation) {
         guard
             let json = managedObject.data.map({ Data($0.utf8) }),
             let series = try? JSONDecoder().decode(RealStation.self, from: json)

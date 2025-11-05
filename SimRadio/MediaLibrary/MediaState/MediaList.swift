@@ -16,6 +16,7 @@ struct MediaList: Identifiable, Hashable, Equatable {
         let artwork: URL?
         let title: String
         let subtitle: String?
+        let timestamp: Date?
     }
 }
 
@@ -25,7 +26,8 @@ extension MediaList {
         meta: .init(
             artwork: nil,
             title: "",
-            subtitle: nil
+            subtitle: nil,
+            timestamp: nil
         ),
         items: []
     )

@@ -19,6 +19,7 @@ struct RealStation: Codable {
     let votes: Int?
     let clickCount: Int?
     let clickTrend: Int?
+    let timestamp: Date?
 
     struct ID: Codable, Hashable {
         let stationUUID: String
@@ -26,7 +27,7 @@ struct RealStation: Codable {
 }
 
 extension RealStation {
-    init?(_ dto: APIRealStationDTO) {
+    init?(_ dto: APIRealStationDTO, timestamp: Date?) {
         guard let stream = URL(string: dto.url),
               let streamResolved = URL(string: dto.urlResolved)
         else { return nil }
@@ -41,7 +42,8 @@ extension RealStation {
             country: dto.country,
             votes: dto.votes,
             clickCount: dto.clickcount,
-            clickTrend: dto.clicktrend
+            clickTrend: dto.clicktrend,
+            timestamp: timestamp
         )
     }
 }

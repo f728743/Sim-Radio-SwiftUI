@@ -13,7 +13,7 @@ class LibraryScreenViewModel {
 
     var recentlyAdded: [LibraryItem] {
         guard let mediaState else { return [] }
-        let mediaList = mediaState.persistedMediaList
+        let mediaList = mediaState.mediaList(persisted: true)
 
         let simSeriesItems = mediaList
             .filter(\.id.isSimRadioSeries)
@@ -21,6 +21,8 @@ class LibraryScreenViewModel {
         let realRadioItems = mediaList
             .filter(\.id.isRealRadioList)
             .flatMap { $0.items.map { LibraryItem.mediaItem($0) } }
-        return simSeriesItems + realRadioItems
+
+        let result = (simSeriesItems + realRadioItems).sorted { $0.timestamp > $1.timestamp }
+        return result
     }
 }

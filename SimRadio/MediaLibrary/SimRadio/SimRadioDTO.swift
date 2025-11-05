@@ -166,7 +166,7 @@ enum SimRadioDTO {
 }
 
 extension SimStationMeta {
-    init(origin: URL, data: SimRadioDTO.StationMeta) {
+    init(origin: URL, data: SimRadioDTO.StationMeta, timestamp: Date?) {
         let logo = origin
             .deletingLastPathComponent()
             .appendingPathComponent(data.logo)
@@ -175,7 +175,8 @@ extension SimStationMeta {
             title: data.title,
             logo: logo,
             genre: data.genre,
-            host: data.host
+            host: data.host,
+            timestamp: timestamp
         )
     }
 }

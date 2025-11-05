@@ -323,7 +323,8 @@ extension MediaState {
             description: marker?.artist ?? meta.description,
             artist: marker?.artist ?? meta.artist,
             genre: marker != nil ? nil : meta.genre,
-            isLiveStream: meta.isLiveStream
+            isLiveStream: meta.isLiveStream,
+            timestamp: meta.timestamp
         )
     }
 }

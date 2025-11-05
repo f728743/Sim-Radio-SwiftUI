@@ -17,7 +17,8 @@ extension SimRadioMedia {
                     title: $0.title,
                     logo: stationImageUrl(String($0.logo.split(separator: ".")[0])),
                     genre: $0.genre,
-                    host: $0.dj
+                    host: $0.dj,
+                    timestamp: nil
                 ),
                 trackLists: [],
                 playlistRules: .init(
@@ -36,7 +37,8 @@ extension SimRadioMedia {
                     meta: .init(
                         artwork: stationGroupImageUrl(),
                         title: "GTA V Radio",
-                        subtitle: nil
+                        subtitle: nil,
+                        timestamp: nil
                     ),
                     stationsIDs: stations.map(\.id)
                 )
@@ -55,7 +57,8 @@ extension MediaList {
             meta: .init(
                 artwork: stationGroupImageUrl(),
                 title: "GTA V Radio",
-                subtitle: nil
+                subtitle: nil,
+                timestamp: nil
             ),
             items: gta5stations.map { data in
                 Media(
@@ -67,7 +70,8 @@ extension MediaList {
                         description: data.dj.map { "Hosted by \($0) – \(data.genre)" } ?? data.genre,
                         artist: data.dj,
                         genre: data.genre,
-                        isLiveStream: false
+                        isLiveStream: false,
+                        timestamp: nil
                     )
                 )
             }

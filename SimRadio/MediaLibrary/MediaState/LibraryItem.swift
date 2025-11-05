@@ -5,6 +5,8 @@
 //  Created by Alexey Vorobyov on 03.11.2025.
 //
 
+import Foundation
+
 enum LibraryItem: Identifiable {
     var id: String {
         switch self {
@@ -38,6 +40,15 @@ extension LibraryItem {
                 subtitle: media.meta.subtitle,
                 artwork: .radio(media.meta.artwork)
             )
+        }
+    }
+
+    var timestamp: Date {
+        switch self {
+        case let .mediaList(mediaList):
+            mediaList.meta.timestamp ?? Date()
+        case let .mediaItem(media):
+            media.meta.timestamp ?? Date()
         }
     }
 }

@@ -12,7 +12,7 @@ import SwiftUI
 class SimRadioAllStationsScreenViewModel {
     var mediaState: MediaState?
     var items: [Media] {
-        let res = (mediaState?.persistedMediaList ?? [])
+        let res = (mediaState?.mediaList(persisted: true) ?? [])
             .flatMap(\.items)
             .filter(\.id.isSimRadio)
         return res

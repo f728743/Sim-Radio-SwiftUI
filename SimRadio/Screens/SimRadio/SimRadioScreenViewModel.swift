@@ -13,7 +13,7 @@ class SimRadioScreenViewModel {
     var mediaState: MediaState?
     var simSeries: [LibraryItem] {
         guard let mediaState else { return [] }
-        let mediaList = mediaState.persistedMediaList
+        let mediaList = mediaState.mediaList(persisted: true)
         let items = mediaList
             .filter(\.id.isSimRadioSeries)
             .map { LibraryItem.mediaList($0) }

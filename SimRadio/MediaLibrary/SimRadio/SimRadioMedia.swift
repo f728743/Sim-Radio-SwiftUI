@@ -36,6 +36,7 @@ struct SimStationMeta: Codable {
     let logo: URL?
     let genre: String
     let host: String?
+    let timestamp: Date?
 }
 
 struct SimStation {
@@ -183,8 +184,8 @@ extension SimRadioMedia {
         case missing
     }
 
-    init(origin: URL, dto: SimRadioDTO.GameSeries) {
-        let series = SimGameSeries(origin: origin, dto: dto)
+    init(origin: URL, dto: SimRadioDTO.GameSeries, timestamp: Date?) {
+        let series = SimGameSeries(origin: origin, dto: dto, timestamp: timestamp)
         let trackLists: [TrackList] = dto.trackLists.map { trackListDTO in
             .init(
                 id: .init(series: .init(origin: origin), value: trackListDTO.id.value),
@@ -210,7 +211,7 @@ extension SimRadioMedia {
                 guard let seriesMedia = dto.stations.first(where: { $0.id == station.id }) else { return nil }
                 return SimStation(
                     id: .init(series: .init(origin: origin), value: station.id.value),
-                    meta: .init(origin: origin, data: station.meta),
+                    meta: .init(origin: origin, data: station.meta, timestamp: timestamp),
                     trackLists: seriesMedia.trackLists.map {
                         .init(series: .init(origin: origin), value: $0.value)
                     },
@@ -283,7 +284,7 @@ extension SimRadioMedia {
 }
 
 extension SimGameSeries {
-    init(origin: URL, dto: SimRadioDTO.GameSeries) {
+    init(origin: URL, dto: SimRadioDTO.GameSeries, timestamp: Date?) {
         let logo = origin
             .deletingLastPathComponent()
             .appendingPathComponent(dto.meta.logo)
@@ -293,7 +294,8 @@ extension SimGameSeries {
             meta: .init(
                 artwork: logo,
                 title: dto.meta.title,
-                subtitle: dto.meta.subtitle
+                subtitle: dto.meta.subtitle,
+                timestamp: timestamp
             ),
             stationsIDs: dto.stations.map {
                 .init(series: .init(origin: origin), value: $0.id.value)

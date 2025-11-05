@@ -98,7 +98,11 @@ extension DefaultSimRadioLibrary: SimRadioLibrary {
         let seriesJSON = try await URLSession.shared.data(from: url)
         let series = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: seriesJSON.0)
 
-        let newSimRadio = SimRadioMedia(origin: url, dto: series)
+        let newSimRadio = SimRadioMedia(
+            origin: url,
+            dto: series,
+            timestamp: persisted ? Date() : nil
+        )
         guard newSimRadio.series.keys.count == 1,
               let seriesID = newSimRadio.series.keys.first
         else { return }
@@ -194,7 +198,15 @@ private extension DefaultSimRadioLibrary {
         let seriesJSON = try await URLSession.shared.data(from: fileURL)
         let series = try JSONDecoder().decode(SimRadioDTO.GameSeries.self, from: seriesJSON.0)
         guard let url = series.origin.map({ URL(string: $0) }) ?? nil else { return }
-        addToLibrary(SimRadioMedia(origin: url, dto: series), persisted: true)
+        let resourceValues = try fileURL.resourceValues(forKeys: [.creationDateKey])
+        addToLibrary(
+            SimRadioMedia(
+                origin: url,
+                dto: series,
+                timestamp: resourceValues.creationDate
+            ),
+            persisted: true
+        )
     }
 
     func updateStationsDownloadState() async {

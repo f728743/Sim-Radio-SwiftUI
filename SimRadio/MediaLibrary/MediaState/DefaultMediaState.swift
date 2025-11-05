@@ -29,64 +29,47 @@ class DefaultMediaState: MediaState {
         self.realRadioLibrary = realRadioLibrary
     }
 
-    var mediaList: [MediaList] {
-        let simRadioMedia = simRadio.series.values
-            .map { series in
-                MediaList(
-                    id: .simRadioSeries(series.id),
-                    meta: series.meta,
-                    items: series.stationsIDs.compactMap {
-                        guard let station: SimStation = simRadio.stations[$0] else { return nil }
-                        return Media(
-                            id: .simRadio(station.id),
-                            meta: .init(station.meta)
-                        )
-                    }
-                )
-            }
-        let realRadioMedia = MediaList(
-            id: .realRadioList,
-            meta: .init(artwork: nil, title: "Radio", subtitle: nil),
-            items: realRadio.stations.values.map { station in
+    func mediaList(persisted: Bool) -> [MediaList] { // TODO: get rid, use mediaList(persisted: Bool)
+        let simSeries = persisted
+            ? simRadio.series.values.filter { !nonPersistedSimSeries.contains($0.id) }
+            : Array(simRadio.series.values)
+
+        let simRadioMedia = simSeries.map { series in
+            MediaList(
+                id: .simRadioSeries(series.id),
+                meta: series.meta,
+                items: series.stationsIDs.compactMap {
+                    guard let station: SimStation = simRadio.stations[$0] else { return nil }
+                    return Media(
+                        id: .simRadio(station.id),
+                        meta: .init(station.meta)
+                    )
+                }
+            )
+        }
+
+        let realRadioStations = persisted
+            ? realRadio.stations.values.filter { !nonPersistedRealStations.contains($0.id) }
+            : Array(realRadio.stations.values)
+
+        let realRadioItems = realRadioStations
+            .map { station in
                 Media(
                     id: .realRadio(station.id),
                     meta: .init(station)
                 )
             }
+
+        let oldestRealRadio = realRadioItems
+            .compactMap(\.meta.timestamp)
+            .min()
+
+        let realRadioMedia = MediaList(
+            id: .realRadioList,
+            meta: .init(artwork: nil, title: "Radio", subtitle: nil, timestamp: oldestRealRadio),
+            items: realRadioItems
         )
         return simRadioMedia + [realRadioMedia]
-    }
-
-    var persistedMediaList: [MediaList] { // TODO: get rid, use mediaList(persisted: Bool)
-        let persistedSimRadioMedia = simRadio.series.values
-            .filter { !nonPersistedSimSeries.contains($0.id) }
-            .map { series in
-                MediaList(
-                    id: .simRadioSeries(series.id),
-                    meta: series.meta,
-                    items: series.stationsIDs.compactMap {
-                        guard let station: SimStation = simRadio.stations[$0] else { return nil }
-                        return Media(
-                            id: .simRadio(station.id),
-                            meta: .init(station.meta)
-                        )
-                    }
-                )
-            }
-
-        let persistedRealRadioMedia = MediaList(
-            id: .realRadioList,
-            meta: .init(artwork: nil, title: "Radio", subtitle: nil),
-            items: realRadio.stations.values
-                .filter { !nonPersistedRealStations.contains($0.id) }
-                .map { station in
-                    Media(
-                        id: .realRadio(station.id),
-                        meta: .init(station)
-                    )
-                }
-        )
-        return persistedSimRadioMedia + [persistedRealRadioMedia]
     }
 
     func load() async {
@@ -217,7 +200,8 @@ extension MediaMeta {
             description: meta.host.map { "Hosted by \($0) – \(meta.genre)" } ?? meta.genre,
             artist: meta.host,
             genre: meta.genre,
-            isLiveStream: true
+            isLiveStream: true,
+            timestamp: meta.timestamp
         )
     }
 }
@@ -231,7 +215,8 @@ extension MediaMeta {
             description: station.tags,
             artist: nil,
             genre: station.tags,
-            isLiveStream: true
+            isLiveStream: true,
+            timestamp: station.timestamp
         )
     }
 }

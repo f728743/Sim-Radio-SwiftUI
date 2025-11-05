@@ -140,7 +140,7 @@ private struct SearchItemLabel<TrailingContent: View>: View {
     var artworkView: some View {
         ZStack {
             ArtworkView(artwork, cornerRadius: 4)
-            if let activity = activity {
+            if let activity {
                 Color.black.opacity(0.4)
                     .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
                 MediaActivityIndicator(state: activity)

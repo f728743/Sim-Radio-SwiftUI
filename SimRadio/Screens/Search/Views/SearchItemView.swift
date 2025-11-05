@@ -15,6 +15,7 @@ struct SearchItemView: View {
     }
 
     let item: APISearchResultItem
+    var activity: MediaActivity?
     let onEvent: (Event) -> Void
 
     var body: some View {
@@ -34,48 +35,54 @@ struct SearchItemView: View {
                             .foregroundStyle(Color(.palette.textSecondary))
                     }
                 )
-            case let .realStation(item):
+
+            case let .realStation(item, isAdded):
                 SearchItemLabel(
                     artwork: item.artwork,
                     title: item.name,
                     subtitle: item.tags.map { prettyPrintTags($0) },
                     kindDescription: "Radio",
+                    activity: activity,
                     onTap: {
                         onEvent(.play(station: item))
                     },
                     trailingContent: {
-                        Button(
-                            action: {
+                        addButton(isAdded: isAdded) {
+                            if !isAdded {
                                 onEvent(.add(station: item))
-                            },
-                            label: {
-                                ZStack {
-                                    Circle()
-                                        .foregroundStyle(Color(.palette.buttonBackground))
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 19, weight: .semibold))
-                                        .foregroundStyle(Color(.palette.brand))
-                                }
-                                .frame(width: 32, height: 32)
                             }
-                        )
-                        .buttonStyle(.plain)
+                        }
                     }
                 )
             }
         }
         .listRowInsets(.rowInsets)
-        .alignmentGuide(.listRowSeparatorLeading) {
-            $0[.leading]
+        .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
+    }
+
+    private func addButton(isAdded: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .foregroundStyle(Color(.palette.buttonBackground))
+                Image(systemName: isAdded ? "checkmark" : "plus")
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundStyle(Color(.palette.brand))
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .frame(width: 32, height: 32)
         }
+        .buttonStyle(.plain)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isAdded)
     }
 }
 
 private struct SearchItemLabel<TrailingContent: View>: View {
     let artwork: Artwork
     let title: String
-    var subtitle: String?
-    var kindDescription: String?
+    let subtitle: String?
+    let kindDescription: String?
+    let activity: MediaActivity?
     let onTap: () -> Void
     private let trailingContent: TrailingContent?
 
@@ -84,6 +91,7 @@ private struct SearchItemLabel<TrailingContent: View>: View {
         title: String,
         subtitle: String? = nil,
         kindDescription: String? = nil,
+        activity: MediaActivity? = nil,
         onTap: @escaping () -> Void,
         trailingContent: (() -> TrailingContent)? = nil,
     ) {
@@ -91,6 +99,7 @@ private struct SearchItemLabel<TrailingContent: View>: View {
         self.title = title
         self.subtitle = subtitle
         self.kindDescription = kindDescription
+        self.activity = activity
         self.onTap = onTap
         self.trailingContent = trailingContent?()
     }
@@ -129,7 +138,15 @@ private struct SearchItemLabel<TrailingContent: View>: View {
     }
 
     var artworkView: some View {
-        ArtworkView(artwork, cornerRadius: 4)
-            .frame(width: 56, height: 56)
+        ZStack {
+            ArtworkView(artwork, cornerRadius: 4)
+            if let activity = activity {
+                Color.black.opacity(0.4)
+                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                MediaActivityIndicator(state: activity)
+                    .foregroundStyle(Color.white)
+            }
+        }
+        .frame(width: 56, height: 56)
     }
 }

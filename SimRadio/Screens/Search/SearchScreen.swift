@@ -27,11 +27,11 @@ struct SearchScreen: View {
             .task {
                 viewModel.searchService = SearchService(apiService: dependencies.apiService)
                 viewModel.mediaState = dependencies.mediaState
-                viewModel.mediaPlayer = dependencies.mediaPlayer
+                viewModel.player = dependencies.mediaPlayer
 
                 if firstTime { // TODO: remove
                     firstTime = false
-                    viewModel.searchText = "so"
+                    viewModel.searchText = "somaf"
                 }
             }
     }
@@ -55,6 +55,7 @@ private extension SearchScreen {
                 List(viewModel.items) { item in
                     SearchItemView(
                         item: item,
+                        activity: item.mediaID.flatMap(viewModel.mediaActivity),
                         onEvent: { event in
                             switch event {
                             case let .add(station):

@@ -22,13 +22,13 @@ final class SearchService: Sendable {
 enum APISearchResultItem: Identifiable {
     var id: String {
         switch self {
-        case let .realStation(item): item.stationuuid
+        case let .realStation(item, _): item.stationuuid
         case let .simRadio(item): item.id
         }
     }
 
-    case realStation(APIRealStationDTO)
-    case simRadio(APISimRadioSeriesDTO)
+    case realStation(dto: APIRealStationDTO, isAdded: Bool)
+    case simRadio(dto: APISimRadioSeriesDTO)
 }
 
 struct APISearchResponseDTO: Codable {
@@ -70,12 +70,6 @@ struct APISimRadioSeriesDTO: Codable, Hashable {
     let coverLogo: String
     let stations: [APISimStationDTO]
     let foundStations: [String]
-}
-
-extension APISearchResponseDTO {
-    var items: [APISearchResultItem] {
-        simRadio.map { .simRadio($0) } + realRadio.map { .realStation($0) }
-    }
 }
 
 extension APISimRadioSeriesDTO {

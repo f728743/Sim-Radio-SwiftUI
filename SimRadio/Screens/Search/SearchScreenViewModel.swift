@@ -8,18 +8,26 @@
 import AVFoundation
 import Foundation
 import SwiftUI
+import Combine
 
 @Observable @MainActor
 class SearchScreenViewModel {
     var items: [APISearchResultItem] = []
+    var state: MediaPlayerState = .paused(media: .none, mode: nil)
+    var palyIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
     var isLoading: Bool = false
     var errorMessage: String?
 
     weak var mediaState: MediaState?
-    weak var mediaPlayer: MediaPlayer?
+    weak var player: MediaPlayer? {
+        didSet {
+            observeMediaPlayerState()
+        }
+    }
     var searchService: SearchService?
 
     private var searchTask: Task<Void, Never>?
+    private var cancellables = Set<AnyCancellable>()
 
     var searchText: String = "" {
         didSet {
@@ -51,7 +59,14 @@ class SearchScreenViewModel {
 
             guard let realStation = RealStation(dto, timestamp: nil) else { return }
             try await mediaState?.addRealRadio(allStations, persisted: false)
-            mediaPlayer?.play(.realRadio(realStation.id), of: allStations.map { .realRadio($0.id) })
+            player?.play(.realRadio(realStation.id), of: allStations.map { .realRadio($0.id) })
+        }
+    }
+    
+    func mediaActivity(_ mediaID: MediaID) -> MediaActivity? {
+        switch state {
+        case let .paused(pausedMediaID, _): pausedMediaID == mediaID ? .paused : nil
+        case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(palyIndicatorSpectrum) : nil
         }
     }
 }
@@ -115,11 +130,39 @@ private extension SearchScreenViewModel {
                 .map(\.id)
         )
     }
+    
+        func observeMediaPlayerState() {
+            guard let player else { return }
+            // Observe state changes
+            cancellables.removeAll()
+            player.$state
+                .sink { [weak self] state in
+                    guard let self else { return }
+                    self.state = state
+                    palyIndicatorSpectrum = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
+                }
+                .store(in: &cancellables)
+
+            player.$palyIndicatorSpectrum
+                .sink { [weak self] spectrum in
+                    self?.palyIndicatorSpectrum = spectrum
+                }
+                .store(in: &cancellables)
+        }
 }
 
 extension APIRealStationDTO {
     var mediaID: MediaID {
         .realRadio(.init(stationUUID: stationuuid))
+    }
+}
+
+extension APISearchResultItem {
+    var mediaID: MediaID? {
+        if case let .realStation(dto, _) = self {
+            return dto.mediaID
+        }
+        return nil
     }
 }
 

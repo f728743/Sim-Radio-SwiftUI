@@ -15,6 +15,7 @@ struct SearchItemView: View {
     }
 
     let item: APISearchResultItem
+    var activity: MediaActivity?
     let onEvent: (Event) -> Void
 
     var body: some View {
@@ -41,6 +42,7 @@ struct SearchItemView: View {
                     title: item.name,
                     subtitle: item.tags.map { prettyPrintTags($0) },
                     kindDescription: "Radio",
+                    activity: activity,
                     onTap: {
                         onEvent(.play(station: item))
                     },
@@ -57,8 +59,6 @@ struct SearchItemView: View {
         .listRowInsets(.rowInsets)
         .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
     }
-
-    // MARK: - Button with smooth transition
 
     private func addButton(isAdded: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -80,8 +80,9 @@ struct SearchItemView: View {
 private struct SearchItemLabel<TrailingContent: View>: View {
     let artwork: Artwork
     let title: String
-    var subtitle: String?
-    var kindDescription: String?
+    let subtitle: String?
+    let kindDescription: String?
+    let activity: MediaActivity?
     let onTap: () -> Void
     private let trailingContent: TrailingContent?
 
@@ -90,6 +91,7 @@ private struct SearchItemLabel<TrailingContent: View>: View {
         title: String,
         subtitle: String? = nil,
         kindDescription: String? = nil,
+        activity: MediaActivity? = nil,
         onTap: @escaping () -> Void,
         trailingContent: (() -> TrailingContent)? = nil,
     ) {
@@ -97,6 +99,7 @@ private struct SearchItemLabel<TrailingContent: View>: View {
         self.title = title
         self.subtitle = subtitle
         self.kindDescription = kindDescription
+        self.activity = activity
         self.onTap = onTap
         self.trailingContent = trailingContent?()
     }
@@ -135,7 +138,15 @@ private struct SearchItemLabel<TrailingContent: View>: View {
     }
 
     var artworkView: some View {
-        ArtworkView(artwork, cornerRadius: 4)
-            .frame(width: 56, height: 56)
+        ZStack {
+            ArtworkView(artwork, cornerRadius: 4)
+            if let activity = activity {
+                Color.black.opacity(0.4)
+                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                MediaActivityIndicator(state: activity)
+                    .foregroundStyle(Color.white)
+            }
+        }
+        .frame(width: 56, height: 56)
     }
 }

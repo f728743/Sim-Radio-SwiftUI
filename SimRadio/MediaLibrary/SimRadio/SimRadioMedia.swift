@@ -294,7 +294,7 @@ extension SimGameSeries {
             meta: .init(
                 artwork: logo,
                 title: dto.meta.title,
-                subtitle: dto.meta.subtitle,
+                subtitle: dto.meta.subtitle ?? "Sim Series",
                 timestamp: timestamp
             ),
             stationsIDs: dto.stations.map {

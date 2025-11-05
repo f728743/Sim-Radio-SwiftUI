@@ -29,7 +29,7 @@ class DefaultMediaState: MediaState {
         self.realRadioLibrary = realRadioLibrary
     }
 
-    func mediaList(persisted: Bool) -> [MediaList] { // TODO: get rid, use mediaList(persisted: Bool)
+    func mediaList(persisted: Bool) -> [MediaList] { 
         let simSeries = persisted
             ? simRadio.series.values.filter { !nonPersistedSimSeries.contains($0.id) }
             : Array(simRadio.series.values)

@@ -26,7 +26,8 @@ final class DefaultRealRadioMediaPlayer {
 extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
     func playStation(withID stationID: RealStation.ID) {
         guard let mediaState,
-              let station = mediaState.realRadio.stations[stationID]
+              let station = mediaState.realRadio.stations[stationID],
+              let stream = station.streamResolved.toHTTPS
         else {
             return
         }
@@ -42,7 +43,7 @@ extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
         print("Loading real radio station: \(station.title)")
 
         // Configure AVPlayer for streaming
-        setupPlayerForStream(station.stream)
+        setupPlayerForStream(stream)
     }
 
     func stop() {
@@ -151,5 +152,13 @@ private extension DefaultRealRadioMediaPlayer {
         let fallbackPlayer = AVPlayer(url: station.stream)
         fallbackPlayer.play()
         player = fallbackPlayer
+    }
+}
+
+extension URL {
+    var toHTTPS: URL? {
+        var components = URLComponents(url: self, resolvingAgainstBaseURL: false)
+        components?.scheme = "https"
+        return components?.url
     }
 }

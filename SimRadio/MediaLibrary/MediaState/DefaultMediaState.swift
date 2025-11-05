@@ -211,8 +211,8 @@ extension MediaMeta {
         self.init(
             artwork: station.logo,
             title: station.title,
-            subtitle: station.country,
-            description: station.tags,
+            subtitle: station.tags,
+            description: station.country,
             artist: nil,
             genre: station.tags,
             isLiveStream: true,

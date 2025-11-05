@@ -22,7 +22,9 @@ class LibraryScreenViewModel {
             .filter(\.id.isRealRadioList)
             .flatMap { $0.items.map { LibraryItem.mediaItem($0) } }
 
-        let result = (simSeriesItems + realRadioItems).sorted { $0.timestamp > $1.timestamp }
-        return result
+        let result = (simSeriesItems + realRadioItems)
+            .sorted { $0.timestamp > $1.timestamp }
+            .prefix(20)
+        return Array(result)
     }
 }

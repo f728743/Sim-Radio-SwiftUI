@@ -38,7 +38,7 @@ extension LibraryItem {
             .init(
                 title: media.meta.title,
                 subtitle: media.meta.subtitle,
-                artwork: .radio(media.meta.artwork)
+                artwork: media.meta.artwork.map { .webImage($0) } ?? .radio(name: media.meta.title)
             )
         }
     }

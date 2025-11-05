@@ -37,7 +37,7 @@ private extension MediaItemScreen {
                 item: .init(
                     title: meta.title,
                     subtitle: meta.subtitle,
-                    artwork: .radio(meta.artwork)
+                    artwork: meta.artwork.map { .webImage($0) } ?? .radio(name: meta.title)
                 ),
                 onEvent: { _ in
                     viewModel.onPlay()

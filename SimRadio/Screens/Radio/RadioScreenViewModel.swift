@@ -15,6 +15,7 @@ class RadioScreenViewModel {
         let res = (mediaState?.mediaList(persisted: true) ?? [])
             .flatMap(\.items)
             .filter(\.id.isRealRadio)
+            .sorted { $0.meta.timestamp ?? Date() > $1.meta.timestamp ?? Date() }
         return res
     }
 }

@@ -7,6 +7,7 @@
 
 import AVFoundation
 import Foundation
+import SwiftUI
 
 @Observable @MainActor
 class SearchScreenViewModel {
@@ -29,6 +30,10 @@ class SearchScreenViewModel {
     }
 
     func add(_ dto: APIRealStationDTO) {
+        guard let stationIndex = items.firstIndex(where: { $0.id == dto.stationuuid }) else {
+            return
+        }
+        items[stationIndex] = .realStation(dto: dto, isAdded: true)
         Task {
             guard let realStation = RealStation(dto, timestamp: Date()) else { return }
             try await mediaState?.addRealRadio([realStation], persisted: true)
@@ -38,7 +43,7 @@ class SearchScreenViewModel {
     func play(_ dto: APIRealStationDTO) {
         Task {
             let allStations = items.compactMap {
-                if case let .realStation(station) = $0 {
+                if case let .realStation(station, _) = $0 {
                     return RealStation(station, timestamp: nil)
                 }
                 return nil
@@ -49,7 +54,9 @@ class SearchScreenViewModel {
             mediaPlayer?.play(.realRadio(realStation.id), of: allStations.map { .realRadio($0.id) })
         }
     }
+}
 
+private extension SearchScreenViewModel {
     func performSearch() {
         guard let searchService else { return }
         searchTask?.cancel()
@@ -75,7 +82,7 @@ class SearchScreenViewModel {
                 guard !Task.isCancelled else {
                     return
                 }
-                items = result.items
+                items = items(dto: result)
                 isLoading = false
             } catch {
                 if !Task.isCancelled {
@@ -86,6 +93,33 @@ class SearchScreenViewModel {
                 }
             }
         }
+    }
+
+    func items(dto: APISearchResponseDTO) -> [APISearchResultItem] {
+        let persisted = addedStations
+        let result: [APISearchResultItem] = dto.simRadio.map { .simRadio(dto: $0) } +
+            dto.realRadio.map { sationDTO in
+                .realStation(
+                    dto: sationDTO,
+                    isAdded: persisted.contains(sationDTO.mediaID)
+                )
+            }
+        return result
+    }
+
+    var addedStations: Set<MediaID> {
+        Set(
+            (mediaState?.mediaList(persisted: true) ?? [])
+                .flatMap(\.items)
+                .filter(\.id.isRealRadio)
+                .map(\.id)
+        )
+    }
+}
+
+extension APIRealStationDTO {
+    var mediaID: MediaID {
+        .realRadio(.init(stationUUID: stationuuid))
     }
 }
 

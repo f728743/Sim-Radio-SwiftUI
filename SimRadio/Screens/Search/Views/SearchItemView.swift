@@ -34,7 +34,8 @@ struct SearchItemView: View {
                             .foregroundStyle(Color(.palette.textSecondary))
                     }
                 )
-            case let .realStation(item):
+
+            case let .realStation(item, isAdded):
                 SearchItemLabel(
                     artwork: item.artwork,
                     title: item.name,
@@ -44,30 +45,35 @@ struct SearchItemView: View {
                         onEvent(.play(station: item))
                     },
                     trailingContent: {
-                        Button(
-                            action: {
+                        addButton(isAdded: isAdded) {
+                            if !isAdded {
                                 onEvent(.add(station: item))
-                            },
-                            label: {
-                                ZStack {
-                                    Circle()
-                                        .foregroundStyle(Color(.palette.buttonBackground))
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 19, weight: .semibold))
-                                        .foregroundStyle(Color(.palette.brand))
-                                }
-                                .frame(width: 32, height: 32)
                             }
-                        )
-                        .buttonStyle(.plain)
+                        }
                     }
                 )
             }
         }
         .listRowInsets(.rowInsets)
-        .alignmentGuide(.listRowSeparatorLeading) {
-            $0[.leading]
+        .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
+    }
+
+    // MARK: - Button with smooth transition
+
+    private func addButton(isAdded: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .foregroundStyle(Color(.palette.buttonBackground))
+                Image(systemName: isAdded ? "checkmark" : "plus")
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundStyle(Color(.palette.brand))
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .frame(width: 32, height: 32)
         }
+        .buttonStyle(.plain)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isAdded)
     }
 }
 

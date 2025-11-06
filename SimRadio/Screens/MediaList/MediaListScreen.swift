@@ -10,7 +10,7 @@ import SwiftUI
 
 struct MediaListScreen: View {
     @Environment(Dependencies.self) var dependencies
-    @State private var selection: Media.ID?
+    @State private var selection: MediaID?
     @State private var viewModel: MediaListScreenViewModel
 
     init(items: [Media], listMeta: MediaList.Meta? = nil) {
@@ -91,10 +91,10 @@ private extension MediaListScreen {
             isLastItem ? $0[.leading] : $0[.leading] + 60
         }
         .swipeActions(edge: .trailing) {
-            ForEach(viewModel.swipeButtons(media: item.id), id: \.self) { button in
+            ForEach(viewModel.swipeButtons(mediaID: item.id), id: \.self) { button in
                 Button(
                     action: { [weak viewModel] in
-                        viewModel?.onSwipeActions(media: item.id, button: button)
+                        viewModel?.onSwipeActions(mediaID: item.id, button: button)
                     },
                     label: {
                         Label(button.label, systemImage: button.systemImage)

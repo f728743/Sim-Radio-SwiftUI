@@ -12,8 +12,8 @@ import SwiftUI
 
 @Observable @MainActor
 class SearchScreenViewModel {
-    var items: [APISearchResultItem] = []
-    var state: MediaPlayerState = .paused(media: .none, mode: nil)
+    var dto: APISearchResponseDTO?
+    var playerState: MediaPlayerState = .paused(media: .none, mode: nil)
     var playIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
     var isLoading: Bool = false
     var errorMessage: String?
@@ -39,10 +39,6 @@ class SearchScreenViewModel {
     }
 
     func add(_ dto: APIRealStationDTO) {
-        guard let stationIndex = items.firstIndex(where: { $0.id == dto.stationuuid }) else {
-            return
-        }
-        items[stationIndex] = .realStation(dto: dto, isAdded: true)
         Task {
             guard let realStation = RealStation(dto, timestamp: Date()) else { return }
             try await mediaState?.addRealRadio([realStation], persisted: true)
@@ -63,6 +59,19 @@ class SearchScreenViewModel {
             player?.play(.realRadio(realStation.id), of: allStations.map { .realRadio($0.id) })
         }
     }
+
+    var items: [APISearchResultItem] {
+        guard let dto else { return [] }
+        let persisted = addedStations
+        let result: [APISearchResultItem] = dto.simRadio.map { .simRadio(dto: $0) } +
+            dto.realRadio.map { sationDTO in
+                .realStation(
+                    dto: sationDTO,
+                    isAdded: persisted.contains(sationDTO.mediaID)
+                )
+            }
+        return result
+    }
 }
 
 private extension SearchScreenViewModel {
@@ -71,7 +80,7 @@ private extension SearchScreenViewModel {
         searchTask?.cancel()
 
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            items = []
+            dto = nil
             errorMessage = nil
             isLoading = false
             return
@@ -91,29 +100,17 @@ private extension SearchScreenViewModel {
                 guard !Task.isCancelled else {
                     return
                 }
-                items = items(dto: result)
+                dto = result
                 isLoading = false
             } catch {
                 if !Task.isCancelled {
                     print("API call Error: \(error.localizedDescription)")
                     errorMessage = error.localizedDescription
-                    items = []
+                    dto = nil
                     isLoading = false
                 }
             }
         }
-    }
-
-    func items(dto: APISearchResponseDTO) -> [APISearchResultItem] {
-        let persisted = addedStations
-        let result: [APISearchResultItem] = dto.simRadio.map { .simRadio(dto: $0) } +
-            dto.realRadio.map { sationDTO in
-                .realStation(
-                    dto: sationDTO,
-                    isAdded: persisted.contains(sationDTO.mediaID)
-                )
-            }
-        return result
     }
 
     var addedStations: Set<MediaID> {

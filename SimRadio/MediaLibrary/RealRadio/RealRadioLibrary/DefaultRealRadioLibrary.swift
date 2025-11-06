@@ -63,6 +63,33 @@ private extension DefaultRealRadioLibrary {
         managedObject.data = json
         try context.save()
     }
+
+    func removeStationFromPersistence(id: RealStation.ID) async throws {
+        guard let context = dataController?.container.viewContext else { return }
+
+        let fetchRequest: NSFetchRequest<ManagedStation> = ManagedStation.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id.stationUUID)
+
+        let managedObjects = try context.fetch(fetchRequest)
+        for object in managedObjects {
+            context.delete(object)
+        }
+        try context.save()
+    }
+
+    func removeFromLibrary(_ id: RealStation.ID) {
+        guard let mediaState, let delegate else { return }
+        let currentStations = mediaState.realRadio.stations
+        let newMedia = RealRadioMedia(
+            stations: currentStations.filter { $0.key != id }
+        )
+        let newNonPersisted = mediaState.nonPersistedRealStations.filter { $0 != id }
+        delegate.realRadioLibrary(
+            self,
+            didChange: newMedia,
+            nonPersistedStations: newNonPersisted
+        )
+    }
 }
 
 extension DefaultRealRadioLibrary: RealRadioLibrary {
@@ -95,6 +122,11 @@ extension DefaultRealRadioLibrary: RealRadioLibrary {
     func addRealRadio(_ stations: [RealStation], persisted: Bool) async throws {
         let new = RealRadioMedia(stations: Dictionary(uniqueKeysWithValues: stations.map { ($0.id, $0) }))
         addToLibrary(new, persisted: persisted)
+    }
+
+    func removeRealRadio(_ radio: RealStation.ID) async throws {
+        try await removeStationFromPersistence(id: radio)
+        removeFromLibrary(radio)
     }
 }
 

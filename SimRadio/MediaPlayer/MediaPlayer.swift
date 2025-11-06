@@ -146,7 +146,6 @@ private extension MediaPlayer {
            currentID == mediaID, currentMode == mode
         {
             print("MediaPlayer: Already playing \(mediaID).")
-            // TODO: check if actualy playing
             return
         }
 

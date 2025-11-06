@@ -20,7 +20,7 @@ class MediaListScreenViewModel {
     weak var mediaState: MediaState?
     let items: [Media]
     let listMeta: MediaList.Meta?
-    var state: MediaPlayerState = .paused(media: .none, mode: nil)
+    var playerState: MediaPlayerState = .paused(media: .none, mode: nil)
     var playIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
     var cancellables = Set<AnyCancellable>()
 
@@ -35,7 +35,7 @@ class MediaListScreenViewModel {
         self.listMeta = listMeta
     }
 
-    func onSelect(media: Media.ID) {
+    func onSelect(media: MediaID) {
         guard let player else { return }
         player.play(media, of: items.map(\.id), mode: nil)
     }
@@ -53,8 +53,15 @@ class MediaListScreenViewModel {
         player.play(itemID, of: shuffledItems, mode: nil)
     }
 
-    func swipeButtons(media: Media.ID) -> [SwipeButton] {
-        switch downloadStatus(for: media)?.state {
+    func swipeButtons(mediaID: MediaID) -> [SwipeButton] {
+        switch mediaID {
+        case .simRadio: simRadioSwipeButtons(mediaID: mediaID)
+        case .realRadio: [.delete]
+        }
+    }
+
+    func simRadioSwipeButtons(mediaID: MediaID) -> [SwipeButton] {
+        switch downloadStatus(for: mediaID)?.state {
         case .completed: [.delete]
         case .none: [.download]
         case .downloading, .scheduled: [.pauseDownload, .delete]
@@ -63,15 +70,35 @@ class MediaListScreenViewModel {
         }
     }
 
-    func onSwipeActions(media: Media.ID, button: SwipeButton) {
+    func onSwipeActions(mediaID: MediaID, button: SwipeButton) {
+        switch mediaID {
+        case .simRadio: onSimRadioSwipeActions(mediaID: mediaID, button: button)
+        case .realRadio: onRealRadioSwipeActions(mediaID: mediaID, button: button)
+        }
+    }
+
+    func onRealRadioSwipeActions(mediaID: MediaID, button: SwipeButton) {
+        if case .delete = button {
+            Task {
+                if case let .playing(currentlyPlayingMediaID, _) = playerState {
+                    if currentlyPlayingMediaID == mediaID {
+                        player?.pause()
+                    }
+                }
+                try await mediaState?.removeRealRadio(mediaID)
+            }
+        }
+    }
+
+    func onSimRadioSwipeActions(mediaID: MediaID, button: SwipeButton) {
         Task {
             switch button {
             case .download:
-                await mediaState?.download(media)
+                await mediaState?.download(mediaID)
             case .delete:
-                await mediaState?.removeDownload(media)
+                await mediaState?.removeDownload(mediaID)
             case .pauseDownload:
-                await mediaState?.pauseDownload(media)
+                await mediaState?.pauseDownload(mediaID)
             }
         }
     }

@@ -20,7 +20,7 @@ class MediaItemScreenViewModel {
         }
     }
 
-    var state: MediaPlayerState = .paused(media: .none, mode: nil)
+    var playerState: MediaPlayerState = .paused(media: .none, mode: nil)
     var playIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
     var cancellables = Set<AnyCancellable>()
 
@@ -32,7 +32,7 @@ class MediaItemScreenViewModel {
         mediaState?.downloadStatus[itemID]
     }
 
-    func onSelect(media: Media.ID) {
+    func onSelect(media: MediaID) {
         guard let player else { return }
         player.play(media, of: [item.id], mode: nil)
     }

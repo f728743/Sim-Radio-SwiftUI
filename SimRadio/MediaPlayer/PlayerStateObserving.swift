@@ -11,7 +11,7 @@ import Combine
 protocol PlayerStateObserving: AnyObject {
     var cancellables: Set<AnyCancellable> { get set }
     var playIndicatorSpectrum: [Float] { get set }
-    var state: MediaPlayerState { get set }
+    var playerState: MediaPlayerState { get set }
     var player: MediaPlayer? { get }
     func observeMediaPlayerState()
     func mediaActivity(_ mediaID: MediaID) -> MediaActivity?
@@ -25,7 +25,7 @@ extension PlayerStateObserving {
         player.$state
             .sink { [weak self] state in
                 guard let self else { return }
-                self.state = state
+                playerState = state
                 playIndicatorSpectrum = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
             }
             .store(in: &cancellables)
@@ -38,7 +38,7 @@ extension PlayerStateObserving {
     }
 
     func mediaActivity(_ mediaID: MediaID) -> MediaActivity? {
-        switch state {
+        switch playerState {
         case let .paused(pausedMediaID, _): pausedMediaID == mediaID ? .paused : nil
         case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(playIndicatorSpectrum) : nil
         }

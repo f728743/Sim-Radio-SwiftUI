@@ -85,6 +85,12 @@ class DefaultMediaState: MediaState {
         try await realRadioLibrary.addRealRadio(stations, persisted: persisted)
     }
 
+    func removeRealRadio(_ mediaID: MediaID) async throws {
+        if case let .realRadio(id) = mediaID {
+            try await realRadioLibrary.removeRealRadio(id)
+        }
+    }
+
     func download(_ mediaID: MediaID) async {
         let current = downloadStatus[mediaID]
         guard current == nil || current?.state == .paused else { return }
@@ -130,7 +136,7 @@ extension DefaultMediaState {
             }
     }
 
-    func media(withID id: Media.ID) -> Media? {
+    func media(withID id: MediaID) -> Media? {
         switch id {
         case let .simRadio(stationID):
             guard let station = simRadio.stations[stationID] else { return nil }

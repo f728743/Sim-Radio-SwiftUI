@@ -14,7 +14,7 @@ class SeriesDetailsScreenViewModel {
     let series: APISimRadioSeriesDTO
 
     weak var mediaState: MediaState?
-    var state: MediaPlayerState = .paused(media: .none, mode: nil)
+    var playerState: MediaPlayerState = .paused(media: .none, mode: nil)
     var playIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
     var cancellables = Set<AnyCancellable>()
     private var isAddTapped: Bool = false

@@ -10,7 +10,7 @@ import SwiftUI
 struct MediaItemScreen: View {
     @Environment(Dependencies.self) var dependencies
     @State private var viewModel: MediaItemScreenViewModel
-    @State private var selection: Media.ID?
+    @State private var selection: MediaID?
 
     init(item: Media) {
         _viewModel = State(

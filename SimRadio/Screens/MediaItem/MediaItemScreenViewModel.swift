@@ -21,8 +21,8 @@ class MediaItemScreenViewModel {
     }
 
     var state: MediaPlayerState = .paused(media: .none, mode: nil)
-    var palyIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
-    private var cancellables = Set<AnyCancellable>()
+    var playIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
+    var cancellables = Set<AnyCancellable>()
 
     init(item: Media) {
         self.item = item
@@ -35,7 +35,7 @@ class MediaItemScreenViewModel {
     func mediaActivity(_ mediaID: MediaID) -> MediaActivity? {
         switch state {
         case let .paused(pausedMediaID, _): pausedMediaID == mediaID ? .paused : nil
-        case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(palyIndicatorSpectrum) : nil
+        case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(playIndicatorSpectrum) : nil
         }
     }
 
@@ -50,23 +50,4 @@ class MediaItemScreenViewModel {
     }
 }
 
-private extension MediaItemScreenViewModel {
-    private func observeMediaPlayerState() {
-        guard let player else { return }
-        // Observe state changes
-        cancellables.removeAll()
-        player.$state
-            .sink { [weak self] state in
-                guard let self else { return }
-                self.state = state
-                palyIndicatorSpectrum = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
-            }
-            .store(in: &cancellables)
-
-        player.$palyIndicatorSpectrum
-            .sink { [weak self] spectrum in
-                self?.palyIndicatorSpectrum = spectrum
-            }
-            .store(in: &cancellables)
-    }
-}
+extension MediaItemScreenViewModel: PlayerStateObserving {}

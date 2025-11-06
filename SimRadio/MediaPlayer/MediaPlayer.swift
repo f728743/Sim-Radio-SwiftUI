@@ -33,7 +33,7 @@ class MediaPlayer {
     @Published private(set) var progress: NowPlayingInfo.Progress?
     @Published private(set) var state: MediaPlayerState
     @Published private(set) var commandProfile: CommandProfile?
-    @Published private(set) var palyIndicatorSpectrum: [Float]
+    @Published private(set) var playIndicatorSpectrum: [Float]
     @Published private(set) var playbackModes: [MediaPlaybackMode] = []
     @Published private(set) var nowPlayingMeta: MediaMeta?
 
@@ -47,7 +47,7 @@ class MediaPlayer {
         systemMediaInterface = SystemMediaInterface()
         state = .paused(media: .none, mode: .none)
         commandProfile = CommandProfile(isLiveStream: false, isSwitchTrackEnabled: false)
-        palyIndicatorSpectrum = .init(repeating: 0, count: Const.frequencyBands)
+        playIndicatorSpectrum = .init(repeating: 0, count: Const.frequencyBands)
         systemMediaInterface.setRemoteCommandProfile(commandProfile!)
         audioSession.delegate = self
         systemMediaInterface.delegate = self
@@ -293,7 +293,7 @@ extension MediaPlayer: SystemMediaInterfaceDelegate {
 
 extension MediaPlayer: SimRadioMediaPlayerDelegate {
     func simRadioMediaPlayer(_: any SimRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
-        palyIndicatorSpectrum = spectrum
+        playIndicatorSpectrum = spectrum
     }
 
     func simRadioMediaPlayer(_: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
@@ -303,7 +303,7 @@ extension MediaPlayer: SimRadioMediaPlayerDelegate {
 
 extension MediaPlayer: RealRadioMediaPlayerDelegate {
     func realRadioMediaPlayer(_: any RealRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
-        palyIndicatorSpectrum = spectrum
+        playIndicatorSpectrum = spectrum
     }
 }
 

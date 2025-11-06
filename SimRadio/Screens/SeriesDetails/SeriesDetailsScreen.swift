@@ -33,7 +33,7 @@ struct SeriesDetailsScreen: View {
         .ignoresSafeArea(edges: [.top])
         .task {
             viewModel.mediaState = dependencies.mediaState
-            viewModel.mediaPlayer = dependencies.mediaPlayer
+            viewModel.player = dependencies.mediaPlayer
             try? await viewModel.load()
         }
     }

@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 19.10.2025.
 //
 
+import Combine
 import Observation
 import SwiftUI
 
@@ -13,7 +14,14 @@ class SeriesDetailsScreenViewModel {
     let series: APISimRadioSeriesDTO
 
     weak var mediaState: MediaState?
-    weak var mediaPlayer: MediaPlayer?
+    var state: MediaPlayerState = .paused(media: .none, mode: nil)
+    var playIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
+    var cancellables = Set<AnyCancellable>()
+    weak var player: MediaPlayer? {
+        didSet {
+            observeMediaPlayerState()
+        }
+    }
 
     init(series: APISimRadioSeriesDTO) {
         self.series = series
@@ -55,10 +63,12 @@ class SeriesDetailsScreenViewModel {
     }
 }
 
+extension SeriesDetailsScreenViewModel: PlayerStateObserving {}
+
 private extension SeriesDetailsScreenViewModel {
     func playStation(_ stationID: String, of stationIDs: [String]) {
         guard let url = URL(string: series.url) else { return }
-        mediaPlayer?.play(
+        player?.play(
             .media(stationID, url: url),
             of: stationIDs.map { .media($0, url: url) },
             mode: nil

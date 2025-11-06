@@ -63,13 +63,6 @@ class SearchScreenViewModel {
             player?.play(.realRadio(realStation.id), of: allStations.map { .realRadio($0.id) })
         }
     }
-
-    func mediaActivity(_ mediaID: MediaID) -> MediaActivity? {
-        switch state {
-        case let .paused(pausedMediaID, _): pausedMediaID == mediaID ? .paused : nil
-        case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(playIndicatorSpectrum) : nil
-        }
-    }
 }
 
 private extension SearchScreenViewModel {

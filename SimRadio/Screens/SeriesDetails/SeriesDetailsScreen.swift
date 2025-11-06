@@ -86,11 +86,14 @@ private extension SeriesDetailsScreen {
                     )
                     .padding(.top, 47)
 
-                    SeriesDetailsOtherStations(
-                        series: viewModel.series,
-                        onTap: viewModel.playStation
-                    )
-                    .padding(.top, 27)
+                    if !viewModel.series.otherStationData.isEmpty {
+                        SeriesDetailsOtherStations(
+                            series: viewModel.series,
+                            onTap: viewModel.playStation,
+                            mediaActivity: viewModel.mediaActivity
+                        )
+                        .padding(.top, 27)
+                    }
                 }
                 .background(Color(.systemBackground))
             }

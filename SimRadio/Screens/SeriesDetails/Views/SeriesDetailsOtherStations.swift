@@ -10,6 +10,7 @@ import SwiftUI
 struct SeriesDetailsOtherStations: View {
     let series: APISimRadioSeriesDTO
     let onTap: (APISimStationDTO) -> Void
+    var mediaActivity: (_ mediaID: MediaID) -> MediaActivity?
 
     var body: some View {
         VStack(spacing: 14) {
@@ -26,6 +27,7 @@ struct SeriesDetailsOtherStations: View {
 
     var carousel: some View {
         ScrollView(.horizontal, showsIndicators: false) {
+            let url = URL(string: series.url)
             LazyHGrid(
                 rows: gridLayout,
                 alignment: .top,
@@ -33,10 +35,12 @@ struct SeriesDetailsOtherStations: View {
             ) {
                 let stations = series.otherStationData
                 ForEach(stations.enumerated(), id: \.element) { index, element in
+                    let mediaID = url.flatMap { MediaID.media(element.id, url: $0) }
                     StationView(
                         artwork: element.artwork(seriesURL: series.url),
                         title: element.title,
                         subtitle: prettyPrintTags(element.tags),
+                        activity: mediaID.flatMap { mediaActivity($0) },
                         withDivider: needDivider(index: index, itemCount: stations.count)
                     )
                     .frame(width: itemWidth)
@@ -73,13 +77,13 @@ private struct StationView: View {
     let artwork: Artwork
     let title: String
     var subtitle: String?
+    var activity: MediaActivity?
     let withDivider: Bool
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                ArtworkView(artwork, cornerRadius: 5)
-                    .frame(width: 48)
+                artworkView
 
                 VStack(spacing: 0) {
                     Text(title)
@@ -99,8 +103,25 @@ private struct StationView: View {
         }
         .contentShape(.rect)
     }
+
+    var artworkView: some View {
+        ZStack {
+            ArtworkView(artwork, cornerRadius: 5)
+            if let activity {
+                Color.black.opacity(0.4)
+                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                MediaActivityIndicator(state: activity)
+                    .foregroundStyle(Color.white)
+            }
+        }
+        .frame(width: 48, height: 48)
+    }
 }
 
 #Preview {
-    SeriesDetailsOtherStations(series: .mock, onTap: { _ in })
+    SeriesDetailsOtherStations(
+        series: .mock,
+        onTap: { _ in },
+        mediaActivity: { _ in nil }
+    )
 }

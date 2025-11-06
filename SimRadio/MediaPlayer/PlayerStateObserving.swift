@@ -14,6 +14,7 @@ protocol PlayerStateObserving: AnyObject {
     var state: MediaPlayerState { get set }
     var player: MediaPlayer? { get }
     func observeMediaPlayerState()
+    func mediaActivity(_ mediaID: MediaID) -> MediaActivity?
 }
 
 extension PlayerStateObserving {
@@ -34,5 +35,12 @@ extension PlayerStateObserving {
                 self?.playIndicatorSpectrum = spectrum
             }
             .store(in: &cancellables)
+    }
+
+    func mediaActivity(_ mediaID: MediaID) -> MediaActivity? {
+        switch state {
+        case let .paused(pausedMediaID, _): pausedMediaID == mediaID ? .paused : nil
+        case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(playIndicatorSpectrum) : nil
+        }
     }
 }

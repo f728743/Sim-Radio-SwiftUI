@@ -72,6 +72,7 @@ private extension SeriesDetailsScreen {
                 VStack(spacing: 0) {
                     SeriesDetailsSeries(
                         series: viewModel.series,
+                        isAdded: viewModel.isSeriesAdded,
                         onAdd: viewModel.addSeries
                     )
                     .padding(.horizontal, ViewConst.screenPaddings)

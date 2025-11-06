@@ -17,6 +17,7 @@ class SeriesDetailsScreenViewModel {
     var state: MediaPlayerState = .paused(media: .none, mode: nil)
     var playIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
     var cancellables = Set<AnyCancellable>()
+    private var isAddTapped: Bool = false
     weak var player: MediaPlayer? {
         didSet {
             observeMediaPlayerState()
@@ -38,7 +39,19 @@ class SeriesDetailsScreenViewModel {
         playStation(first, of: stations)
     }
 
+    var isSeriesAdded: Bool? {
+        guard let mediaState else { return nil }
+        guard let id = series.mediaListID else {
+            return false
+        }
+        if isAddTapped == true { return true }
+        return mediaState.mediaList(persisted: true)
+            .map(\.id)
+            .contains(id)
+    }
+
     func addSeries() {
+        isAddTapped = true
         Task {
             guard let url = URL(string: series.url) else { return }
             try await mediaState?.addSimRadio(url: url, persisted: true)
@@ -64,6 +77,13 @@ class SeriesDetailsScreenViewModel {
 }
 
 extension SeriesDetailsScreenViewModel: PlayerStateObserving {}
+
+extension APISimRadioSeriesDTO {
+    var mediaListID: MediaListID? {
+        guard let url = URL(string: url) else { return nil }
+        return .simRadioSeries(.init(origin: url))
+    }
+}
 
 private extension SeriesDetailsScreenViewModel {
     func playStation(_ stationID: String, of stationIDs: [String]) {

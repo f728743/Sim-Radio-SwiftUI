@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SeriesDetailsSeries: View {
     let series: APISimRadioSeriesDTO
+    let isAdded: Bool?
     let onAdd: () -> Void
     var body: some View {
         HStack(alignment: .bottom, spacing: 12) {
@@ -22,14 +23,21 @@ struct SeriesDetailsSeries: View {
                     .padding(.top, 3)
 
                 Button(
-                    action: onAdd,
+                    action: {
+                        if isAdded == false {
+                            onAdd()
+                        }
+                    },
                     label: {
                         ZStack {
                             Circle()
                                 .foregroundStyle(Color(.palette.buttonBackground))
-                            Image(systemName: "plus")
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundStyle(Color(.palette.brand))
+                            if let isAdded {
+                                Image(systemName: isAdded ? "checkmark" : "plus")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundStyle(Color(.palette.brand))
+                                    .contentTransition(.symbolEffect(.replace))
+                            }
                         }
                         .frame(width: 32, height: 32)
                     }
@@ -44,5 +52,9 @@ struct SeriesDetailsSeries: View {
 }
 
 #Preview {
-    SeriesDetailsSeries(series: .mock, onAdd: {})
+    SeriesDetailsSeries(
+        series: .mock,
+        isAdded: false,
+        onAdd: {}
+    )
 }

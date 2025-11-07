@@ -19,7 +19,6 @@ struct OverlaidRootView: View {
 
     var body: some View {
         RootTabView()
-            .tabBarMinimizeBehavior(.onScrollDown)
             .tabViewBottomAccessory {
                 CompactNowPlaying(
                     expanded: $expandSheet,

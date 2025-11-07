@@ -35,7 +35,7 @@ struct SeriesDetailsSeries: View {
                             if let isAdded {
                                 Image(systemName: isAdded ? "checkmark" : "plus")
                                     .font(.system(size: 15, weight: .bold))
-                                    .foregroundStyle(Color(.palette.brand))
+                                    .foregroundStyle(.brand)
                                     .contentTransition(.symbolEffect(.replace))
                             }
                         }

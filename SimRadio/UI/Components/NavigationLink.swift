@@ -16,7 +16,7 @@ struct NavigationLink: View {
             Image(systemName: systemImage)
                 .font(.system(size: 22))
                 .frame(width: 36)
-                .foregroundStyle(Color(.palette.brand))
+                .foregroundStyle(.brand)
             Text(title)
                 .font(.system(size: 20))
                 .lineLimit(1)
@@ -25,7 +25,7 @@ struct NavigationLink: View {
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color(.palette.stroke))
         }
-        .frame(height: 48)
+        .frame(height: 52)
         .contentShape(.rect)
     }
 }

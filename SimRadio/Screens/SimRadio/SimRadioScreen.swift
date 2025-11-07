@@ -13,17 +13,21 @@ struct SimRadioScreen: View {
     @State private var viewModel = SimRadioScreenViewModel()
 
     var body: some View {
-        List {
-            NavigationLink(title: "All Sim Stations", systemImage: "play.square.stack")
-                .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
-                .listSectionSeparator(.hidden, edges: .top)
-                .onTapGesture {
-                    router.navigateToSimRadioAllStations()
-                }
+        ScrollView {
+            VStack(spacing: 0) {
+                let rowSeparatorLeading: CGFloat = 60
+                NavigationLink(title: "All Sim Stations", systemImage: "play.square.stack")
+                    .onTapGesture {
+                        router.navigateToSimRadioAllStations()
+                    }
+                    .padding(.horizontal, ViewConst.screenPaddings)
+                Divider()
+                    .padding(.leading, rowSeparatorLeading)
 
-            simSeries
-                .listRowInsets(.init(top: 25, leading: 20, bottom: 0, trailing: 20))
-                .listSectionSeparator(.hidden, edges: .bottom)
+                simSeries
+                    .padding(.horizontal, ViewConst.screenPaddings - LibraryItemsGrid.itemPadding)
+                    .padding(.top, 26)
+            }
         }
         .listStyle(.plain)
         .contentMargins(.bottom, ViewConst.screenPaddings, for: .scrollContent)

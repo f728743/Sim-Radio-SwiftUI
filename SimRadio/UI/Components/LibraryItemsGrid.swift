@@ -8,24 +8,39 @@
 import SwiftUI
 
 struct LibraryItemsGrid: View {
+    static let itemPadding: CGFloat = 6
     let title: String
     let items: [LibraryItem]
     let onTap: (LibraryItem) -> Void
 
     var body: some View {
-        VStack(spacing: 13) {
+        VStack(spacing: 7) {
             Text(title)
                 .font(.system(size: 22, weight: .semibold))
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Self.itemPadding)
 
             LazyVGrid(
-                columns: [GridItem(.flexible()), GridItem(.flexible())],
-                spacing: 16
+                columns: [GridItem(.flexible(), spacing: 0), GridItem(.flexible(), spacing: 0)],
+                spacing: 10
             ) {
                 ForEach(items) { item in
                     LibraryItemView(label: item.label)
                         .onTapGesture {
                             onTap(item)
+                        }
+                        .contextMenu {
+                            Button {
+                                print("Play")
+                            } label: {
+                                Label("Play", systemImage: "play")
+                            }
+                            Divider()
+                            Button(role: .destructive) {
+                                print("Delete")
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                 }
             }
@@ -37,9 +52,9 @@ private struct LibraryItemView: View {
     let label: LibraryItem.Label
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 7) {
             ArtworkView(label.artwork)
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(label.title)
                     .font(.system(size: 13, weight: .medium))
                     .lineLimit(1)
@@ -50,5 +65,8 @@ private struct LibraryItemView: View {
                     .lineLimit(1)
             }
         }
+        .padding(LibraryItemsGrid.itemPadding)
+        .background(.background)
+        .clipShape(.rect(cornerRadius: 14))
     }
 }

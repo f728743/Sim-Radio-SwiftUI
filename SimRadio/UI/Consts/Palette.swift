@@ -58,11 +58,6 @@ extension Palette {
         Palette.PlayerCard.self
     }
 
-    static let brand: UIColor = .dynamic(
-        light: UIColor(red: 0.384, green: 0.553, blue: 0.247, alpha: 1),
-        dark: UIColor(red: 0.384, green: 0.553, blue: 0.247, alpha: 1)
-    )
-
     static let artworkBorder: UIColor = .dynamic(
         light: .black.withAlphaComponent(0.2),
         dark: .white.withAlphaComponent(0.2)

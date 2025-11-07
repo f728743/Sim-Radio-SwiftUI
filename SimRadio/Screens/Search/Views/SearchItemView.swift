@@ -67,7 +67,7 @@ struct SearchItemView: View {
                     .foregroundStyle(Color(.palette.buttonBackground))
                 Image(systemName: isAdded ? "checkmark" : "plus")
                     .font(.system(size: 19, weight: .semibold))
-                    .foregroundStyle(Color(.palette.brand))
+                    .foregroundStyle(.brand)
                     .contentTransition(.symbolEffect(.replace))
             }
             .frame(width: 32, height: 32)

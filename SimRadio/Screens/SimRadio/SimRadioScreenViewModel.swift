@@ -19,4 +19,8 @@ class SimRadioScreenViewModel {
             .map { LibraryItem.mediaList($0) }
         return items
     }
+
+    func contextMenu(for _: LibraryItem) -> [LibraryContextMenuItem] {
+        [.play, .download, .delete]
+    }
 }

@@ -44,7 +44,7 @@ private extension MediaDownloadProgressView {
             .trim(from: 0, to: value)
             .rotation(.degrees(-90))
             .stroke(
-                Color(Palette.brand),
+                Color(.brand),
                 style: StrokeStyle(
                     lineWidth: Const.lineWidth,
                     lineCap: .round

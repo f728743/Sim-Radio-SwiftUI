@@ -11,12 +11,6 @@ import SwiftUI
 
 @Observable @MainActor
 class MediaListScreenViewModel {
-    enum SwipeButton: Hashable {
-        case download
-        case pauseDownload
-        case delete
-    }
-
     weak var mediaState: MediaState?
     let items: [Media]
     let listMeta: MediaList.Meta?
@@ -53,14 +47,14 @@ class MediaListScreenViewModel {
         player.play(itemID, of: shuffledItems, mode: nil)
     }
 
-    func swipeButtons(mediaID: MediaID) -> [SwipeButton] {
+    func swipeButtons(mediaID: MediaID) -> [MediaListSwipeButton] {
         switch mediaID {
         case .simRadio: simRadioSwipeButtons(mediaID: mediaID)
         case .realRadio: [.delete]
         }
     }
 
-    func simRadioSwipeButtons(mediaID: MediaID) -> [SwipeButton] {
+    func simRadioSwipeButtons(mediaID: MediaID) -> [MediaListSwipeButton] {
         switch downloadStatus(for: mediaID)?.state {
         case .completed: [.delete]
         case .none: [.download]
@@ -70,14 +64,14 @@ class MediaListScreenViewModel {
         }
     }
 
-    func onSwipeActions(mediaID: MediaID, button: SwipeButton) {
+    func onSwipeActions(mediaID: MediaID, button: MediaListSwipeButton) {
         switch mediaID {
         case .simRadio: onSimRadioSwipeActions(mediaID: mediaID, button: button)
         case .realRadio: onRealRadioSwipeActions(mediaID: mediaID, button: button)
         }
     }
 
-    func onRealRadioSwipeActions(mediaID: MediaID, button: SwipeButton) {
+    func onRealRadioSwipeActions(mediaID: MediaID, button: MediaListSwipeButton) {
         if case .delete = button {
             Task {
                 if case let .playing(currentlyPlayingMediaID, _) = playerState {
@@ -90,7 +84,7 @@ class MediaListScreenViewModel {
         }
     }
 
-    func onSimRadioSwipeActions(mediaID: MediaID, button: SwipeButton) {
+    func onSimRadioSwipeActions(mediaID: MediaID, button: MediaListSwipeButton) {
         Task {
             switch button {
             case .download:
@@ -113,32 +107,3 @@ class MediaListScreenViewModel {
 }
 
 extension MediaListScreenViewModel: PlayerStateObserving {}
-
-extension MediaListScreenViewModel.SwipeButton {
-    var systemImage: String {
-        switch self {
-        case .download:
-            "arrow.down"
-        case .pauseDownload:
-            "pause.fill"
-        case .delete:
-            "minus.circle.fill"
-        }
-    }
-
-    var label: String {
-        switch self {
-        case .download: "Download"
-        case .pauseDownload: "Pause"
-        case .delete: "Delete"
-        }
-    }
-
-    var color: Color {
-        switch self {
-        case .download: Color(.systemBlue)
-        case .pauseDownload: Color(.systemGray)
-        case .delete: Color(.systemRed)
-        }
-    }
-}

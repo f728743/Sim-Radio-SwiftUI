@@ -89,7 +89,7 @@ private struct ItemView: View {
             Group {
                 if let activity = model.activity {
                     MediaActivityIndicator(state: activity)
-                        .foregroundStyle(Color.brand)
+                        .foregroundStyle(.brand)
                 } else {
                     Text("\(index)")
                 }

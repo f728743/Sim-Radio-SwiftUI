@@ -14,31 +14,38 @@ struct LibraryScreen: View {
     @State private var viewModel = LibraryScreenViewModel()
 
     var body: some View {
-        List {
-            NavigationLink(title: "Sim Radio", systemImage: "gamecontroller")
-                .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
-                .listSectionSeparator(.hidden, edges: .top)
-                .onTapGesture {
-                    router.navigateToSimRadio()
-                }
+        ScrollView {
+            VStack(spacing: 0) {
+                let rowSeparatorLeading: CGFloat = 60
+                NavigationLink(title: "Sim Radio", systemImage: "gamecontroller")
+                    .onTapGesture {
+                        router.navigateToSimRadio()
+                    }
+                    .padding(.horizontal, ViewConst.screenPaddings)
+                Divider()
+                    .padding(.leading, rowSeparatorLeading)
 
-            NavigationLink(title: "Radio", systemImage: "dot.radiowaves.left.and.right")
-                .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
-                .onTapGesture {
-                    router.navigateToRadio()
-                }
+                NavigationLink(title: "Radio", systemImage: "dot.radiowaves.left.and.right")
+                    .onTapGesture {
+                        router.navigateToRadio()
+                    }
+                    .padding(.horizontal, ViewConst.screenPaddings)
+                Divider()
+                    .padding(.leading, rowSeparatorLeading)
 
-            NavigationLink(title: "Downloaded", systemImage: "arrow.down.circle")
-                .listRowInsets(.init(top: 0, leading: 23, bottom: 0, trailing: 22))
-                .onTapGesture {
-                    router.navigateToDownloaded()
-                }
+                NavigationLink(title: "Downloaded", systemImage: "arrow.down.circle")
+                    .onTapGesture {
+                        router.navigateToDownloaded()
+                    }
+                    .padding(.horizontal, ViewConst.screenPaddings)
+                Divider()
+                    .padding(.leading, rowSeparatorLeading)
 
-            recentlyAdded
-                .listRowInsets(.init(top: 25, leading: 20, bottom: 0, trailing: 20))
-                .listSectionSeparator(.hidden, edges: .bottom)
+                recentlyAdded
+                    .padding(.horizontal, ViewConst.screenPaddings - LibraryItemsGrid.itemPadding)
+                    .padding(.top, 26)
+            }
         }
-        .listStyle(.plain)
         .contentMargins(.bottom, ViewConst.screenPaddings, for: .scrollContent)
         .navigationTitle("Library")
         .toolbarTitleDisplayMode(.inlineLarge)
@@ -60,7 +67,8 @@ private extension LibraryScreen {
                 case let .mediaItem(item):
                     router.navigateToMedia(item: item)
                 }
-            }
+            },
+            contextMenu: viewModel.contextMenu
         )
     }
 }

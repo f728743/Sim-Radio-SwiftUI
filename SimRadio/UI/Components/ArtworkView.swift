@@ -8,35 +8,6 @@
 import Kingfisher
 import SwiftUI
 
-enum Artwork: Hashable {
-    case radio(name: String? = nil)
-    case album
-    case webImage(URL)
-}
-
-extension Artwork {
-    static func radio(
-        _ url: URL?,
-        name: String? = nil
-    ) -> Artwork {
-        url.map { .webImage($0) } ?? .radio(name: name)
-    }
-
-    static func album(_ url: URL?) -> Artwork {
-        url.map { .webImage($0) } ?? .album
-    }
-
-    static func radioImage(
-        _ urlString: String?,
-        name: String? = nil
-    ) -> Artwork {
-        .radio(
-            urlString.flatMap { URL(string: $0) },
-            name: name
-        )
-    }
-}
-
 struct ArtworkView: View {
     let artwork: Artwork
     let cornerRadius: CGFloat

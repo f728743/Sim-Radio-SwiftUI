@@ -27,4 +27,8 @@ class LibraryScreenViewModel {
             .prefix(20)
         return Array(result)
     }
+
+    func contextMenu(for _: LibraryItem) -> [LibraryContextMenuItem] {
+        [.play, .divider, .delete]
+    }
 }

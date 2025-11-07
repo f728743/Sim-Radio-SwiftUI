@@ -25,7 +25,8 @@ struct RootTabView: View {
                 }
             }
         }
-        .accentColor(Color(.palette.brand))
+        .tabBarMinimizeBehavior(.onScrollDown)
+        .accentColor(.brand)
     }
 }
 

@@ -103,5 +103,10 @@ private extension SeriesDetailsScreen {
 }
 
 #Preview {
+    @Previewable @State var dependencies = Dependencies.stub
+    @Previewable @State var playerController = PlayerController.stub
     SeriesDetailsScreen(series: .mock)
+        .withRouter()
+        .environment(dependencies)
+        .environment(playerController)
 }

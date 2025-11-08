@@ -74,12 +74,9 @@ class MediaListScreenViewModel {
     func onRealRadioSwipeActions(mediaID: MediaID, button: MediaListSwipeButton) {
         if case .delete = button {
             Task {
-                if case let .playing(currentlyPlayingMediaID, _) = playerState {
-                    if currentlyPlayingMediaID == mediaID {
-                        player?.pause()
-                    }
+                if case let .realRadio(radioID) = mediaID {
+                    try await mediaState?.removeRealRadio(radioID)
                 }
-                try await mediaState?.removeRealRadio(mediaID)
             }
         }
     }

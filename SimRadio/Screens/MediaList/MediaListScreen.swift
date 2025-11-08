@@ -97,7 +97,7 @@ private extension MediaListScreen {
                         viewModel?.onSwipeActions(mediaID: item.id, button: button)
                     },
                     label: {
-                        Label(button.label, systemImage: button.systemImage)
+                        Image(systemName: button.systemImage)
                     }
                 )
                 .tint(button.color)

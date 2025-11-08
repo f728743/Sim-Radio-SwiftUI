@@ -85,10 +85,8 @@ class DefaultMediaState: MediaState {
         try await realRadioLibrary.addRealRadio(stations, persisted: persisted)
     }
 
-    func removeRealRadio(_ mediaID: MediaID) async throws {
-        if case let .realRadio(id) = mediaID {
-            try await realRadioLibrary.removeRealRadio(id)
-        }
+    func removeRealRadio(_ id: RealStation.ID) async throws {
+        try await realRadioLibrary.removeRealRadio(id)
     }
 
     func download(_ mediaID: MediaID) async {

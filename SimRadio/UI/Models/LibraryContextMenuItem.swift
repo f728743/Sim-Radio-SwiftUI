@@ -11,7 +11,6 @@ enum LibraryContextMenuItem: Hashable {
     case play
     case delete
     case download
-    case divider
 }
 
 extension LibraryContextMenuItem {
@@ -23,8 +22,6 @@ extension LibraryContextMenuItem {
             "trash"
         case .download:
             "arrow.down"
-        case .divider:
-            ""
         }
     }
 
@@ -33,7 +30,6 @@ extension LibraryContextMenuItem {
         case .play: "Play"
         case .delete: "Delete"
         case .download: "Download"
-        case .divider: ""
         }
     }
 

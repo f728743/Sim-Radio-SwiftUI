@@ -79,14 +79,12 @@ private extension DefaultRealRadioLibrary {
 
     func removeFromLibrary(_ id: RealStation.ID) {
         guard let mediaState, let delegate else { return }
-        let currentStations = mediaState.realRadio.stations
-        let newMedia = RealRadioMedia(
-            stations: currentStations.filter { $0.key != id }
-        )
-        let newNonPersisted = mediaState.nonPersistedRealStations.filter { $0 != id }
+        let currentNonPersisted = mediaState.nonPersistedRealStations
+        let newNonPersisted = currentNonPersisted.contains(id)
+            ? currentNonPersisted : currentNonPersisted + [id]
         delegate.realRadioLibrary(
             self,
-            didChange: newMedia,
+            didChange: mediaState.realRadio,
             nonPersistedStations: newNonPersisted
         )
     }
@@ -119,14 +117,14 @@ extension DefaultRealRadioLibrary: RealRadioLibrary {
         }
     }
 
-    func addRealRadio(_ stations: [RealStation], persisted: Bool) async throws {
+    func addStations(_ stations: [RealStation], persisted: Bool) async throws {
         let new = RealRadioMedia(stations: Dictionary(uniqueKeysWithValues: stations.map { ($0.id, $0) }))
         addToLibrary(new, persisted: persisted)
     }
 
-    func removeRealRadio(_ radio: RealStation.ID) async throws {
-        try await removeStationFromPersistence(id: radio)
-        removeFromLibrary(radio)
+    func removeStation(withID id: RealStation.ID) async throws {
+        try await removeStationFromPersistence(id: id)
+        removeFromLibrary(id)
     }
 }
 

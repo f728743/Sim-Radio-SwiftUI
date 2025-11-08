@@ -35,6 +35,7 @@ struct SimRadioScreen: View {
         .toolbarTitleDisplayMode(.inlineLarge)
         .task {
             viewModel.mediaState = dependencies.mediaState
+            viewModel.player = dependencies.mediaPlayer
         }
     }
 }
@@ -53,7 +54,6 @@ private extension SimRadioScreen {
                     case let .mediaItem(item):
                         router.navigateToMedia(item: item)
                     }
-
                 case let .selected(menuItem, item):
                     viewModel.onSelect(menuItem, of: item)
                 }

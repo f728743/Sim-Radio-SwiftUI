@@ -91,6 +91,7 @@ extension DefaultSimRadioLibrary: SimRadioLibrary {
 
         Task {
             await loadSimRadio()
+            try await cleanup()
         }
     }
 
@@ -114,6 +115,27 @@ extension DefaultSimRadioLibrary: SimRadioLibrary {
             storage.addSeries(id: seriesID)
         }
         addToLibrary(newSimRadio, persisted: persisted)
+    }
+
+    func remove(_ series: SimGameSeries) async throws {
+        guard let mediaState else { return }
+        let curren = mediaState.simRadio
+
+        let seriesID = series.id
+        let directory = seriesID.directoryURL
+        let seriesFileURL = directory.appending(path: SimGameSeries.defaultFileName, directoryHint: .notDirectory)
+        storage.removeSeries(id: seriesID)
+        try seriesFileURL.removeFileIfExists()
+
+        let currentNonPersisted = mediaState.nonPersistedSimSeries
+        let newNonPersisted = currentNonPersisted.contains(seriesID)
+            ? currentNonPersisted : currentNonPersisted + [seriesID]
+
+        delegate?.simRadioLibrary(
+            self,
+            didChange: curren,
+            nonPersistedSeries: newNonPersisted
+        )
     }
 }
 
@@ -191,6 +213,21 @@ private extension DefaultSimRadioLibrary {
             }
         }
         await updateStationsDownloadState()
+    }
+
+    func cleanup() async throws {
+        let dir = URL.documentsDirectory.appendingPathComponent(SimGameSeries.localDirectoryName)
+        let fileManager = FileManager.default
+
+        let contents = try fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
+
+        for subdirectory in contents where subdirectory.hasDirectoryPath {
+            let simRadioFile = subdirectory.appendingPathComponent(SimGameSeries.defaultFileName)
+
+            if !simRadioFile.isFileExists {
+                subdirectory.remove()
+            }
+        }
     }
 
     func loadSimRadio(series id: SimGameSeries.ID) async throws {

@@ -67,7 +67,9 @@ extension LibraryContextMenuHandling {
                 }
             case let .mediaList(mediaList):
                 if mediaList.items.first?.id.isSimRadio == true {
-                    try await mediaState.removeSimRadio(mediaList.id)
+                    if case let .simRadioSeries(seriesID) = mediaList.id {
+                        try await mediaState.removeSimRadio(seriesID)
+                    }
                 }
             }
         }

@@ -117,14 +117,14 @@ extension DefaultRealRadioLibrary: RealRadioLibrary {
         }
     }
 
-    func addRealRadio(_ stations: [RealStation], persisted: Bool) async throws {
+    func addStations(_ stations: [RealStation], persisted: Bool) async throws {
         let new = RealRadioMedia(stations: Dictionary(uniqueKeysWithValues: stations.map { ($0.id, $0) }))
         addToLibrary(new, persisted: persisted)
     }
 
-    func removeRealRadio(_ radio: RealStation.ID) async throws {
-        try await removeStationFromPersistence(id: radio)
-        removeFromLibrary(radio)
+    func removeStation(withID id: RealStation.ID) async throws {
+        try await removeStationFromPersistence(id: id)
+        removeFromLibrary(id)
     }
 }
 

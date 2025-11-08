@@ -12,6 +12,7 @@ protocol SimRadioLibrary {
     func load() async
 
     func addSimRadio(url: URL, persisted: Bool) async throws
+    func remove(_ series: SimGameSeries) async throws
 
     func downloadStation(_ stationID: SimStation.ID) async
     func removeDownload(_ stationID: SimStation.ID) async

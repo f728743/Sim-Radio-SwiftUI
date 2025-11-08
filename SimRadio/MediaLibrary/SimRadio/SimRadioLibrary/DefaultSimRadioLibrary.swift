@@ -115,6 +115,27 @@ extension DefaultSimRadioLibrary: SimRadioLibrary {
         }
         addToLibrary(newSimRadio, persisted: persisted)
     }
+    
+    func remove(_ series: SimGameSeries) async throws {
+        guard let mediaState else { return }
+        let curren = mediaState.simRadio
+
+        let seriesID = series.id
+        let directory = seriesID.directoryURL
+        let seriesFileURL = directory.appending(path: SimGameSeries.defaultFileName, directoryHint: .notDirectory)
+        storage.removeSeries(id: seriesID)
+        try seriesFileURL.removeFileIfExists()
+                
+        let currentNonPersisted = mediaState.nonPersistedSimSeries
+        let newNonPersisted = currentNonPersisted.contains(seriesID)
+            ? currentNonPersisted : currentNonPersisted + [seriesID]
+
+        delegate?.simRadioLibrary(
+            self,
+            didChange: curren,
+            nonPersistedSeries: newNonPersisted
+        )
+    }
 }
 
 private extension DefaultSimRadioLibrary {

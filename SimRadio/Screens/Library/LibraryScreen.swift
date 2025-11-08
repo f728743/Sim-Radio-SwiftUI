@@ -51,6 +51,7 @@ struct LibraryScreen: View {
         .toolbarTitleDisplayMode(.inlineLarge)
         .task {
             viewModel.mediaState = dependencies.mediaState
+            viewModel.player = dependencies.mediaPlayer
         }
     }
 }
@@ -60,13 +61,20 @@ private extension LibraryScreen {
         LibraryItemsGrid(
             title: "Recently Added",
             items: viewModel.recentlyAdded,
-            onTap: { item in
-                switch item {
-                case let .mediaList(list):
-                    router.navigateToMedia(items: list.items, listMeta: list.meta)
-                case let .mediaItem(item):
-                    router.navigateToMedia(item: item)
+            onEvent: { event in
+                switch event {
+                case let .tap(item):
+                    switch item {
+                    case let .mediaList(list):
+                        router.navigateToMedia(items: list.items, listMeta: list.meta)
+                    case let .mediaItem(item):
+                        router.navigateToMedia(item: item)
+                    }
+
+                case let .selected(menuItem, item):
+                    viewModel.onSelect(menuItem, of: item)
                 }
+
             },
             contextMenu: viewModel.contextMenu
         )

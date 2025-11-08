@@ -20,7 +20,9 @@ class SimRadioScreenViewModel {
         return items
     }
 
-    func contextMenu(for _: LibraryItem) -> [LibraryContextMenuItem] {
+    func contextMenu(for _: LibraryItem) -> [LibraryContextMenuItem?] {
         [.play, .download, .delete]
     }
+
+    func onSelect(_: LibraryContextMenuItem, of _: LibraryItem) {}
 }

@@ -21,7 +21,7 @@ extension MediaListSwipeButton {
         case .pauseDownload:
             "pause.fill"
         case .delete:
-            "minus.circle.fill"
+            "trash"
         }
     }
 

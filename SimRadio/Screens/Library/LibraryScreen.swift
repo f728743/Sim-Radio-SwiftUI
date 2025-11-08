@@ -67,7 +67,8 @@ private extension LibraryScreen {
                 case let .mediaItem(item):
                     router.navigateToMedia(item: item)
                 }
-            }
+            },
+            contextMenu: viewModel.contextMenu
         )
     }
 }

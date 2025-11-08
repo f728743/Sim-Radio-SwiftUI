@@ -12,6 +12,7 @@ struct LibraryItemsGrid: View {
     let title: String
     let items: [LibraryItem]
     let onTap: (LibraryItem) -> Void
+    let contextMenu: (LibraryItem) -> [LibraryContextMenuItem]
 
     var body: some View {
         VStack(spacing: 7) {
@@ -30,16 +31,16 @@ struct LibraryItemsGrid: View {
                             onTap(item)
                         }
                         .contextMenu {
-                            Button {
-                                print("Play")
-                            } label: {
-                                Label("Play", systemImage: "play")
-                            }
-                            Divider()
-                            Button(role: .destructive) {
-                                print("Delete")
-                            } label: {
-                                Label("Delete", systemImage: "trash")
+                            ForEach(contextMenu(item), id: \.self) { menuItem in
+                                if case .divider = menuItem {
+                                    Divider()
+                                } else {
+                                    Button(role: menuItem.role) {
+                                        print("item: \(menuItem.label) tapped")
+                                    } label: {
+                                        Label(menuItem.label, systemImage: menuItem.systemImage)
+                                    }
+                                }
                             }
                         }
                 }

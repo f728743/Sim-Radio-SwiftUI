@@ -51,7 +51,8 @@ private extension SimRadioScreen {
                 case let .mediaItem(item):
                     router.navigateToMedia(item: item)
                 }
-            }
+            },
+            contextMenu: viewModel.contextMenu
         )
     }
 }

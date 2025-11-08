@@ -16,6 +16,7 @@ struct PlayerButtons: View {
 
     var body: some View {
         HStack(spacing: spacing) {
+            let isSwitchDisabled: Bool = !model.commandProfile.isSwitchTrackEnabled
             PlayerButton(
                 label: {
                     PlayerButtonLabel(
@@ -31,7 +32,8 @@ struct PlayerButtons: View {
                     model.onBackward()
                 }
             )
-            .disabled(!model.commandProfile.isSwitchTrackEnabled)
+            .disabled(isSwitchDisabled)
+            .blendMode(isSwitchDisabled ? .overlay : .normal)
 
             PlayerButton(
                 label: {
@@ -57,7 +59,8 @@ struct PlayerButtons: View {
                     model.onForward()
                 }
             )
-            .disabled(!model.commandProfile.isSwitchTrackEnabled)
+            .disabled(isSwitchDisabled)
+            .blendMode(isSwitchDisabled ? .overlay : .normal)
         }
         .playerButtonStyle(.expandedPlayer)
     }
@@ -68,7 +71,8 @@ extension PlayerButtonConfig {
         Self(
             labelColor: .init(Palette.PlayerCard.opaque),
             tint: .init(Palette.PlayerCard.translucent.withAlphaComponent(0.3)),
-            pressedColor: .init(Palette.PlayerCard.opaque)
+            pressedColor: .init(Palette.PlayerCard.opaque),
+//            disabledColor: .init(Palette.PlayerCard.opaque)
         )
     }
 }

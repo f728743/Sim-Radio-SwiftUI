@@ -161,48 +161,6 @@ private struct ProgressTracker: View, @preconcurrency Animatable {
     }
 }
 
-private extension UIWindow {
-    func stacked(progress: CGFloat, animationDuration: TimeInterval?) {
-        if let animationDuration {
-            UIView.animate(
-                withDuration: animationDuration,
-                animations: {
-                    self.stacked(progress: progress)
-                },
-                completion: { _ in
-                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + animationDuration) {
-                        self.resetStacked()
-                    }
-                }
-            )
-        } else {
-            stacked(progress: progress)
-        }
-    }
-
-    private func stacked(progress: CGFloat) {
-        let offsetY = progress * 10
-        layer.cornerRadius = 22
-        layer.masksToBounds = true
-
-        let scale = 1 - progress * 0.1
-        transform = .identity
-            .scaledBy(x: scale, y: scale)
-            .translatedBy(x: 0, y: offsetY)
-    }
-
-    func resetStackedWithAnimation(duration: TimeInterval) {
-        UIView.animate(withDuration: duration) {
-            self.resetStacked()
-        }
-    }
-
-    private func resetStacked() {
-        layer.cornerRadius = 0.0
-        transform = .identity
-    }
-}
-
 #Preview {
     @Previewable @State var dependencies = Dependencies.stub
     @Previewable @State var playerController = PlayerController.stub

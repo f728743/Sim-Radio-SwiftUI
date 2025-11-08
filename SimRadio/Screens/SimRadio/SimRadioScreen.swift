@@ -44,13 +44,20 @@ private extension SimRadioScreen {
         LibraryItemsGrid(
             title: "Sim Series",
             items: viewModel.simSeries,
-            onTap: { item in
-                switch item {
-                case let .mediaList(list):
-                    router.navigateToMedia(items: list.items, listMeta: list.meta)
-                case let .mediaItem(item):
-                    router.navigateToMedia(item: item)
+            onEvent: { event in
+                switch event {
+                case let .tap(item):
+                    switch item {
+                    case let .mediaList(list):
+                        router.navigateToMedia(items: list.items, listMeta: list.meta)
+                    case let .mediaItem(item):
+                        router.navigateToMedia(item: item)
+                    }
+
+                case let .selected(menuItem, item):
+                    viewModel.onSelect(menuItem, of: item)
                 }
+
             },
             contextMenu: viewModel.contextMenu
         )

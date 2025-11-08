@@ -153,6 +153,7 @@ private extension MediaPlayer {
             stopCurrentPlayerActivity()
         }
 
+        audioSession.setActive(true)
         switch mediaID {
         case let .realRadio(id):
             realPlayer?.playStation(withID: id)
@@ -176,6 +177,7 @@ private extension MediaPlayer {
                 simPlayer?.stop()
             }
         }
+        audioSession.setActive(false)
     }
 
     func setCommandProfile(_ profile: CommandProfile) {

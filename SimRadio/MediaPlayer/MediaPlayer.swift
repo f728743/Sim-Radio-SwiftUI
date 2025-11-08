@@ -211,6 +211,8 @@ private extension MediaPlayer {
         }
         if mediaID.isSimRadio {
             playbackModes = simPlayer?.availableModes(stationID: mediaID) ?? []
+        } else {
+            playbackModes = []
         }
     }
 

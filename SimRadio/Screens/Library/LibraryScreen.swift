@@ -70,11 +70,9 @@ private extension LibraryScreen {
                     case let .mediaItem(item):
                         router.navigateToMedia(item: item)
                     }
-
                 case let .selected(menuItem, item):
                     viewModel.onSelect(menuItem, of: item)
                 }
-
             },
             contextMenu: viewModel.contextMenu
         )

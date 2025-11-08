@@ -10,7 +10,9 @@ import SwiftUI
 
 @Observable @MainActor
 class SimRadioScreenViewModel {
-    var mediaState: MediaState?
+    weak var mediaState: MediaState?
+    weak var player: MediaPlayer?
+
     var simSeries: [LibraryItem] {
         guard let mediaState else { return [] }
         let mediaList = mediaState.mediaList(persisted: true)
@@ -19,10 +21,6 @@ class SimRadioScreenViewModel {
             .map { LibraryItem.mediaList($0) }
         return items
     }
-
-    func contextMenu(for _: LibraryItem) -> [LibraryContextMenuItem?] {
-        [.play, .download, .delete]
-    }
-
-    func onSelect(_: LibraryContextMenuItem, of _: LibraryItem) {}
 }
+
+extension SimRadioScreenViewModel: LibraryContextMenuHandling {}

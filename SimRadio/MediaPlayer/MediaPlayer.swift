@@ -177,7 +177,6 @@ private extension MediaPlayer {
                 simPlayer?.stop()
             }
         }
-        audioSession.setActive(false)
     }
 
     func setCommandProfile(_ profile: CommandProfile) {

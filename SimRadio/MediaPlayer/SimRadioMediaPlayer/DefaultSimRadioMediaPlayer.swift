@@ -11,7 +11,6 @@ import AVFoundation
 class DefaultSimRadioMediaPlayer {
     weak var mediaState: SimRadioMediaState?
     weak var delegate: SimRadioMediaPlayerDelegate?
-
     private let queuePlayer = AVQueuePlayer()
     private let audioTapProcessor: AudioTapProcessor
     private var nextPlayableItem: NextPlayableItem?
@@ -25,6 +24,7 @@ class DefaultSimRadioMediaPlayer {
     private var timeObserverToken: Any?
     private var currentMarkers: [AudioFragmentMarker]?
     private var lastBroadcastedMarker: AudioFragmentMarker?
+    private var forceMarkerUpdate: Bool = false
 
     init() {
         audioTapProcessor = AudioTapProcessor(
@@ -103,7 +103,8 @@ extension DefaultSimRadioMediaPlayer: AudioTapProcessorDelegate {
             guard let self else { return }
             delegate?.simRadioMediaPlayer(
                 self,
-                didUpdateSpectrum: spectrum.first ?? .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
+                didUpdateSpectrum: spectrum.first ??
+                    .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
             )
         }
     }
@@ -148,6 +149,7 @@ private extension DefaultSimRadioMediaPlayer {
 
         currentMarkers = playlistItem.track.markers
         lastBroadcastedMarker = nil
+        forceMarkerUpdate = true
 
         let loader = PlayerItemLoader()
         let playerItem = try await loader.loadPlayerItem(
@@ -162,6 +164,7 @@ private extension DefaultSimRadioMediaPlayer {
         queuePlayer.insert(playerItem, after: nil)
         queuePlayer.play()
         addDidPlayToEndObserver(to: playerItem)
+        addPeriodicTimeObserver()
 
         guard let nextPlayableItem = try await makeNextPlayableItem(
             stationID: stationID,
@@ -216,7 +219,6 @@ private extension DefaultSimRadioMediaPlayer {
 
         return try await playlistBuilder.makePlaylistItem(
             startingOn: startingDate,
-//            at: .init(seconds: startingDate.currentSecondOfDay),
             at: startingTime,
             mode: stationData.station.playlistRules.mode(for: modeID)
         )
@@ -236,6 +238,7 @@ private extension DefaultSimRadioMediaPlayer {
 
             currentMarkers = nextPlayableItem.markers
             lastBroadcastedMarker = nil
+            forceMarkerUpdate = true
             addPeriodicTimeObserver()
             queuePlayer.insert(newNextPlayableItem.item, after: nil)
             self.nextPlayableItem = newNextPlayableItem
@@ -272,14 +275,19 @@ private extension DefaultSimRadioMediaPlayer {
     }
 
     func processPlaybackTime(_ time: CMTime) {
-        guard let markers = currentMarkers,
-              !markers.isEmpty
-        else {
-            return
+        let currentMarker: AudioFragmentMarker?
+        
+        // Determine the current marker (it can be nil if there are no markers)
+        if let markers = currentMarkers, !markers.isEmpty {
+            currentMarker = markers.last { time >= $0.offset }
+        } else {
+            currentMarker = nil
         }
-        let currentMarker = markers.last { time >= $0.offset }
-        if currentMarker != lastBroadcastedMarker {
+
+        // Check if the marker has changed OR this is a forced update
+        if currentMarker != lastBroadcastedMarker || forceMarkerUpdate {
             lastBroadcastedMarker = currentMarker
+            forceMarkerUpdate = false 
             delegate?.simRadioMediaPlayer(self, didCrossTrackMarker: currentMarker)
         }
     }

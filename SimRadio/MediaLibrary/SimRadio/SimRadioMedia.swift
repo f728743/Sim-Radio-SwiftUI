@@ -106,7 +106,7 @@ extension Track {
     }
 
     fileprivate static func localFilePath(seriesID: SimGameSeries.ID, path: String) -> String {
-        ["\(seriesID.origin.nonCryptoHash)", filePath(path: path)].joined(separator: "/")
+        ["\(seriesID.path)", filePath(path: path)].joined(separator: "/")
     }
 
     fileprivate static func localFileURL(seriesID: SimGameSeries.ID, path: String) -> URL {
@@ -304,11 +304,13 @@ extension SimGameSeries {
     }
 
     static let defaultFileName: String = "sim_radio.json"
+    static let localDirectoryName: String = "sim_radio"
 }
 
 extension SimGameSeries.ID {
     var directoryURL: URL {
-        .documentsDirectory.appending(path: path, directoryHint: .isDirectory)
+        .documentsDirectory
+            .appending(path: path, directoryHint: .isDirectory)
     }
 
     var jsonFileURL: URL {
@@ -316,7 +318,7 @@ extension SimGameSeries.ID {
     }
 
     var path: String {
-        "\(origin.nonCryptoHash)"
+        "\(SimGameSeries.localDirectoryName)/\(origin.nonCryptoHash)"
     }
 }
 

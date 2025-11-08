@@ -8,5 +8,5 @@
 class RealRadioLibraryStub: RealRadioLibrary {
     func load() async {}
     func addStations(_: [RealStation], persisted _: Bool) async throws {}
-    func removeStation(withID id: RealStation.ID) async {}
+    func removeStation(withID _: RealStation.ID) async {}
 }

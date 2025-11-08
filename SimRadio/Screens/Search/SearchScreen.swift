@@ -28,11 +28,6 @@ struct SearchScreen: View {
                 viewModel.searchService = SearchService(apiService: dependencies.apiService)
                 viewModel.mediaState = dependencies.mediaState
                 viewModel.player = dependencies.mediaPlayer
-
-                if firstTime { // TODO: remove
-                    firstTime = false
-                    viewModel.searchText = "somaf"
-                }
             }
     }
 }

@@ -46,7 +46,7 @@ class MediaPlayer {
         audioSession = AudioSession()
         systemMediaInterface = SystemMediaInterface()
         state = .paused(media: .none, mode: .none)
-        commandProfile = CommandProfile(isLiveStream: false, isSwitchTrackEnabled: false)
+        commandProfile = CommandProfile(isLiveStream: true, isSwitchTrackEnabled: false)
         playIndicatorSpectrum = .init(repeating: 0, count: Const.frequencyBands)
         systemMediaInterface.setRemoteCommandProfile(commandProfile!)
         audioSession.delegate = self

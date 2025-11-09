@@ -8,6 +8,7 @@
 // swiftlint:disable file_length
 
 import AVFoundation
+import SharedUtilities
 
 typealias DrawPools = [DrawPoolID: NonRepeatingRandomizer<DereferencedTruck>]
 enum DrawPoolID: Hashable {

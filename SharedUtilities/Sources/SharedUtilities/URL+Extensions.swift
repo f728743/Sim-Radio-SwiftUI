@@ -1,15 +1,14 @@
 //
 //  URL+Extensions.swift
-//  SimRadio
+//  SharedUtilities
 //
 //  Created by Alexey Vorobyov on 08.04.2025.
 //
 
-import Foundation
 import Kingfisher
 import UIKit
 
-extension URL {
+public extension URL {
     var image: UIImage? {
         get async {
             return await ImageLoader.shared.getImage(for: self)
@@ -77,7 +76,7 @@ extension URL {
     }
 }
 
-extension [URL] {
+public extension [URL] {
     /// Removes all empty directories in the array, starting from the most nested ones,
     /// and recursively checks parent directories for emptiness
     func removeEmptyDirectories() {
@@ -103,7 +102,7 @@ extension [URL] {
     }
 }
 
-extension String {
+public extension String {
     func deletingLastPathComponent() -> String {
         split(separator: "/").dropLast().joined(separator: "/")
     }

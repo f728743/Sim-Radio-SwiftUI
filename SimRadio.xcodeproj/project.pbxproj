@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AD97F4F82EC091DC007DFBA2 /* SharedUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AD97F4F72EC091DC007DFBA2 /* SharedUtilities */; };
 		ADB5B3AF2D2F96A8006001EF /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = ADB5B3AE2D2F96A8006001EF /* Kingfisher */; };
 /* End PBXBuildFile section */
 
@@ -23,6 +24,7 @@
 /* Begin PBXFileReference section */
 		AD2F42562D2F948D00F8EAF1 /* SimRadio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimRadio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD63C2E92D4B7CD200C96EC5 /* SimRadioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SimRadioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD97F4F52EC09003007DFBA2 /* SharedUtilities */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SharedUtilities; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -56,6 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD97F4F82EC091DC007DFBA2 /* SharedUtilities in Frameworks */,
 				ADB5B3AF2D2F96A8006001EF /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -73,8 +76,10 @@
 		AD2F424D2D2F948D00F8EAF1 = {
 			isa = PBXGroup;
 			children = (
+				AD97F4F52EC09003007DFBA2 /* SharedUtilities */,
 				AD2F42582D2F948D00F8EAF1 /* SimRadio */,
 				AD63C2EA2D4B7CD200C96EC5 /* SimRadioTests */,
+				AD97F4F62EC091DC007DFBA2 /* Frameworks */,
 				AD2F42572D2F948D00F8EAF1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -86,6 +91,13 @@
 				AD63C2E92D4B7CD200C96EC5 /* SimRadioTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AD97F4F62EC091DC007DFBA2 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -110,6 +122,7 @@
 			name = SimRadio;
 			packageProductDependencies = (
 				ADB5B3AE2D2F96A8006001EF /* Kingfisher */,
+				AD97F4F72EC091DC007DFBA2 /* SharedUtilities */,
 			);
 			productName = SimRadio;
 			productReference = AD2F42562D2F948D00F8EAF1 /* SimRadio.app */;
@@ -498,13 +511,17 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
 			requirement = {
-				kind = upToNextMajorVersion;
+				kind = upToNextMinorVersion;
 				minimumVersion = 8.1.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AD97F4F72EC091DC007DFBA2 /* SharedUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SharedUtilities;
+		};
 		ADB5B3AE2D2F96A8006001EF /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = ADB5B3AD2D2F96A8006001EF /* XCRemoteSwiftPackageReference "Kingfisher" */;

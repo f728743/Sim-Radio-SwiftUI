@@ -1,13 +1,13 @@
 //
 //  String+Extensions.swift
-//  SimRadio
+//  SharedUtilities
 //
 //  Created by Alexey Vorobyov
 //
 
 import Foundation
 
-extension String {
+public extension String {
     var nonCryptoHash: UInt64 {
         var result = UInt64(5381)
         let buf = [UInt8](utf8)

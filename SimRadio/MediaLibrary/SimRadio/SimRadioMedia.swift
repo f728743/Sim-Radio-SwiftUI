@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SharedUtilities
 
 struct SimRadioMedia {
     let series: [SimGameSeries.ID: SimGameSeries]

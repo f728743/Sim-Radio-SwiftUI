@@ -1,13 +1,13 @@
 //
 //  Date+Extensions.swift
-//  SimRadio
+//  SharedUtilities
 //
 //  Created by Alexey Vorobyov on 29.01.2025.
 //
 
 import Foundation
 
-extension Date {
+public extension Date {
     var currentSecondOfDay: Double {
         let calendar = Calendar.current
         let h = calendar.component(.hour, from: self)

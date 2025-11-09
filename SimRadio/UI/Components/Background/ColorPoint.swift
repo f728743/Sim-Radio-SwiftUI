@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SharedUtilities
 
 struct ColorPoint: Hashable {
     var position: UnitPoint

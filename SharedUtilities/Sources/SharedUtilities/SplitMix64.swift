@@ -1,6 +1,6 @@
 //
 //  SplitMix64.swift
-//  SimRadio
+//  SharedUtilities
 //
 //  Created by Alexey Vorobyov on 02.05.2025.
 //

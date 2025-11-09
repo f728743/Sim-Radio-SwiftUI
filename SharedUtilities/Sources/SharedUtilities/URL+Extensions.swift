@@ -11,7 +11,7 @@ import UIKit
 public extension URL {
     var image: UIImage? {
         get async {
-            return await ImageLoader.shared.getImage(for: self)
+            await ImageLoader.shared.getImage(for: self)
         }
     }
 
@@ -110,20 +110,20 @@ public extension String {
 
 private actor ImageLoader {
     static let shared = ImageLoader()
-    
+
     private let requestModifier = AnyModifier { request in
         var modifiedRequest = request
         modifiedRequest.timeoutInterval = 1
         return modifiedRequest
     }
-    
+
     private var loadingTasks: [URL: Task<UIImage?, Never>] = [:]
-    
+
     func getImage(for url: URL) async -> UIImage? {
         if let existingTask = loadingTasks[url] {
             return await existingTask.value
         }
-        
+
         let task = Task<UIImage?, Never> {
             let result: UIImage?
             do {
@@ -137,7 +137,7 @@ private actor ImageLoader {
             }
             return result
         }
-        
+
         loadingTasks[url] = task
         let result = await task.value
         loadingTasks[url] = nil

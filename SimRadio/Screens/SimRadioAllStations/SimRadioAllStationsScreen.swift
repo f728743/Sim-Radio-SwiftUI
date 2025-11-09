@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 24.09.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct SimRadioAllStationsScreen: View {

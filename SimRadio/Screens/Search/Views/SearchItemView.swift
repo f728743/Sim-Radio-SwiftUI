@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 24.10.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct SearchItemView: View {
@@ -67,7 +68,7 @@ struct SearchItemView: View {
                     .foregroundStyle(Color(.palette.buttonBackground))
                 Image(systemName: isAdded ? "checkmark" : "plus")
                     .font(.system(size: 19, weight: .semibold))
-                    .foregroundStyle(.brand)
+                    .foregroundStyle(Color.brand)
                     .contentTransition(.symbolEffect(.replace))
             }
             .frame(width: 32, height: 32)

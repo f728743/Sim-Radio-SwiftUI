@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 09.04.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct MediaDownloadProgressView: View {
@@ -44,7 +45,7 @@ private extension MediaDownloadProgressView {
             .trim(from: 0, to: value)
             .rotation(.degrees(-90))
             .stroke(
-                Color(.brand),
+                Color.brand,
                 style: StrokeStyle(
                     lineWidth: Const.lineWidth,
                     lineCap: .round

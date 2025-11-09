@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 24.12.2024.
 //
 
+import DesignSystem
 import MediaPlayer
 import SwiftUI
 

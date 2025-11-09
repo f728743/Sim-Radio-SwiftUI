@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 22.10.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct SeriesDetailsOtherStations: View {

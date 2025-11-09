@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 24.09.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct MediaItemScreen: View {
@@ -89,7 +90,7 @@ private struct ItemView: View {
             Group {
                 if let activity = model.activity {
                     MediaActivityIndicator(state: activity)
-                        .foregroundStyle(.brand)
+                        .foregroundStyle(Color.brand)
                 } else {
                     Text("\(index)")
                 }

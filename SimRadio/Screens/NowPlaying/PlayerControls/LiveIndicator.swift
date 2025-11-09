@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 16.05.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct LiveIndicator: View {

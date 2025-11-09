@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SharedUtilities",
     platforms: [
-        .iOS(.v13)
+        .iOS(.v26)
     ],
     products: [
         .library(
@@ -20,7 +20,6 @@ let package = Package(
             .upToNextMinor(from: "8.1.3")
         )
     ],
-
     targets: [
         .target(
             name: "SharedUtilities",

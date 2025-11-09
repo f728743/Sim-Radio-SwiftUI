@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 17.11.2024.
 //
 
+import DesignSystem
 import SwiftUI
 
 enum PlayerMatchedGeometry {

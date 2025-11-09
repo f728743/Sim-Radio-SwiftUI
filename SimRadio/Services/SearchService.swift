@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 06.10.2025.
 //
 
+import DesignSystem
 import Foundation
 
 final class SearchService: Sendable {

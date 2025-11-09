@@ -276,18 +276,19 @@ private extension DefaultSimRadioMediaPlayer {
 
     func processPlaybackTime(_ time: CMTime) {
         let currentMarker: AudioFragmentMarker?
-        
-        // Determine the current marker (it can be nil if there are no markers)
-        if let markers = currentMarkers, !markers.isEmpty {
-            currentMarker = markers.last { time >= $0.offset }
+
+            // Determine the current marker (it can be nil if there are no markers)
+            = if let markers = currentMarkers, !markers.isEmpty
+        {
+            markers.last { time >= $0.offset }
         } else {
-            currentMarker = nil
+            nil
         }
 
         // Check if the marker has changed OR this is a forced update
         if currentMarker != lastBroadcastedMarker || forceMarkerUpdate {
             lastBroadcastedMarker = currentMarker
-            forceMarkerUpdate = false 
+            forceMarkerUpdate = false
             delegate?.simRadioMediaPlayer(self, didCrossTrackMarker: currentMarker)
         }
     }

@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 22.10.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct SeriesDetailsSeries: View {
@@ -35,7 +36,7 @@ struct SeriesDetailsSeries: View {
                             if let isAdded {
                                 Image(systemName: isAdded ? "checkmark" : "plus")
                                     .font(.system(size: 15, weight: .bold))
-                                    .foregroundStyle(.brand)
+                                    .foregroundStyle(Color.brand)
                                     .contentTransition(.symbolEffect(.replace))
                             }
                         }

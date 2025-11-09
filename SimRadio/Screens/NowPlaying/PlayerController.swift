@@ -6,6 +6,7 @@
 //
 
 import Combine
+import DesignSystem
 import SwiftUI
 import UIKit
 
@@ -118,7 +119,7 @@ private extension PlayerController {
             colors = await meta.colors.map { UIColor($0) }
         } else {
             display = .placeholder
-            colors = [.graySecondary]
+            colors = [UIColor(.graySecondary)]
         }
     }
 }

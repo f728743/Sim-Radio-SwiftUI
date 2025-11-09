@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 02.01.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct NowPlayingBackground: View {

@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 25.12.2024.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct PreviewBackground: View {

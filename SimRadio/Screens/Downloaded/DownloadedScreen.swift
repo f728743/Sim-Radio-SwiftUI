@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 26.01.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct DownloadedScreen: View {

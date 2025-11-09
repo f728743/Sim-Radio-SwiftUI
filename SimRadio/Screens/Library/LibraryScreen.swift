@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 06.04.2025.
 //
 
+import DesignSystem
 import Kingfisher
 import SwiftUI
 

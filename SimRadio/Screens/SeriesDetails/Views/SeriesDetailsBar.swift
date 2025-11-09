@@ -31,7 +31,7 @@ struct SeriesDetailsBar: View {
                 ZStack {
                     Circle()
                         .frame(width: 44, height: 44)
-                        .foregroundStyle(.brand)
+                        .foregroundStyle(Color.brand)
 
                     Button(
                         action: onPlay,

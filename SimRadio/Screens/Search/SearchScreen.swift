@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 23.09.2025.
 //
 
+import DesignSystem
 import SwiftUI
 
 struct SearchScreen: View {

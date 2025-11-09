@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 03.11.2025.
 //
 
+import DesignSystem
 import Foundation
 
 enum LibraryItem: Identifiable {

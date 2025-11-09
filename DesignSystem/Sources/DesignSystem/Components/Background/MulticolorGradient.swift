@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MulticolorGradient: View, @preconcurrency Animatable {
+    let library = ShaderLibrary.bundle(.module)
     var points: ColorPoints
     var animationUpdateHandler: ((ColorPoints) -> Void)?
 
@@ -27,7 +28,9 @@ struct MulticolorGradient: View, @preconcurrency Animatable {
 
     var body: some View {
         Rectangle()
-            .colorEffect(ShaderLibrary.gradient(.boundingRect, .uniforms(uniforms)))
+            .colorEffect(
+                library.gradient(.boundingRect, .uniforms(uniforms))
+            )
     }
 }
 

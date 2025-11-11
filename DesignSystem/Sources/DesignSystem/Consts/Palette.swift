@@ -18,7 +18,7 @@ public extension Color {
         Color("AppSky", bundle: .module),
         Color("AppIndigo", bundle: .module),
         Color("AppPurple", bundle: .module),
-        Color("AppPin", bundle: .module)
+        Color("AppPink", bundle: .module)
     ]
 
     static let iconPrimary: Color = .primary

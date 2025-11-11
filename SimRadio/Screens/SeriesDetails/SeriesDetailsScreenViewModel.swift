@@ -8,6 +8,7 @@
 import Combine
 import DesignSystem
 import Observation
+import Services
 import SwiftUI
 
 @Observable @MainActor

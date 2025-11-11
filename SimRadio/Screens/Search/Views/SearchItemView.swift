@@ -6,6 +6,7 @@
 //
 
 import DesignSystem
+import Services
 import SwiftUI
 
 struct SearchItemView: View {

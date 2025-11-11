@@ -6,6 +6,7 @@
 //
 
 import Observation
+import Services
 
 @MainActor
 class Dependencies: Observable {

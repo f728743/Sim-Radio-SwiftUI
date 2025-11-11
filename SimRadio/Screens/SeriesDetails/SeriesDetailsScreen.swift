@@ -7,6 +7,7 @@
 
 import DesignSystem
 import Kingfisher
+import Services
 import SwiftUI
 
 struct SeriesDetailsScreen: View {

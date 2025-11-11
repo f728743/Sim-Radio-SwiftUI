@@ -1,18 +1,18 @@
 //
 //  APIService.swift
-//  SimRadio
+//  Services
 //
 //  Created by Alexey Vorobyov on 04.10.2025.
 //
 
 import Foundation
 
-protocol APIServiceProtocol: Sendable {
+public protocol APIServiceProtocol: Sendable {
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T
     func request<T: Decodable>(_ endpoint: Endpoint) async throws -> APIResponse<T>
 }
 
-enum HTTPMethod: String {
+public enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
     case put = "PUT"
@@ -20,18 +20,18 @@ enum HTTPMethod: String {
     case patch = "PATCH"
 }
 
-enum HTTPHeader {
+public enum HTTPHeader {
     static let contentType = "Content-Type"
     static let authorization = "Authorization"
     static let accept = "Accept"
 }
 
-enum ContentType: String {
+public enum ContentType: String {
     case json = "application/json"
     case formData = "multipart/form-data"
 }
 
-enum APIError: Error {
+public enum APIError: Error {
     case invalidURL
     case invalidResponse
     case statusCode(Int)
@@ -41,7 +41,7 @@ enum APIError: Error {
     case unauthorized
     case serverError(String)
 
-    var localizedDescription: String {
+    public var localizedDescription: String {
         switch self {
         case .invalidURL:
             "Invalid URL"
@@ -63,14 +63,14 @@ enum APIError: Error {
     }
 }
 
-struct Endpoint {
-    let method: HTTPMethod
-    let path: String
-    let queryParameters: [String: Any]?
-    let body: Any?
-    let headers: [String: String]?
+public struct Endpoint {
+    public let method: HTTPMethod
+    public let path: String
+    public let queryParameters: [String: Any]?
+    public let body: Any?
+    public let headers: [String: String]?
 
-    init(
+    public init(
         method: HTTPMethod,
         path: String,
         queryParameters: [String: Any]? = nil,
@@ -85,18 +85,18 @@ struct Endpoint {
     }
 }
 
-struct APIResponse<T: Decodable> {
+public struct APIResponse<T: Decodable> {
     let value: T
     let response: HTTPURLResponse
 }
 
-final class APIService: APIServiceProtocol, Sendable {
+public final class APIService: APIServiceProtocol, Sendable {
     private let baseURL: String
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
 
-    init(
+    public init(
         baseURL: String,
         session: URLSession = .shared,
         decoder: JSONDecoder = JSONDecoder(),
@@ -114,12 +114,12 @@ final class APIService: APIServiceProtocol, Sendable {
         self.encoder.dateEncodingStrategy = .iso8601
     }
 
-    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+    public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         let response: APIResponse<T> = try await request(endpoint)
         return response.value
     }
 
-    func request<T: Decodable>(_ endpoint: Endpoint) async throws -> APIResponse<T> {
+    public func request<T: Decodable>(_ endpoint: Endpoint) async throws -> APIResponse<T> {
         let urlRequest = try buildURLRequest(from: endpoint)
         let (data, response) = try await session.data(for: urlRequest)
         guard let httpResponse = response as? HTTPURLResponse else {

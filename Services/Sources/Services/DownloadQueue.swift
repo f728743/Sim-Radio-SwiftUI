@@ -1,19 +1,23 @@
 //
 //  DownloadQueue.swift
-//  SimRadio
+//  Services
 //
 //  Created by Alexey Vorobyov
 //
 
 import Foundation
 
-actor DownloadQueue {
-    struct DownloadRequest: Equatable, Hashable {
-        let sourceURL: URL
-        let destinationDirectoryPath: String
+public actor DownloadQueue {
+    public struct DownloadRequest: Equatable, Hashable, Sendable {
+        public let sourceURL: URL
+        public let destinationDirectoryPath: String
+        public init(sourceURL: URL, destinationDirectoryPath: String) {
+            self.sourceURL = sourceURL
+            self.destinationDirectoryPath = destinationDirectoryPath
+        }
     }
 
-    enum DownloadState {
+    public enum DownloadState: Sendable {
         case queued
         case progress(downloadedBytes: Int64, totalBytes: Int64)
         case completed
@@ -21,12 +25,16 @@ actor DownloadQueue {
         case failed(error: Error)
     }
 
-    struct Event {
-        let state: DownloadState
-        let downloadRequest: DownloadRequest
+    public struct Event: Sendable {
+        public let state: DownloadState
+        public let downloadRequest: DownloadRequest
+        public init(state: DownloadState, downloadRequest: DownloadRequest) {
+            self.state = state
+            self.downloadRequest = downloadRequest
+        }
     }
 
-    let events: AsyncStream<Event>
+    public let events: AsyncStream<Event>
     private let continuation: AsyncStream<Event>.Continuation
     private let destinationDirectory: URL
     private let urlSession: URLSession
@@ -34,7 +42,7 @@ actor DownloadQueue {
     private var downloadQueue: [QueueElement] = []
     private var activeDownloads: [DownloadRequest: FileDownload] = [:]
 
-    init(destinationDirectory: URL, maxConcurrentDownloads: Int = 6) {
+    public init(destinationDirectory: URL, maxConcurrentDownloads: Int = 6) {
         let config = URLSessionConfiguration.default
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         config.urlCache = nil
@@ -50,7 +58,7 @@ actor DownloadQueue {
         }
     }
 
-    func append(_ downloadRequests: [DownloadRequest]) async {
+    public func append(_ downloadRequests: [DownloadRequest]) async {
         await withTaskGroup(of: Void.self) { group in
             for downloadRequest in downloadRequests {
                 group.addTask { await self.append(downloadRequest) }
@@ -58,7 +66,7 @@ actor DownloadQueue {
         }
     }
 
-    func append(_ downloadRequest: DownloadRequest) async {
+    public func append(_ downloadRequest: DownloadRequest) async {
         guard !downloadQueue.contains(where: { $0.downloadRequest == downloadRequest }) else {
             return
         }
@@ -77,7 +85,7 @@ actor DownloadQueue {
         }
     }
 
-    func cancel(_ downloadRequest: DownloadRequest) async {
+    public func cancel(_ downloadRequest: DownloadRequest) async {
         if let download = activeDownloads[downloadRequest] {
             download.cancel()
         } else if let index = downloadQueue.firstIndex(where: { $0.downloadRequest == downloadRequest }) {
@@ -86,7 +94,7 @@ actor DownloadQueue {
         }
     }
 
-    func cancelAllDownloads() async {
+    public func cancelAllDownloads() async {
         for downloadRequest in activeDownloads.keys {
             await cancel(downloadRequest)
         }
@@ -196,7 +204,7 @@ extension DownloadQueue.QueueElement {
     }
 }
 
-extension DownloadQueue.DownloadState {
+public extension DownloadQueue.DownloadState {
     var isFinished: Bool {
         switch self {
         case .completed, .canceled:
@@ -216,7 +224,7 @@ extension DownloadQueue.DownloadState {
     }
 }
 
-extension DownloadQueue.DownloadRequest {
+public extension DownloadQueue.DownloadRequest {
     var localDirectoryURL: URL {
         .documentsDirectory.appending(
             path: destinationDirectoryPath,

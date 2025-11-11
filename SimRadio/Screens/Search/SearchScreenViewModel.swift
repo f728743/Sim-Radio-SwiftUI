@@ -7,7 +7,9 @@
 
 import AVFoundation
 import Combine
+import DesignSystem
 import Foundation
+import Services
 import SwiftUI
 
 @Observable @MainActor
@@ -145,4 +147,25 @@ func prettyPrintTags(_ tags: String) -> String {
         .split(separator: ",")
         .map(\.capitalized)
         .joined(separator: ", ")
+}
+
+extension APISimRadioSeriesDTO {
+    var artwork: Artwork {
+        .album(buildMediaURL(from: url, with: logo))
+    }
+}
+
+extension APIRealStationDTO {
+    var artwork: Artwork {
+        let url = cachedFavicon.flatMap { URL(string: $0) }
+        return .radio(url, name: name)
+    }
+}
+
+func buildMediaURL(from baseURL: String, with filename: String) -> URL? {
+    guard let baseURL = URL(string: baseURL) else {
+        return nil
+    }
+    let baseDirectory = baseURL.deletingLastPathComponent()
+    return baseDirectory.appendingPathComponent(filename)
 }

@@ -8,6 +8,7 @@
 // swiftlint:disable file_length function_body_length cyclomatic_complexity
 
 import Foundation
+import Services
 
 private enum DownloadLog {
     case info(verbose: Bool), warning, error
@@ -53,7 +54,7 @@ actor DefaultSimRadioDownload {
 
         Task { [weak self] in
             guard let self else { return }
-            let stream = downloadQueue.events
+            let stream = await downloadQueue.events
             for await event in stream {
                 await handleDownloaderEvent(event)
             }

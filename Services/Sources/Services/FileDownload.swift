@@ -1,33 +1,34 @@
 //
 //  FileDownload.swift
-//  SimRadio
+//  Services
 //
 //  Created by Alexey Vorobyov
 //
 
 import Foundation
+import SharedUtilities
 
-final class FileDownload: NSObject {
-    let events: AsyncStream<Event>
+public final class FileDownload: NSObject {
+    public let events: AsyncStream<Event>
     private let continuation: AsyncStream<Event>.Continuation
     private let urlSessionTask: URLSessionDownloadTask
     private let destinationDirectory: URL
 
-    enum Event {
+    public enum Event: Sendable {
         case progress(downloadedBytes: Int64, totalBytes: Int64)
         case completed
         case canceled
         case failed(error: Error)
     }
 
-    convenience init(url: URL, destinationDirectory: URL, urlSession: URLSession) {
+    public convenience init(url: URL, destinationDirectory: URL, urlSession: URLSession) {
         self.init(
             destinationDirectory: destinationDirectory,
             urlSessionTask: urlSession.downloadTask(with: url)
         )
     }
 
-    convenience init(resumeData data: Data, destinationDirectory: URL, urlSession: URLSession) {
+    public convenience init(resumeData data: Data, destinationDirectory: URL, urlSession: URLSession) {
         self.init(
             destinationDirectory: destinationDirectory,
             urlSessionTask: urlSession.downloadTask(withResumeData: data)
@@ -44,19 +45,19 @@ final class FileDownload: NSObject {
         }
     }
 
-    func start() {
+    public func start() {
         urlSessionTask.delegate = self
         urlSessionTask.resume()
     }
 
-    func cancel() {
+    public func cancel() {
         urlSessionTask.cancel()
         continuation.yield(.canceled)
         continuation.finish()
     }
 }
 
-extension FileDownload.Event {
+public extension FileDownload.Event {
     var isFinal: Bool {
         switch self {
         case .completed, .failed, .canceled:
@@ -68,7 +69,7 @@ extension FileDownload.Event {
 }
 
 extension FileDownload: URLSessionDownloadDelegate {
-    func urlSession(
+    public func urlSession(
         _: URLSession,
         downloadTask: URLSessionDownloadTask,
         didFinishDownloadingTo location: URL
@@ -93,7 +94,7 @@ extension FileDownload: URLSessionDownloadDelegate {
         continuation.finish()
     }
 
-    func urlSession(
+    public func urlSession(
         _: URLSession,
         downloadTask _: URLSessionDownloadTask,
         didWriteData _: Int64,

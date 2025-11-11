@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		AD6013A52EC09C890023137C /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = AD6013A42EC09C890023137C /* DesignSystem */; };
 		AD97F4F82EC091DC007DFBA2 /* SharedUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AD97F4F72EC091DC007DFBA2 /* SharedUtilities */; };
+		AD9E1B532EC3127D002E768E /* Services in Frameworks */ = {isa = PBXBuildFile; productRef = AD9E1B522EC3127D002E768E /* Services */; };
 		ADB5B3AF2D2F96A8006001EF /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = ADB5B3AE2D2F96A8006001EF /* Kingfisher */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +28,7 @@
 		AD6013A32EC09AEC0023137C /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DesignSystem; sourceTree = "<group>"; };
 		AD63C2E92D4B7CD200C96EC5 /* SimRadioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SimRadioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD97F4F52EC09003007DFBA2 /* SharedUtilities */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SharedUtilities; sourceTree = "<group>"; };
+		AD9E1B512EC311C4002E768E /* Services */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Services; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -60,6 +62,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD9E1B532EC3127D002E768E /* Services in Frameworks */,
 				AD6013A52EC09C890023137C /* DesignSystem in Frameworks */,
 				AD97F4F82EC091DC007DFBA2 /* SharedUtilities in Frameworks */,
 				ADB5B3AF2D2F96A8006001EF /* Kingfisher in Frameworks */,
@@ -79,6 +82,7 @@
 		AD2F424D2D2F948D00F8EAF1 = {
 			isa = PBXGroup;
 			children = (
+				AD9E1B512EC311C4002E768E /* Services */,
 				AD6013A32EC09AEC0023137C /* DesignSystem */,
 				AD97F4F52EC09003007DFBA2 /* SharedUtilities */,
 				AD2F42582D2F948D00F8EAF1 /* SimRadio */,
@@ -128,6 +132,7 @@
 				ADB5B3AE2D2F96A8006001EF /* Kingfisher */,
 				AD97F4F72EC091DC007DFBA2 /* SharedUtilities */,
 				AD6013A42EC09C890023137C /* DesignSystem */,
+				AD9E1B522EC3127D002E768E /* Services */,
 			);
 			productName = SimRadio;
 			productReference = AD2F42562D2F948D00F8EAF1 /* SimRadio.app */;
@@ -530,6 +535,10 @@
 		AD97F4F72EC091DC007DFBA2 /* SharedUtilities */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SharedUtilities;
+		};
+		AD9E1B522EC3127D002E768E /* Services */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Services;
 		};
 		ADB5B3AE2D2F96A8006001EF /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

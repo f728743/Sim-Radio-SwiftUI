@@ -79,6 +79,11 @@ class SearchScreenViewModel {
 private extension SearchScreenViewModel {
     func performSearch() {
         guard let searchService else { return }
+        
+        if urlInputHandled() {
+            return
+        }
+        
         searchTask?.cancel()
 
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -115,6 +120,16 @@ private extension SearchScreenViewModel {
         }
     }
 
+    func urlInputHandled() -> Bool {
+        guard searchText.starts(with: "https://"), let url = URL(string: searchText) else {
+            return false
+        }
+        Task {
+            try await mediaState?.addSimRadio(url: url, persisted: true)
+        }
+        return true
+    }
+    
     var addedStations: Set<MediaID> {
         Set(
             (mediaState?.mediaList(persisted: true) ?? [])

@@ -9,6 +9,7 @@ import Combine
 import DesignSystem
 import MediaLibrary
 import Observation
+import Player
 import Services
 import SwiftUI
 

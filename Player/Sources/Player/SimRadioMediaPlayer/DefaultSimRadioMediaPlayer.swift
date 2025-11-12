@@ -9,9 +9,9 @@ import AVFoundation
 import MediaLibrary
 
 @MainActor
-final class DefaultSimRadioMediaPlayer {
-    weak var mediaState: SimRadioMediaState?
-    weak var delegate: SimRadioMediaPlayerDelegate?
+public final class DefaultSimRadioMediaPlayer {
+    public weak var mediaState: SimRadioMediaState?
+    public weak var delegate: SimRadioMediaPlayerDelegate?
     private let queuePlayer = AVQueuePlayer()
     private let audioTapProcessor: AudioTapProcessor
     private var nextPlayableItem: NextPlayableItem?
@@ -27,7 +27,7 @@ final class DefaultSimRadioMediaPlayer {
     private var lastBroadcastedMarker: AudioFragmentMarker?
     private var forceMarkerUpdate: Bool = false
 
-    init() {
+    public init() {
         audioTapProcessor = AudioTapProcessor(
             frequencyBands: MediaPlayer.Const.frequencyBands
         )
@@ -36,7 +36,7 @@ final class DefaultSimRadioMediaPlayer {
 }
 
 extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
-    func playStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?) {
+    public func playStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?) {
         playTask?.cancel()
 
         // Save the ID of the new request
@@ -71,7 +71,7 @@ extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
         }
     }
 
-    func stop() {
+    public func stop() {
         queuePlayer.removeAllItems()
         playTask?.cancel()
         playTask = nil
@@ -83,7 +83,7 @@ extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
         currentRequestedMode = nil
     }
 
-    func availableModes(stationID: MediaID) -> [MediaPlaybackMode] {
+    public func availableModes(stationID: MediaID) -> [MediaPlaybackMode] {
         switch stationID {
         case let .simRadio(id):
             guard let mediaState,

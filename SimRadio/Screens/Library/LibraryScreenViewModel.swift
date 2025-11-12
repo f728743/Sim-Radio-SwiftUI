@@ -7,6 +7,7 @@
 
 import MediaLibrary
 import Observation
+import Player
 
 @Observable @MainActor
 final class LibraryScreenViewModel {

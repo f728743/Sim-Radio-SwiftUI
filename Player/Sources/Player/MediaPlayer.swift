@@ -9,15 +9,15 @@ import Combine
 import MediaLibrary
 import UIKit
 
-enum MediaPlayerState: Equatable, Hashable {
+public enum MediaPlayerState: Equatable, Hashable {
     case playing(media: MediaID, mode: MediaPlaybackMode.ID?)
     case paused(media: MediaID?, mode: MediaPlaybackMode.ID?)
 }
 
 @MainActor
-final class MediaPlayer {
-    enum Const {
-        static let frequencyBands = 5
+public final class MediaPlayer {
+    public enum Const {
+        public static let frequencyBands = 5
     }
 
     struct MediaMode {
@@ -25,25 +25,25 @@ final class MediaPlayer {
         let mode: MediaPlaybackMode.ID?
     }
 
-    var simPlayer: SimRadioMediaPlayer?
-    var realPlayer: RealRadioMediaPlayer?
+    public var simPlayer: SimRadioMediaPlayer?
+    public var realPlayer: RealRadioMediaPlayer?
 
-    weak var mediaState: MediaState?
+    public weak var mediaState: MediaState?
     private(set) var items: [MediaID] = []
 
     @Published private(set) var progress: NowPlayingInfo.Progress?
-    @Published private(set) var state: MediaPlayerState
-    @Published private(set) var commandProfile: CommandProfile?
-    @Published private(set) var playIndicatorSpectrum: [Float]
-    @Published private(set) var playbackModes: [MediaPlaybackMode] = []
-    @Published private(set) var nowPlayingMeta: MediaMeta?
+    @Published public private(set) var state: MediaPlayerState
+    @Published public private(set) var commandProfile: CommandProfile?
+    @Published public private(set) var playIndicatorSpectrum: [Float]
+    @Published public private(set) var playbackModes: [MediaPlaybackMode] = []
+    @Published public private(set) var nowPlayingMeta: MediaMeta?
 
     private var audioSession: AudioSession
     private var systemMediaInterface: SystemMediaInterface
     // For handling interruptions
     private var interruptedMedia: MediaMode?
 
-    init() {
+    public init() {
         audioSession = AudioSession()
         systemMediaInterface = SystemMediaInterface()
         state = .paused(media: .none, mode: .none)
@@ -56,7 +56,7 @@ final class MediaPlayer {
 
     // MARK: - Public Playback Controls
 
-    func togglePlayPause() {
+    public func togglePlayPause() {
         if state.isPlaying {
             pause()
         } else {
@@ -64,7 +64,7 @@ final class MediaPlayer {
         }
     }
 
-    func play(mode: MediaPlaybackMode.ID?) {
+    public func play(mode: MediaPlaybackMode.ID?) {
         guard !state.isPlaying || state.currentMediaMode != mode else { return }
         if let mediaID = state.currentMediaID {
             guard let index = items.firstIndex(of: mediaID) else {
@@ -77,7 +77,7 @@ final class MediaPlayer {
         }
     }
 
-    func play(_ mediaID: MediaID, of items: [MediaID], mode: MediaPlaybackMode.ID? = nil) {
+    public func play(_ mediaID: MediaID, of items: [MediaID], mode: MediaPlaybackMode.ID? = nil) {
         guard let index = items.firstIndex(of: mediaID) else {
             print("MediaPlayer Error: there is no mediaID \(mediaID) in items.")
             return
@@ -96,7 +96,7 @@ final class MediaPlayer {
         updateMeta()
     }
 
-    func forward() {
+    public func forward() {
         guard items.count > 1,
               let mediaID = state.currentMediaID,
               let index = items.firstIndex(of: mediaID)
@@ -107,7 +107,7 @@ final class MediaPlayer {
         goToItem(at: nextIndex)
     }
 
-    func backward() {
+    public func backward() {
         guard items.count > 1,
               let mediaID = state.currentMediaID,
               let index = items.firstIndex(of: mediaID)
@@ -231,7 +231,7 @@ private extension MediaPlayer {
     }
 }
 
-extension MediaPlayerState {
+public extension MediaPlayerState {
     var currentMediaID: MediaID? {
         switch self {
         case let .paused(mediaID, _): mediaID
@@ -295,17 +295,17 @@ extension MediaPlayer: SystemMediaInterfaceDelegate {
 }
 
 extension MediaPlayer: SimRadioMediaPlayerDelegate {
-    func simRadioMediaPlayer(_: any SimRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
+    public func simRadioMediaPlayer(_: any SimRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
         playIndicatorSpectrum = spectrum
     }
 
-    func simRadioMediaPlayer(_: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
+    public func simRadioMediaPlayer(_: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?) {
         updateMeta(trackMarker: marker)
     }
 }
 
 extension MediaPlayer: RealRadioMediaPlayerDelegate {
-    func realRadioMediaPlayer(_: any RealRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
+    public func realRadioMediaPlayer(_: any RealRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
         playIndicatorSpectrum = spectrum
     }
 }

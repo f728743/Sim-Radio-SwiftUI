@@ -7,6 +7,7 @@
 
 import Combine
 import MediaLibrary
+import Player
 
 @MainActor
 protocol PlayerStateObserving: AnyObject {

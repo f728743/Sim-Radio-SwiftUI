@@ -11,6 +11,7 @@
 		AD6013A52EC09C890023137C /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = AD6013A42EC09C890023137C /* DesignSystem */; };
 		AD97F4F82EC091DC007DFBA2 /* SharedUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AD97F4F72EC091DC007DFBA2 /* SharedUtilities */; };
 		AD9E1B532EC3127D002E768E /* Services in Frameworks */ = {isa = PBXBuildFile; productRef = AD9E1B522EC3127D002E768E /* Services */; };
+		ADB3236E2EC4F7FC002AD1F5 /* Player in Frameworks */ = {isa = PBXBuildFile; productRef = ADB3236D2EC4F7FC002AD1F5 /* Player */; };
 		ADB5B3AF2D2F96A8006001EF /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = ADB5B3AE2D2F96A8006001EF /* Kingfisher */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		AD63C2E92D4B7CD200C96EC5 /* SimRadioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SimRadioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD97F4F52EC09003007DFBA2 /* SharedUtilities */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SharedUtilities; sourceTree = "<group>"; };
 		AD9E1B512EC311C4002E768E /* Services */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Services; sourceTree = "<group>"; };
+		ADB3236C2EC4F7F4002AD1F5 /* Player */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Player; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -52,11 +54,6 @@
 			path = SimRadio;
 			sourceTree = "<group>";
 		};
-		AD63C2EA2D4B7CD200C96EC5 /* SimRadioTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SimRadioTests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +62,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AD9E1B532EC3127D002E768E /* Services in Frameworks */,
+				ADB3236E2EC4F7FC002AD1F5 /* Player in Frameworks */,
 				AD6013A52EC09C890023137C /* DesignSystem in Frameworks */,
 				AD97F4F82EC091DC007DFBA2 /* SharedUtilities in Frameworks */,
 				AD1941EC2EC4D5FA00197279 /* MediaLibrary in Frameworks */,
@@ -85,13 +83,12 @@
 		AD2F424D2D2F948D00F8EAF1 = {
 			isa = PBXGroup;
 			children = (
-				AD1941EA2EC4D5B700197279 /* MediaLibrary */,
-				AD9E1B512EC311C4002E768E /* Services */,
-				AD6013A32EC09AEC0023137C /* DesignSystem */,
-				AD97F4F52EC09003007DFBA2 /* SharedUtilities */,
 				AD2F42582D2F948D00F8EAF1 /* SimRadio */,
-				AD63C2EA2D4B7CD200C96EC5 /* SimRadioTests */,
-				AD97F4F62EC091DC007DFBA2 /* Frameworks */,
+				AD6013A32EC09AEC0023137C /* DesignSystem */,
+				AD1941EA2EC4D5B700197279 /* MediaLibrary */,
+				ADB3236C2EC4F7F4002AD1F5 /* Player */,
+				AD9E1B512EC311C4002E768E /* Services */,
+				AD97F4F52EC09003007DFBA2 /* SharedUtilities */,
 				AD2F42572D2F948D00F8EAF1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -103,13 +100,6 @@
 				AD63C2E92D4B7CD200C96EC5 /* SimRadioTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		AD97F4F62EC091DC007DFBA2 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -138,6 +128,7 @@
 				AD6013A42EC09C890023137C /* DesignSystem */,
 				AD9E1B522EC3127D002E768E /* Services */,
 				AD1941EB2EC4D5FA00197279 /* MediaLibrary */,
+				ADB3236D2EC4F7FC002AD1F5 /* Player */,
 			);
 			productName = SimRadio;
 			productReference = AD2F42562D2F948D00F8EAF1 /* SimRadio.app */;
@@ -155,9 +146,6 @@
 			);
 			dependencies = (
 				AD63C2EE2D4B7CD200C96EC5 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				AD63C2EA2D4B7CD200C96EC5 /* SimRadioTests */,
 			);
 			name = SimRadioTests;
 			packageProductDependencies = (
@@ -552,6 +540,10 @@
 		AD9E1B522EC3127D002E768E /* Services */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Services;
+		};
+		ADB3236D2EC4F7FC002AD1F5 /* Player */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Player;
 		};
 		ADB5B3AE2D2F96A8006001EF /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

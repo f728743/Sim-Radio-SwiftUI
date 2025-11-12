@@ -7,6 +7,7 @@
 
 import MediaLibrary
 import Observation
+import Player
 import Services
 
 @MainActor

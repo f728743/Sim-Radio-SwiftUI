@@ -8,12 +8,12 @@
 import MediaLibrary
 
 @MainActor
-protocol RealRadioMediaPlayer {
+public protocol RealRadioMediaPlayer {
     func playStation(withID stationID: RealStation.ID)
     func stop()
 }
 
 @MainActor
-protocol RealRadioMediaPlayerDelegate: AnyObject {
+public protocol RealRadioMediaPlayerDelegate: AnyObject {
     func realRadioMediaPlayer(_ player: RealRadioMediaPlayer, didUpdateSpectrum spectrum: [Float])
 }

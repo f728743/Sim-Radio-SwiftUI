@@ -10,9 +10,9 @@ import Foundation
 import MediaLibrary
 
 @MainActor
-final class DefaultRealRadioMediaPlayer {
-    weak var mediaState: RealRadioMediaState?
-    weak var delegate: RealRadioMediaPlayerDelegate?
+public final class DefaultRealRadioMediaPlayer {
+    public weak var mediaState: RealRadioMediaState?
+    public weak var delegate: RealRadioMediaPlayerDelegate?
 
     private var player: AVPlayer?
     private var playerItem: AVPlayerItem?
@@ -20,12 +20,14 @@ final class DefaultRealRadioMediaPlayer {
     private var spectrumUpdateTimer: Timer?
     private var statusObservation: NSKeyValueObservation?
     private var spectrum = SimulatedSpectrum()
+
+    public init() {}
 }
 
 // MARK: - RealRadioMediaPlayer
 
 extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
-    func playStation(withID stationID: RealStation.ID) {
+    public func playStation(withID stationID: RealStation.ID) {
         guard let mediaState,
               let station = mediaState.realRadio.stations[stationID],
               let stream = station.streamResolved.toHTTPS
@@ -47,7 +49,7 @@ extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
         setupPlayerForStream(stream)
     }
 
-    func stop() {
+    public func stop() {
         cleanup()
         print("Stopped real radio playback")
     }

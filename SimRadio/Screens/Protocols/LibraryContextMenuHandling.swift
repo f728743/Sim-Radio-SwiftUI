@@ -7,6 +7,7 @@
 
 import Foundation
 import MediaLibrary
+import Player
 
 @MainActor
 protocol LibraryContextMenuHandling: AnyObject {

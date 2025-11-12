@@ -10,6 +10,7 @@ import Combine
 import DesignSystem
 import Foundation
 import MediaLibrary
+import Player
 import Services
 import SwiftUI
 

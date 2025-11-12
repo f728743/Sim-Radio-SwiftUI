@@ -7,6 +7,7 @@
 
 import DesignSystem
 import Services
+import SharedUtilities
 import SwiftUI
 
 struct SearchItemView: View {

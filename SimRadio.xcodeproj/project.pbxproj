@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AD1941EC2EC4D5FA00197279 /* MediaLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = AD1941EB2EC4D5FA00197279 /* MediaLibrary */; };
 		AD6013A52EC09C890023137C /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = AD6013A42EC09C890023137C /* DesignSystem */; };
 		AD97F4F82EC091DC007DFBA2 /* SharedUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = AD97F4F72EC091DC007DFBA2 /* SharedUtilities */; };
 		AD9E1B532EC3127D002E768E /* Services in Frameworks */ = {isa = PBXBuildFile; productRef = AD9E1B522EC3127D002E768E /* Services */; };
@@ -24,6 +25,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AD1941EA2EC4D5B700197279 /* MediaLibrary */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = MediaLibrary; sourceTree = "<group>"; };
 		AD2F42562D2F948D00F8EAF1 /* SimRadio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimRadio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD6013A32EC09AEC0023137C /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DesignSystem; sourceTree = "<group>"; };
 		AD63C2E92D4B7CD200C96EC5 /* SimRadioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SimRadioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +67,7 @@
 				AD9E1B532EC3127D002E768E /* Services in Frameworks */,
 				AD6013A52EC09C890023137C /* DesignSystem in Frameworks */,
 				AD97F4F82EC091DC007DFBA2 /* SharedUtilities in Frameworks */,
+				AD1941EC2EC4D5FA00197279 /* MediaLibrary in Frameworks */,
 				ADB5B3AF2D2F96A8006001EF /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -82,6 +85,7 @@
 		AD2F424D2D2F948D00F8EAF1 = {
 			isa = PBXGroup;
 			children = (
+				AD1941EA2EC4D5B700197279 /* MediaLibrary */,
 				AD9E1B512EC311C4002E768E /* Services */,
 				AD6013A32EC09AEC0023137C /* DesignSystem */,
 				AD97F4F52EC09003007DFBA2 /* SharedUtilities */,
@@ -133,6 +137,7 @@
 				AD97F4F72EC091DC007DFBA2 /* SharedUtilities */,
 				AD6013A42EC09C890023137C /* DesignSystem */,
 				AD9E1B522EC3127D002E768E /* Services */,
+				AD1941EB2EC4D5FA00197279 /* MediaLibrary */,
 			);
 			productName = SimRadio;
 			productReference = AD2F42562D2F948D00F8EAF1 /* SimRadio.app */;
@@ -532,6 +537,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AD1941EB2EC4D5FA00197279 /* MediaLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MediaLibrary;
+		};
 		AD6013A42EC09C890023137C /* DesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DesignSystem;

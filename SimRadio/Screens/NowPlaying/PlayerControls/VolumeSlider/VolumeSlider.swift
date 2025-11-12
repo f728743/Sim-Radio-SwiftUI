@@ -71,7 +71,7 @@ extension ElasticSliderConfig {
     }
 }
 
-class MPVolumeViewProxy {
+final class MPVolumeViewProxy {
     var mpVolumeView: MPVolumeView?
 }
 

@@ -31,3 +31,10 @@ public func lerp(_ v0: UIColor, _ v1: UIColor, _ t: some BinaryFloatingPoint) ->
         alpha: lerp(alpha0, alpha1, t)
     )
 }
+
+public func prettyPrintTags(_ tags: String) -> String {
+    tags
+        .split(separator: ",")
+        .map(\.capitalized)
+        .joined(separator: ", ")
+}

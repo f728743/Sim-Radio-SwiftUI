@@ -9,11 +9,12 @@ import AVFoundation
 import Combine
 import DesignSystem
 import Foundation
+import MediaLibrary
 import Services
 import SwiftUI
 
 @Observable @MainActor
-class SearchScreenViewModel {
+final class SearchScreenViewModel {
     var dto: APISearchResponseDTO?
     var playerState: MediaPlayerState = .paused(media: .none, mode: nil)
     var playIndicatorSpectrum: [Float] = .init(repeating: 0, count: MediaPlayer.Const.frequencyBands)
@@ -79,11 +80,11 @@ class SearchScreenViewModel {
 private extension SearchScreenViewModel {
     func performSearch() {
         guard let searchService else { return }
-        
+
         if urlInputHandled() {
             return
         }
-        
+
         searchTask?.cancel()
 
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -129,7 +130,7 @@ private extension SearchScreenViewModel {
         }
         return true
     }
-    
+
     var addedStations: Set<MediaID> {
         Set(
             (mediaState?.mediaList(persisted: true) ?? [])
@@ -155,13 +156,6 @@ extension APISearchResultItem {
         }
         return nil
     }
-}
-
-func prettyPrintTags(_ tags: String) -> String {
-    tags
-        .split(separator: ",")
-        .map(\.capitalized)
-        .joined(separator: ", ")
 }
 
 extension APISimRadioSeriesDTO {

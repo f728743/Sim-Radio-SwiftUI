@@ -6,9 +6,10 @@
 //
 
 import AVFoundation
+import MediaLibrary
 
 @MainActor
-class DefaultSimRadioMediaPlayer {
+final class DefaultSimRadioMediaPlayer {
     weak var mediaState: SimRadioMediaState?
     weak var delegate: SimRadioMediaPlayerDelegate?
     private let queuePlayer = AVQueuePlayer()

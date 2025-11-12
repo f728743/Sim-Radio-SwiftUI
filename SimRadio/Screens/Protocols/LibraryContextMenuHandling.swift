@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MediaLibrary
 
 @MainActor
 protocol LibraryContextMenuHandling: AnyObject {
@@ -14,7 +15,7 @@ protocol LibraryContextMenuHandling: AnyObject {
 }
 
 extension LibraryContextMenuHandling {
-    func contextMenu(for item: LibraryItem) -> [LibraryContextMenuItem?] {
+    func contextMenu(for item: MediaItem) -> [LibraryContextMenuItem?] {
         switch item {
         case .mediaItem:
             [.play, nil, .delete]
@@ -23,7 +24,7 @@ extension LibraryContextMenuHandling {
         }
     }
 
-    func onSelect(_ menuItem: LibraryContextMenuItem, of item: LibraryItem) {
+    func onSelect(_ menuItem: LibraryContextMenuItem, of item: MediaItem) {
         switch menuItem {
         case .play:
             play(item)
@@ -36,7 +37,7 @@ extension LibraryContextMenuHandling {
         }
     }
 
-    func play(_ item: LibraryItem) {
+    func play(_ item: MediaItem) {
         switch item {
         case let .mediaItem(media):
             player?.play(media.id, of: [media.id])
@@ -57,7 +58,7 @@ extension LibraryContextMenuHandling {
         }
     }
 
-    func delete(_ item: LibraryItem) {
+    func delete(_ item: MediaItem) {
         guard let mediaState else { return }
         Task {
             switch item {

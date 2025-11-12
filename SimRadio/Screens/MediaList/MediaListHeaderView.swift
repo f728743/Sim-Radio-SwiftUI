@@ -6,6 +6,7 @@
 //
 
 import DesignSystem
+import MediaLibrary
 import SwiftUI
 
 struct MediaListHeaderView: View {
@@ -14,7 +15,7 @@ struct MediaListHeaderView: View {
         case shuffle
     }
 
-    let item: LibraryItem.Label
+    let item: MediaItem.Label
     let onEvent: (Event) -> Void
 
     var body: some View {

@@ -7,6 +7,7 @@
 
 import DesignSystem
 import Kingfisher
+import MediaLibrary
 import SwiftUI
 
 struct MediaListScreen: View {

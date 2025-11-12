@@ -9,7 +9,7 @@ import AVFoundation
 import SwiftUI
 
 @MainActor
-class VolumeSliderViewModel: ObservableObject {
+final class VolumeSliderViewModel: ObservableObject {
     @Published var currentVolume: Double = 0.0
     private var audioSession = AVAudioSession.sharedInstance()
     private var volumeObservation: NSKeyValueObservation?

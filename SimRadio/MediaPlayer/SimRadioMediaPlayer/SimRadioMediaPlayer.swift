@@ -5,6 +5,8 @@
 //  Created by Alexey Vorobyov on 01.05.2025.
 //
 
+import MediaLibrary
+
 @MainActor
 protocol SimRadioMediaPlayer {
     func playStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?) // TODO: replace MediaID with SimStation.ID

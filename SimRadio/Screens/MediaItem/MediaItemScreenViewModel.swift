@@ -6,6 +6,7 @@
 //
 
 import Combine
+import MediaLibrary
 import Observation
 import SwiftUI
 

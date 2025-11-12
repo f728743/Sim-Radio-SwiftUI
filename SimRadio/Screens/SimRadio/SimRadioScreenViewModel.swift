@@ -5,20 +5,21 @@
 //  Created by Alexey Vorobyov on 02.11.2025.
 //
 
+import MediaLibrary
 import Observation
 import SwiftUI
 
 @Observable @MainActor
-class SimRadioScreenViewModel {
+final class SimRadioScreenViewModel {
     weak var mediaState: MediaState?
     weak var player: MediaPlayer?
 
-    var simSeries: [LibraryItem] {
+    var simSeries: [MediaItem] {
         guard let mediaState else { return [] }
         let mediaList = mediaState.mediaList(persisted: true)
         let items = mediaList
             .filter(\.id.isSimRadioSeries)
-            .map { LibraryItem.mediaList($0) }
+            .map { MediaItem.mediaList($0) }
         return items
     }
 }

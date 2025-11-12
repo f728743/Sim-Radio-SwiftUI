@@ -13,7 +13,7 @@ protocol SpectrumAnalyzerDelegate: AnyObject {
     func spectrumAnalyzer(_ analyzer: SpectrumAnalyzer, didUpdateSpectrum spectrum: [[Float]])
 }
 
-class SpectrumAnalyzer {
+final class SpectrumAnalyzer {
     let frequencyBands: Int
     let mono: Bool
     let startFrequency: Float

@@ -6,19 +6,20 @@
 //
 
 import DesignSystem
+import MediaLibrary
 import SwiftUI
 
 struct LibraryItemsGrid: View {
     enum Event {
-        case tap(LibraryItem)
-        case selected(LibraryContextMenuItem, LibraryItem)
+        case tap(MediaItem)
+        case selected(LibraryContextMenuItem, MediaItem)
     }
 
     static let itemPadding: CGFloat = 6
     let title: String
-    let items: [LibraryItem]
+    let items: [MediaItem]
     let onEvent: (Event) -> Void
-    let contextMenu: (LibraryItem) -> [LibraryContextMenuItem?]
+    let contextMenu: (MediaItem) -> [LibraryContextMenuItem?]
 
     var body: some View {
         VStack(spacing: 7) {
@@ -57,7 +58,7 @@ struct LibraryItemsGrid: View {
 }
 
 private struct LibraryItemView: View {
-    let label: LibraryItem.Label
+    let label: MediaItem.Label
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {

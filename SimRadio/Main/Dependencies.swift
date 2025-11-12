@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 13.05.2025.
 //
 
+import MediaLibrary
 import Observation
 import Services
 

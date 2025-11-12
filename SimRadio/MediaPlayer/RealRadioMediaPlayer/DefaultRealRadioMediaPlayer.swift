@@ -7,6 +7,7 @@
 
 import AVFoundation
 import Foundation
+import MediaLibrary
 
 @MainActor
 final class DefaultRealRadioMediaPlayer {

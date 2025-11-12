@@ -6,6 +6,7 @@
 //
 
 import DesignSystem
+import MediaLibrary
 import SwiftUI
 
 struct MediaDownloadProgressView: View {

@@ -5,6 +5,7 @@
 //  Created by Alexey Vorobyov on 08.05.2025.
 //
 
+import MediaLibrary
 import UIKit
 
 struct NowPlayingInfo {

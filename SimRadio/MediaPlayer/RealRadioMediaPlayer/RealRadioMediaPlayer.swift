@@ -5,6 +5,8 @@
 //  Created by Alexey Vorobyov on 26.10.2025.
 //
 
+import MediaLibrary
+
 @MainActor
 protocol RealRadioMediaPlayer {
     func playStation(withID stationID: RealStation.ID)

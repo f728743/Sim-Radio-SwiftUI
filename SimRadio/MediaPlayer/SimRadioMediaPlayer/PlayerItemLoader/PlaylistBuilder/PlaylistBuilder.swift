@@ -8,6 +8,7 @@
 // swiftlint:disable file_length
 
 import AVFoundation
+import MediaLibrary
 import SharedUtilities
 
 typealias DrawPools = [DrawPoolID: NonRepeatingRandomizer<DereferencedTruck>]
@@ -16,7 +17,8 @@ enum DrawPoolID: Hashable {
     case voiceOver(SimRadioDTO.VoiceOver.ID)
 }
 
-class PlaylistBuilder {
+@MainActor
+final class PlaylistBuilder {
     enum PlaylistMode {
         case alternate(TimeInterval)
         case option(SimRadioDTO.SourceOption.ID)

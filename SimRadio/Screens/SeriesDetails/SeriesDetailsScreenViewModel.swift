@@ -7,12 +7,13 @@
 
 import Combine
 import DesignSystem
+import MediaLibrary
 import Observation
 import Services
 import SwiftUI
 
 @Observable @MainActor
-class SeriesDetailsScreenViewModel {
+final class SeriesDetailsScreenViewModel {
     let series: APISimRadioSeriesDTO
 
     weak var mediaState: MediaState?

@@ -6,6 +6,7 @@
 //
 
 import Combine
+import MediaLibrary
 import UIKit
 
 enum MediaPlayerState: Equatable, Hashable {
@@ -14,7 +15,7 @@ enum MediaPlayerState: Equatable, Hashable {
 }
 
 @MainActor
-class MediaPlayer {
+final class MediaPlayer {
     enum Const {
         static let frequencyBands = 5
     }

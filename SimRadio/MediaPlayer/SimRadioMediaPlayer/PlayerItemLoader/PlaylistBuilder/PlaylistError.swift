@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MediaLibrary
 
 enum PlayerItemLoadingError: Error {
     case playlistError

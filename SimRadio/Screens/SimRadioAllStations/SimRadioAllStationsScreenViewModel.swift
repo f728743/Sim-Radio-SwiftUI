@@ -5,11 +5,12 @@
 //  Created by Alexey Vorobyov on 02.11.2025.
 //
 
+import MediaLibrary
 import Observation
 import SwiftUI
 
 @Observable @MainActor
-class SimRadioAllStationsScreenViewModel {
+final class SimRadioAllStationsScreenViewModel {
     var mediaState: MediaState?
     var items: [Media] {
         let res = (mediaState?.mediaList(persisted: true) ?? [])

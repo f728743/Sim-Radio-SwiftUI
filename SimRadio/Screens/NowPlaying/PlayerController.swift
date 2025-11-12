@@ -7,11 +7,12 @@
 
 import Combine
 import DesignSystem
+import MediaLibrary
 import SwiftUI
 import UIKit
 
 @Observable @MainActor
-class PlayerController {
+final class PlayerController {
     struct Display: Hashable {
         let artwork: Artwork
         let title: String

@@ -123,7 +123,9 @@ private extension SearchScreenViewModel {
     }
 
     func urlInputHandled() -> Bool {
-        guard searchText.starts(with: "https://"), let url = URL(string: searchText) else {
+        guard searchText.hasPrefix("https://"),
+              searchText.hasSuffix(".json"),
+              let url = URL(string: searchText) else {
             return false
         }
         Task {

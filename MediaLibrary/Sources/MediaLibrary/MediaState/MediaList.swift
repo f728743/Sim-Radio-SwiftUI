@@ -16,6 +16,7 @@ public struct MediaList: Identifiable, Hashable, Equatable, Sendable {
         public let artwork: URL?
         public let title: String
         public let subtitle: String?
+        public let isOnlineOnly: Bool
         public let timestamp: Date?
     }
 }
@@ -27,6 +28,7 @@ public extension MediaList {
             artwork: nil,
             title: "",
             subtitle: nil,
+            isOnlineOnly: true,
             timestamp: nil
         ),
         items: []

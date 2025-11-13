@@ -34,13 +34,15 @@ struct LibraryScreen: View {
                 Divider()
                     .padding(.leading, rowSeparatorLeading)
 
-                NavigationLink(title: "Downloaded", systemImage: "arrow.down.circle")
-                    .onTapGesture {
-                        router.navigateToDownloaded()
-                    }
-                    .padding(.horizontal, ViewConst.screenPaddings)
-                Divider()
-                    .padding(.leading, rowSeparatorLeading)
+                if viewModel.hasDownloadable {
+                    NavigationLink(title: "Downloaded", systemImage: "arrow.down.circle")
+                        .onTapGesture {
+                            router.navigateToDownloaded()
+                        }
+                        .padding(.horizontal, ViewConst.screenPaddings)
+                    Divider()
+                        .padding(.leading, rowSeparatorLeading)
+                }
 
                 recentlyAdded
                     .padding(.horizontal, ViewConst.screenPaddings - LibraryItemsGrid.itemPadding)

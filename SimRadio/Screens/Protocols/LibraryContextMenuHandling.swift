@@ -19,9 +19,10 @@ extension LibraryContextMenuHandling {
     func contextMenu(for item: MediaItem) -> [LibraryContextMenuItem?] {
         switch item {
         case .mediaItem:
-            [.play, nil, .delete]
+            return [.play, nil, .delete]
         case let .mediaList(mediaList):
-            [.play] + (needDowonload(mediaList.items.map(\.id)) ? [.download] : []) + [nil, .delete]
+            let needDowonload = !mediaList.meta.isOnlineOnly && needDowonload(mediaList.items.map(\.id))
+            return [.play] + (needDowonload ? [.download] : []) + [nil, .delete]
         }
     }
 

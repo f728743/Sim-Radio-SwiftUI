@@ -51,18 +51,26 @@ class MediaListScreenViewModel {
 
     func swipeButtons(mediaID: MediaID) -> [MediaListSwipeButton] {
         switch mediaID {
-        case .simRadio: simRadioSwipeButtons(mediaID: mediaID)
+        case let .simRadio(stationID): simRadioSwipeButtons(stationID: stationID)
         case .realRadio: [.delete]
         }
     }
 
-    func simRadioSwipeButtons(mediaID: MediaID) -> [MediaListSwipeButton] {
-        switch downloadStatus(for: mediaID)?.state {
-        case .completed: [.delete]
-        case .none: [.download]
-        case .downloading, .scheduled: [.pauseDownload, .delete]
-        case .paused: [.download, .delete]
-        case .busy: []
+    func simRadioSwipeButtons(stationID: SimStation.ID) -> [MediaListSwipeButton] {
+        guard let mediaState else { return [] }
+        let isOnlineOnly = mediaState
+            .mediaList(persisted: true)
+            .first { $0.id == .simRadioSeries(stationID.series)}?
+            .meta
+            .isOnlineOnly
+        if isOnlineOnly ?? true { return [] }
+        
+        switch downloadStatus(for: .simRadio(stationID))?.state {
+        case .completed: return [.delete]
+        case .none: return [.download]
+        case .downloading, .scheduled: return [.pauseDownload, .delete]
+        case .paused: return [.download, .delete]
+        case .busy: return []
         }
     }
 

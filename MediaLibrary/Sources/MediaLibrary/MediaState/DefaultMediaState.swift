@@ -66,7 +66,13 @@ public final class DefaultMediaState: MediaState {
 
         let realRadioMedia = MediaList(
             id: .realRadioList,
-            meta: .init(artwork: nil, title: "Radio", subtitle: nil, timestamp: oldestRealRadio),
+            meta: .init(
+                artwork: nil,
+                title: "Radio",
+                subtitle: nil,
+                isOnlineOnly: true,
+                timestamp: oldestRealRadio
+            ),
             items: realRadioItems
         )
         return simRadioMedia + [realRadioMedia]

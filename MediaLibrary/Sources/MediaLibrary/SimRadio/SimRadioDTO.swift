@@ -20,6 +20,7 @@ public enum SimRadioDTO {
         public let subtitle: String?
         public let logo: String
         public let cover: SeriesCover
+        public let isOnlineOnly: Bool?
     }
 
     public struct SeriesCover: Codable {

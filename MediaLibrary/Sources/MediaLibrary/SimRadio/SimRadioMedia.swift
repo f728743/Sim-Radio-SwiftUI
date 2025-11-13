@@ -315,6 +315,7 @@ extension SimGameSeries {
                 artwork: logo,
                 title: dto.meta.title,
                 subtitle: dto.meta.subtitle ?? "Sim Series",
+                isOnlineOnly: dto.meta.isOnlineOnly ?? true,
                 timestamp: timestamp
             ),
             stationsIDs: dto.stations.map {

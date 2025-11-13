@@ -38,6 +38,7 @@ extension SimRadioMedia {
                         artwork: stationGroupImageUrl(),
                         title: "GTA V Radio",
                         subtitle: nil,
+                        isOnlineOnly: false,
                         timestamp: nil
                     ),
                     stationsIDs: stations.map(\.id)
@@ -58,6 +59,7 @@ extension MediaList {
                 artwork: stationGroupImageUrl(),
                 title: "GTA V Radio",
                 subtitle: nil,
+                isOnlineOnly: false,
                 timestamp: nil
             ),
             items: gta5stations.map { data in

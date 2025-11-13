@@ -30,6 +30,11 @@ final class LibraryScreenViewModel {
             .prefix(20)
         return Array(result)
     }
+
+    var hasDownloadable: Bool {
+        guard let mediaState else { return false }
+        return mediaState.mediaList(persisted: true).contains { $0.meta.isOnlineOnly == false }
+    }
 }
 
 extension LibraryScreenViewModel: LibraryContextMenuHandling {}

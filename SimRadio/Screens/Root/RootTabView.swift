@@ -30,8 +30,8 @@ struct RootTabView: View {
     }
 }
 
+@MainActor
 private extension TabBarItem {
-    @MainActor
     @ViewBuilder
     var destinationView: some View {
         switch self {

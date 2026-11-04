@@ -6,7 +6,6 @@
 //
 
 import Foundation
-
 import SwiftUI
 
 @available(iOS 26, *)

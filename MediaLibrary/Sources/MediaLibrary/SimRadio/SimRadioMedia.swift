@@ -106,8 +106,14 @@ public struct DereferencedTruck {
 }
 
 public extension DereferencedTruck {
-    var url: URL { Track.url(seriesID: id.series, path: path) }
-    var localFileURL: URL { Track.localFileURL(seriesID: id.series, path: path) }
+    var url: URL {
+        Track.url(seriesID: id.series, path: path)
+    }
+
+    var localFileURL: URL {
+        Track.localFileURL(seriesID: id.series, path: path)
+    }
+
     func url(local: Bool) -> URL {
         local ? localFileURL : url
     }
@@ -141,13 +147,21 @@ extension Track {
         static let mediaExtension = ".m4a"
     }
 
-    var filePath: String? { path.map { Self.filePath(path: $0) } }
+    var filePath: String? {
+        path.map { Self.filePath(path: $0) }
+    }
 
-    var url: URL? { path.map { Self.url(seriesID: id.series, path: $0) } }
+    var url: URL? {
+        path.map { Self.url(seriesID: id.series, path: $0) }
+    }
 
-    var localFilePath: String? { path.map { Self.localFilePath(seriesID: id.series, path: $0) } }
+    var localFilePath: String? {
+        path.map { Self.localFilePath(seriesID: id.series, path: $0) }
+    }
 
-    var localFileURL: URL? { path.map { Self.localFileURL(seriesID: id.series, path: $0) } }
+    var localFileURL: URL? {
+        path.map { Self.localFileURL(seriesID: id.series, path: $0) }
+    }
 
     var destinationDirectoryPath: String? {
         localFilePath?.deletingLastPathComponent()
@@ -297,9 +311,7 @@ extension SimRadioMedia {
         }
 
         // Find intersection between target station's track lists and other stations'
-        let intersection = targetTrackLists.filter { otherStationsTrackLists.contains($0) }
-
-        return intersection
+        return targetTrackLists.filter { otherStationsTrackLists.contains($0) }
     }
 }
 

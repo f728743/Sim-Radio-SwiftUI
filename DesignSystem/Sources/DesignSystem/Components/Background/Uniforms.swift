@@ -69,7 +69,9 @@ extension Uniforms {
 }
 
 extension UnitPoint {
-    var simd: simd_float2 { simd_float2(Float(x), Float(y)) }
+    var simd: simd_float2 {
+        simd_float2(Float(x), Float(y))
+    }
 }
 
 extension Color {

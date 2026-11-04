@@ -52,6 +52,8 @@ struct SeriesDetailsBar: View {
     }
 
     enum Const {
-        static var height: CGFloat { 88 }
+        static var height: CGFloat {
+            88
+        }
     }
 }

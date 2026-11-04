@@ -115,7 +115,6 @@ private extension MediaListScreen {
         }
     }
 
-    @ViewBuilder
     var footer: some View {
         Text(viewModel.footer)
             .frame(maxWidth: .infinity, alignment: .leading)

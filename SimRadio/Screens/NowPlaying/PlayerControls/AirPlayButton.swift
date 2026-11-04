@@ -83,9 +83,13 @@ private final class AirPlayPresenter {
     }
 
     @MainActor private func findButton(in view: UIView) -> UIButton? {
-        if let button = view as? UIButton { return button }
+        if let button = view as? UIButton {
+            return button
+        }
         for sub in view.subviews {
-            if let found = findButton(in: sub) { return found }
+            if let found = findButton(in: sub) {
+                return found
+            }
         }
         return nil
     }

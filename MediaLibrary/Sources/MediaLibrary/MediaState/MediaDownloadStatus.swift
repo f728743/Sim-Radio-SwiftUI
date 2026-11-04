@@ -28,7 +28,9 @@ public struct MediaDownloadStatus: Sendable {
 extension MediaDownloadStatus: DownloadProgressProtocol {}
 
 public extension MediaDownloadStatus {
-    static var initial: Self { .init(state: .scheduled) }
+    static var initial: Self {
+        .init(state: .scheduled)
+    }
 }
 
 extension MediaDownloadStatus.DownloadState {
@@ -51,9 +53,17 @@ public extension DownloadProgressProtocol {
         return (Double(downloadedBytes) / Double(totalBytes)).clamped(to: 0.0 ... 1.0)
     }
 
-    var percent: Double { progress * 100 }
-    var percentString: String { String(format: "%.1f%%", percent) }
-    var progressString: String { "\(percentString) (\(downloadedBytes) / \(totalBytes))" }
+    var percent: Double {
+        progress * 100
+    }
+
+    var percentString: String {
+        String(format: "%.1f%%", percent)
+    }
+
+    var progressString: String {
+        "\(percentString) (\(downloadedBytes) / \(totalBytes))"
+    }
 }
 
 extension MediaDownloadStatus.DownloadState {

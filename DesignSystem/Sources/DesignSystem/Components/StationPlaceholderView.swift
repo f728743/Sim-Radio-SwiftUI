@@ -19,7 +19,7 @@ struct StationPlaceholderView: View {
             .overlay {
                 Image(.radio)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .scaleEffect(0.7)
                     .foregroundStyle(foregroundColor)
                     .shadow(color: shadowColor, radius: 2, y: 1)

@@ -20,8 +20,7 @@ public struct PanGesture: UIGestureRecognizerRepresentable {
     }
 
     public func makeUIGestureRecognizer(context _: Context) -> UIPanGestureRecognizer {
-        let gesture = UIPanGestureRecognizer()
-        return gesture
+        UIPanGestureRecognizer()
     }
 
     public func updateUIGestureRecognizer(_: UIPanGestureRecognizer, context _: Context) {}

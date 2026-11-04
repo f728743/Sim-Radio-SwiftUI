@@ -40,7 +40,9 @@ struct PlayerControls: View {
 }
 
 private extension CGSize {
-    var verticalSpacing: CGFloat { height * 0.04 }
+    var verticalSpacing: CGFloat {
+        height * 0.04
+    }
 }
 
 private extension PlayerControls {

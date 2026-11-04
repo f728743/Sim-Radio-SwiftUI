@@ -436,18 +436,34 @@ private protocol SimRadioDownloadStatusProtocol {
 extension SimRadioDownloadStatus: SimRadioDownloadStatusProtocol {}
 
 extension DefaultSimRadioDownload.FileDownloadInfo: SimRadioDownloadStatusProtocol {
-    var state: SimRadioDownloadState { status.state }
-    var totalBytes: Int64 { status.totalBytes }
-    var downloadedBytes: Int64 { status.downloadedBytes }
+    var state: SimRadioDownloadState {
+        status.state
+    }
+
+    var totalBytes: Int64 {
+        status.totalBytes
+    }
+
+    var downloadedBytes: Int64 {
+        status.downloadedBytes
+    }
 }
 
 extension DefaultSimRadioDownload.StationDownloadInfo: SimRadioDownloadStatusProtocol {
-    var state: SimRadioDownloadState { status.state }
-    var totalBytes: Int64 { status.totalBytes }
-    var downloadedBytes: Int64 { status.downloadedBytes }
+    var state: SimRadioDownloadState {
+        status.state
+    }
+
+    var totalBytes: Int64 {
+        status.totalBytes
+    }
+
+    var downloadedBytes: Int64 {
+        status.downloadedBytes
+    }
 }
 
-// Aggregation logic for collections
+/// Aggregation logic for collections
 extension Collection where Element: SimRadioDownloadStatusProtocol {
     var overallState: SimRadioDownloadState? {
         get async {
@@ -471,8 +487,13 @@ extension Collection where Element: SimRadioDownloadStatusProtocol {
         }
     }
 
-    var overallTotalBytes: Int64 { reduce(0) { $0 + $1.totalBytes } }
-    var overallDownloadedBytes: Int64 { reduce(0) { $0 + $1.downloadedBytes } }
+    var overallTotalBytes: Int64 {
+        reduce(0) { $0 + $1.totalBytes }
+    }
+
+    var overallDownloadedBytes: Int64 {
+        reduce(0) { $0 + $1.downloadedBytes }
+    }
 
     var overallStatus: SimRadioDownloadStatus? {
         get async {
@@ -513,7 +534,9 @@ private func log(info: String) {
 private func log(warning: String) {
     guard logSettings.contains(
         where: {
-            if case .warning = $0 { return true }
+            if case .warning = $0 {
+                return true
+            }
             return false
         }
     ) else { return }
@@ -523,7 +546,9 @@ private func log(warning: String) {
 private func log(error: String) {
     guard logSettings.contains(
         where: {
-            if case .error = $0 { return true }
+            if case .error = $0 {
+                return true
+            }
             return false
         }
     ) else { return }
@@ -534,8 +559,8 @@ extension Collection<DownloadLog> {
     var logVerboseInfo: Bool {
         contains(
             where: {
-                if case let .info(verbose) = $0 {
-                    if verbose { return true }
+                if case let .info(verbose) = $0, verbose {
+                    return true
                 }
                 return false
             }
@@ -545,7 +570,9 @@ extension Collection<DownloadLog> {
     var logInfo: Bool {
         contains(
             where: {
-                if case .info = $0 { return true }
+                if case .info = $0 {
+                    return true
+                }
                 return false
             }
         )

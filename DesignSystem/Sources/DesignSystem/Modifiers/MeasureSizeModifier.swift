@@ -79,7 +79,6 @@ public extension Color {
 }
 
 public extension View {
-    @ViewBuilder
     func randomBackgroundColor() -> some View {
         background(Color.random)
     }

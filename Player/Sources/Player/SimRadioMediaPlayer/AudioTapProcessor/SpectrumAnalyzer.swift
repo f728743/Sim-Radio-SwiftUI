@@ -239,11 +239,10 @@ private extension SpectrumAnalyzer {
         let num = f.map { c1 * $0 * $0 }
         let den = f.map { ($0 + c2) * sqrtf(max(0, ($0 + c3) * ($0 + c4))) * ($0 + c1) }
 
-        let weights = num.enumerated().map { index, element -> Float in
+        return num.enumerated().map { index, element -> Float in
             guard den[index] != 0 else { return 0.0 }
             return 1.2589 * element / den[index]
         }
-        return weights
     }
 
     static func makeBandIndices(

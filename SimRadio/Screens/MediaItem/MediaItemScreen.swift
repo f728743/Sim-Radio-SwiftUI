@@ -30,7 +30,6 @@ struct MediaItemScreen: View {
 }
 
 private extension MediaItemScreen {
-    @ViewBuilder
     var content: some View {
         List {
             let item = viewModel.item

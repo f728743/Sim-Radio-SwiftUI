@@ -13,7 +13,7 @@ struct SimRadioDownloadStatus: Equatable, Sendable {
     let downloadedBytes: Int64
     let totalBytes: Int64
 
-    // Convenience initializer
+    /// Convenience initializer
     init(state: SimRadioDownloadState, downloadedBytes: Int64 = 0, totalBytes: Int64 = 0) {
         self.state = state
         self.downloadedBytes = downloadedBytes
@@ -22,7 +22,9 @@ struct SimRadioDownloadStatus: Equatable, Sendable {
 }
 
 extension SimRadioDownloadStatus {
-    static var initial: Self { .init(state: .scheduled) }
+    static var initial: Self {
+        .init(state: .scheduled)
+    }
 }
 
 /// Represents the possible states of a station's download.

@@ -194,12 +194,16 @@ extension FileDownload.Event {
 
 extension DownloadQueue.QueueElement {
     var isDownloading: Bool {
-        if case .downloading = state { return true }
+        if case .downloading = state {
+            return true
+        }
         return false
     }
 
     var isQueued: Bool {
-        if case .queued = state { return true }
+        if case .queued = state {
+            return true
+        }
         return false
     }
 }

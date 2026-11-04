@@ -49,8 +49,13 @@ final class PlayerController {
         }
     }
 
-    var backwardButton: ButtonType { .backward }
-    var forwardButton: ButtonType { .forward }
+    var backwardButton: ButtonType {
+        .backward
+    }
+
+    var forwardButton: ButtonType {
+        .forward
+    }
 
     func onPlayPause() {
         player?.togglePlayPause()

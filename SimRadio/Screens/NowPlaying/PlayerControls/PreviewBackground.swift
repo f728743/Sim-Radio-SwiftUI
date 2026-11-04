@@ -57,10 +57,6 @@ struct PreviewBackground: View {
                 }
                 .blendMode(.overlay)
 
-                var color: UIColor {
-                    .init(white: white, alpha: alpha)
-                }
-
                 VStack(spacing: 30) {
                     Slider(value: $white, in: 0 ... 1)
                         .padding(.top, 10)
@@ -75,6 +71,10 @@ struct PreviewBackground: View {
                 .foregroundStyle(.white)
                 .padding(60)
             }
+        }
+
+        var color: UIColor {
+            .init(white: white, alpha: alpha)
         }
     }
 

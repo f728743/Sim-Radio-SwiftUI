@@ -191,10 +191,7 @@ extension DominantColorQuality {
     }
 
     func targetSize(for size: CGSize) -> CGSize {
-        guard let preferredPixelCount else {
-            return size
-        }
-        guard size.pixelCount > preferredPixelCount else {
+        guard let preferredPixelCount, size.pixelCount > preferredPixelCount else {
             return size
         }
         return size.transformToFit(in: preferredPixelCount)
@@ -289,9 +286,7 @@ private extension CGSize {
     /// Returns a new size of the target area, keeping the same aspect ratio.
     func transformToFit(in targetPixelCount: CGFloat) -> CGSize {
         let ratio = pixelCount / targetPixelCount
-        let targetSize = CGSize(width: width / sqrt(ratio), height: height / sqrt(ratio))
-
-        return targetSize
+        return CGSize(width: width / sqrt(ratio), height: height / sqrt(ratio))
     }
 }
 

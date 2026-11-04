@@ -23,7 +23,7 @@ public struct ArtworkView: View {
         let border = UIScreen.hairlineWidth
         ZStack {
             background
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
             switch artwork {
             case let .radio(name):
                 StationPlaceholderView(name: name)
@@ -31,13 +31,13 @@ public struct ArtworkView: View {
             case let .webImage(url):
                 KFImage.url(url)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .aspectRatio(1.0, contentMode: .fit)
 
             case .album:
                 Image(systemName: "rectangle.stack.badge.play")
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .aspectRatio(1.0, contentMode: .fit)
                     .scaleEffect(0.9)
                     .foregroundStyle(Color.iconSecondary)

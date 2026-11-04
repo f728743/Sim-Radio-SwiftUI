@@ -87,8 +87,13 @@ private extension MarqueeText {
         .mask(fadeMask)
     }
 
-    var lineWidth: CGFloat { textSize.width - (config.leftFade + config.rightFade) + config.spacing }
-    var offset: Double { animate ? lineWidth : 0 }
+    var lineWidth: CGFloat {
+        textSize.width - (config.leftFade + config.rightFade) + config.spacing
+    }
+
+    var offset: Double {
+        animate ? lineWidth : 0
+    }
 
     var staticText: some View {
         Text(text)

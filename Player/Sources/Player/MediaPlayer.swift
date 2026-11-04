@@ -40,7 +40,7 @@ public final class MediaPlayer {
 
     private var audioSession: AudioSession
     private var systemMediaInterface: SystemMediaInterface
-    // For handling interruptions
+    /// For handling interruptions
     private var interruptedMedia: MediaMode?
 
     public init() {

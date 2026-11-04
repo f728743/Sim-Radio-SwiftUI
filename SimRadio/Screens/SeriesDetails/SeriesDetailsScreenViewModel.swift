@@ -48,7 +48,9 @@ final class SeriesDetailsScreenViewModel {
         guard let id = series.mediaListID else {
             return false
         }
-        if isAddTapped == true { return true }
+        if isAddTapped == true {
+            return true
+        }
         return mediaState.mediaList(persisted: true)
             .map(\.id)
             .contains(id)
@@ -75,8 +77,7 @@ final class SeriesDetailsScreenViewModel {
 
     func media(_ stationID: String) -> Media? {
         guard let url = URL(string: series.url) else { return nil }
-        let result = mediaState?.media(withID: .media(stationID, url: url))
-        return result
+        return mediaState?.media(withID: .media(stationID, url: url))
     }
 }
 

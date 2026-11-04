@@ -40,9 +40,11 @@ final class CustomVisualEffectView: UIVisualEffectView {
         super.init(effect: nil)
     }
 
-    required init?(coder _: NSCoder) { nil }
+    required init?(coder _: NSCoder) {
+        nil
+    }
 
-    override public func draw(_ rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         super.draw(rect)
         effect = nil
         animator?.stopAnimation(true)

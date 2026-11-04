@@ -61,7 +61,7 @@ private extension SeriesDetailsScreen {
             ParallaxHeaderView(height: UIScreen.size.width) {
                 KFImage.url(viewModel.series.coverLogoURL)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .aspectRatio(1.0, contentMode: .fill)
                     .offset(y: max(scrollOffset, 0) / 4)
             }

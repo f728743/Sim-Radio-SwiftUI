@@ -96,7 +96,7 @@ final class PlaylistBuilder {
         let markers = relevantItem.track.markers.map {
             adjustMarkers(for: itemFileTimeRange, from: $0)
         }
-        let result = PlaylistItem(
+        return PlaylistItem(
             track: AudioFragment(
                 url: relevantItem.track.url,
                 timeRange: itemFileTimeRange,
@@ -105,7 +105,6 @@ final class PlaylistBuilder {
             ),
             mixes: adjustedMixes
         )
-        return result
     }
     // swiftlint:enable function_body_length
 }
@@ -126,7 +125,9 @@ extension SimRadioStationData {
         var dereferencedTruckIDs: Set<Track.ID> = []
         var dereferencedTrucks: [DereferencedTruck] = []
         for truck in tracks {
-            if dereferencedTruckIDs.contains(truck.id) { continue }
+            if dereferencedTruckIDs.contains(truck.id) {
+                continue
+            }
             let truckIntros = (truckIntros[truck.id] ?? []).unique()
             let dereferencedTruck = try truck.dereference(
                 trackLists: trackListDictionary,
@@ -140,7 +141,9 @@ extension SimRadioStationData {
 }
 
 private extension PlaylistBuilder {
-    var station: SimStation { stationData.station }
+    var station: SimStation {
+        stationData.station
+    }
 
     func adjustMarkers(for timeRange: CMTimeRange, from markers: [AudioFragmentMarker]) -> [AudioFragmentMarker] {
         guard !markers.isEmpty else { return [] }
@@ -163,12 +166,11 @@ private extension PlaylistBuilder {
             return cached
         }
         var generator: any RandomNumberGenerator = SplitMix64(seed: UInt64(date.startOfDay.timeIntervalSince1970))
-        let playlist = try await makePlaylist(
+        return try await makePlaylist(
             duration: .init(seconds: .fullDayDuration),
             mode: mode,
             generator: &generator
         )
-        return playlist
     }
 
     func populateHelperDictionaries() throws {
@@ -357,7 +359,9 @@ private extension PlaylistBuilder {
         let rnd = Double.random(in: 0 ... 1, using: &generator)
         var p = 0.0
         for next in fragment.next {
-            if let option, let nextOption = next.option, option != nextOption { continue }
+            if let option, let nextOption = next.option, option != nextOption {
+                continue
+            }
             p += next.probability ?? 1.0
             if rnd <= p {
                 return next.fragment
@@ -469,12 +473,11 @@ private extension PlaylistBuilder {
                     value: $0.value
                 )
             }
-            let result = try pickTrack(
+            return try pickTrack(
                 from: introIDs,
                 among: introTrackLists,
                 generator: &generator
             ).dereference(trackLists: trackLists)
-            return result
         case .track:
             let seriesID = station.id.series
             guard let trackListsID = src.trackLists?.first,
@@ -575,7 +578,7 @@ extension AudioFragment {
 
         let offsetIntoMixOriginal = max(.zero, overlapStartInDay - startTime)
 
-        let adjustedMix = AudioFragment(
+        return AudioFragment(
             url: url,
             timeRange: CMTimeRange(
                 start: timeRange.start + offsetIntoMixOriginal,
@@ -584,7 +587,6 @@ extension AudioFragment {
             startTime: itemStartTimeInOutput + (overlapStartInDay - parentActualStartTimeInDay),
             markers: nil
         )
-        return adjustedMix
     }
 }
 
@@ -599,11 +601,7 @@ extension AudioFragmentMarker {
 
 func secOfDay(hhmm: String) -> Double? {
     let time = hhmm.split { $0 == ":" }.map(String.init)
-    guard time.count > 1 else {
-        return nil
-    }
-
-    guard let h = Double(time[0]), let m = Double(time[1]) else {
+    guard time.count > 1, let h = Double(time[0]), let m = Double(time[1]) else {
         return nil
     }
     return (h * 60 * 60) + (m * 60)

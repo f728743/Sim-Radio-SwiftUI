@@ -66,34 +66,6 @@ public struct APIRealStationDTO: Codable {
     public let language: String?
     public let tags: String?
     public let cachedFavicon: String?
-
-    init(
-        stationuuid: String,
-        name: String,
-        url: String,
-        urlResolved: String,
-        favicon: String?,
-        votes: Int?,
-        clickcount: Int?,
-        clicktrend: Int?,
-        country: String?,
-        language: String?,
-        tags: String?,
-        cachedFavicon: String?
-    ) {
-        self.stationuuid = stationuuid
-        self.name = name
-        self.url = url
-        self.urlResolved = urlResolved
-        self.favicon = favicon
-        self.votes = votes
-        self.clickcount = clickcount
-        self.clicktrend = clicktrend
-        self.country = country
-        self.language = language
-        self.tags = tags
-        self.cachedFavicon = cachedFavicon
-    }
 }
 
 public struct APISimStationDTO: Codable, Hashable, Identifiable {

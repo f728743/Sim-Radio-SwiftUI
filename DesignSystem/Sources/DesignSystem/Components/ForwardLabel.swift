@@ -71,25 +71,27 @@ private struct ForwardLabel: View {
         .frame(width: width, height: size)
     }
 
-    var side: CGFloat { size * sideFraction }
-    var width: CGFloat { size + side * 2 }
+    var side: CGFloat {
+        size * sideFraction
+    }
+
+    var width: CGFloat {
+        size + side * 2
+    }
 
     var leftOffset: CGFloat {
-        let res = min(sideFraction, progress) * size +
+        min(sideFraction, progress) * size +
             (1 - leftGrowthProgress) * side +
             rightProtrusionProgress * side
-        return res
     }
 
     var rightOffset: CGFloat {
-        let res = max(0, sideFraction - progress) * size
+        max(0, sideFraction - progress) * size
             + rightShrinkProgress * side
-        return res
     }
 
     var rightWidth: CGFloat {
-        let res = lerp(0, size / 2, 1 - scaleProgress)
-        return res
+        lerp(0, size / 2, 1 - scaleProgress)
     }
 
     var scaleProgress: Double {
@@ -102,8 +104,7 @@ private struct ForwardLabel: View {
     }
 
     var linearRightShrinkProgress: Double {
-        let progress = max(0, scaleProgress - (1 - sideFraction * 2)) / sideFraction / 2
-        return progress
+        max(0, scaleProgress - (1 - sideFraction * 2)) / sideFraction / 2
     }
 
     var rightShrinkProgress: Double {
@@ -117,7 +118,7 @@ private struct ForwardLabel: View {
     var gliph: some View {
         Image(systemName: "play.fill")
             .resizable()
-            .aspectRatio(contentMode: .fit)
+            .scaledToFit()
     }
 }
 

@@ -42,7 +42,7 @@ public struct PlayerButtonLabel: View {
         default:
             Image(systemName: type.systemImageName)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(width: size, height: size)
         }
     }
@@ -90,7 +90,7 @@ private struct Label: View {
     var gliph: some View {
         Image(systemName: "play.fill")
             .resizable()
-            .aspectRatio(contentMode: .fit)
+            .scaledToFit()
     }
 }
 

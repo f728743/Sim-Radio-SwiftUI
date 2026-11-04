@@ -131,7 +131,7 @@ extension PlayerButton where Content == EmptyView {
                 label: {
                     Image(systemName: "play.fill")
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(width: 34, height: 34)
 
                 },

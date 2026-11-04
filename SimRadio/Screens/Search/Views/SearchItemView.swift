@@ -131,13 +131,13 @@ private struct SearchItemLabel<TrailingContent: View>: View {
             trailingContent
         }
         .frame(height: 76)
+    }
 
-        var subtitleText: String {
-            [kindDescription, subtitle]
-                .compactMap(\.self)
-                .filter { !$0.isEmpty }
-                .joined(separator: " · ")
-        }
+    var subtitleText: String {
+        [kindDescription, subtitle]
+            .compactMap(\.self)
+            .filter { !$0.isEmpty }
+            .joined(separator: " · ")
     }
 
     var artworkView: some View {

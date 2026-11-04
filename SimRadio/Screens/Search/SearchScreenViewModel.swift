@@ -67,14 +67,13 @@ final class SearchScreenViewModel {
     var items: [APISearchResultItem] {
         guard let dto else { return [] }
         let persisted = addedStations
-        let result: [APISearchResultItem] = dto.simRadio.map { .simRadio(dto: $0) } +
+        return dto.simRadio.map { .simRadio(dto: $0) } +
             dto.realRadio.map { sationDTO in
                 .realStation(
                     dto: sationDTO,
                     isAdded: persisted.contains(sationDTO.mediaID)
                 )
             }
-        return result
     }
 }
 

@@ -15,6 +15,7 @@ let package = Package(
         )
     ],
     dependencies: [
+        .package(path: "../Services/"),
         .package(path: "../SharedUtilities/"),
         .package(path: "../MediaLibrary/")
     ],
@@ -22,6 +23,7 @@ let package = Package(
         .target(
             name: "Player",
             dependencies: [
+                "Services",
                 "SharedUtilities",
                 "MediaLibrary"
             ]

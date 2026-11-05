@@ -8,4 +8,6 @@ cyclomatic_complexity:
     ignores_case_statements: true
 
 disabled_rules:
+   # Formatting is managed by SwiftFormat.
+   - opening_brace
    - trailing_whitespace

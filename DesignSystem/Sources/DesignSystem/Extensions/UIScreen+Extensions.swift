@@ -5,8 +5,8 @@
 //  Created by Alexey Vorobyov on 20.11.2024.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIScreen {
     var deviceCornerRadius: CGFloat {

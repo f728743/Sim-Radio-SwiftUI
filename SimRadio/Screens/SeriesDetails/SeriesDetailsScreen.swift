@@ -30,7 +30,7 @@ struct SeriesDetailsScreen: View {
         .onGeometryChange(
             for: CGFloat.self,
             of: { $0.size.width },
-            action:  { containerWidth = $0 }
+            action: { containerWidth = $0 }
         )
         .onScrollGeometryChange(for: CGFloat.self) { geometry in
             geometry.contentOffset.y

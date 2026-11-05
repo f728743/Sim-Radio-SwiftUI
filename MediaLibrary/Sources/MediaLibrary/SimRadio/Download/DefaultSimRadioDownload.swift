@@ -122,21 +122,7 @@ private extension DefaultSimRadioDownload {
         )
         var stationDownloadedFiles: [TrackList.ID: [FileDownloadInfo]] = [:]
         for trackList in trackListsToDownload {
-            let tracks = trackList.tracks.filter { $0.path != nil }
-            let missingFiles = Set(missing?[trackList.id] ?? [])
-            let files = tracks.map {
-                guard let url = $0.url, let destinationDirectoryPath = $0.destinationDirectoryPath else { fatalError() }
-                let request = DownloadQueue.DownloadRequest(
-                    sourceURL: url,
-                    destinationDirectoryPath: destinationDirectoryPath
-                )
-                return FileDownloadInfo(
-                    request: request,
-                    status: isPartialDownload
-                        ? missingFiles.contains(request.localFileURL) ? .initial : .init(state: .completed)
-                        : .initial
-                )
-            }
+            let files = makeFileDownloads(for: trackList, missing: missing)
             let trackListDownload = TrackListDownloadInfo(
                 id: trackList.id,
                 status: isPartialDownload ? .init(
@@ -168,6 +154,28 @@ private extension DefaultSimRadioDownload {
         }
         eventContinuation?.yield(.init(id: station.id, status: .initial))
         await downloadQueue.append(downloadRequest)
+    }
+
+    func makeFileDownloads(
+        for trackList: TrackList,
+        missing: [TrackList.ID: [URL]]?
+    ) -> [FileDownloadInfo] {
+        let isPartialDownload = missing != nil
+        let tracks = trackList.tracks.filter { $0.path != nil }
+        let missingFiles = Set(missing?[trackList.id] ?? [])
+        return tracks.map {
+            guard let url = $0.url, let destinationDirectoryPath = $0.destinationDirectoryPath else { fatalError() }
+            let request = DownloadQueue.DownloadRequest(
+                sourceURL: url,
+                destinationDirectoryPath: destinationDirectoryPath
+            )
+            return FileDownloadInfo(
+                request: request,
+                status: isPartialDownload
+                    ? missingFiles.contains(request.localFileURL) ? .initial : .init(state: .completed)
+                    : .initial
+            )
+        }
     }
 
     func alreadyDownloaded(of groupIDs: [TrackList.ID]) async -> [TrackList.ID] {
@@ -243,26 +251,30 @@ private extension DefaultSimRadioDownload {
         }
 
         for stationID in trackListStations {
-            guard let stationInfo = stationDownloads[stationID] else {
-                log(error: "Station \(stationID) not found during status calculation.")
-                continue
-            }
+            await updateStationDownloadStatus(for: stationID)
+        }
+    }
 
-            guard let newStationStatus = await calculateStationStatus(stationInfo: stationInfo) else {
-                log(warning: "nil ftatus for station with id \(stationID)")
-                continue
-            }
-            if newStationStatus.state.isFinished {
-                cleanupDownloadTracking(for: stationID)
-                stationDownloads[stationID] = nil
-            } else {
-                stationDownloads[stationID]?.status = newStationStatus
-            }
+    func updateStationDownloadStatus(for stationID: SimStation.ID) async {
+        guard let stationInfo = stationDownloads[stationID] else {
+            log(error: "Station \(stationID) not found during status calculation.")
+            return
+        }
 
-            if stationInfo.status != newStationStatus {
-                eventContinuation?.yield(.init(id: stationID, status: newStationStatus))
-                logProgress()
-            }
+        guard let newStationStatus = await calculateStationStatus(stationInfo: stationInfo) else {
+            log(warning: "nil ftatus for station with id \(stationID)")
+            return
+        }
+        if newStationStatus.state.isFinished {
+            cleanupDownloadTracking(for: stationID)
+            stationDownloads[stationID] = nil
+        } else {
+            stationDownloads[stationID]?.status = newStationStatus
+        }
+
+        if stationInfo.status != newStationStatus {
+            eventContinuation?.yield(.init(id: stationID, status: newStationStatus))
+            logProgress()
         }
     }
 

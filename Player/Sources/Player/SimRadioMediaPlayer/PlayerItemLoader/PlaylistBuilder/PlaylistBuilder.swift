@@ -56,32 +56,10 @@ final class PlaylistBuilder {
         guard let relevantItem = dailyItems.first(where: { $0.track.playing.end > timeOffsetInFirstDay }) else {
             throw PlaylistGenerationError.makeDailyPlaylistError(date: currentDate)
         }
-        var itemFileTimeRange = relevantItem.track.timeRange
-        var itemPlayableDuration = relevantItem.track.timeRange.duration
+        let itemFileTimeRange = trimmedTimeRange(for: relevantItem.track, at: timeOffsetInFirstDay)
         let parentOriginalStartTimeInDay = relevantItem.track.startTime
         let itemStartTimeInOutput: CMTime = .zero // Single item, start at 0 in output
 
-        // Adjust for the time offset within the item
-        if timeOffsetInFirstDay > parentOriginalStartTimeInDay {
-            let offsetIntoItem = timeOffsetInFirstDay - parentOriginalStartTimeInDay
-            let newDuration = max(.zero, relevantItem.track.timeRange.duration - offsetIntoItem)
-            itemPlayableDuration = newDuration
-            itemFileTimeRange = CMTimeRange(
-                start: relevantItem.track.timeRange.start + offsetIntoItem,
-                duration: itemPlayableDuration
-            )
-        }
-        let remainingInDayDuration = max(
-            .zero,
-            .fullDayDuration - parentOriginalStartTimeInDay - itemFileTimeRange.start
-        )
-        let actualDurationToAdd = min(itemPlayableDuration, remainingInDayDuration)
-        if actualDurationToAdd < itemPlayableDuration {
-            itemFileTimeRange = CMTimeRange(
-                start: itemFileTimeRange.start,
-                duration: actualDurationToAdd
-            )
-        }
         let parentActualStartTimeInDay = parentOriginalStartTimeInDay +
             (itemFileTimeRange.start - relevantItem.track.timeRange.start)
         let parentActualEndTimeInDay = parentActualStartTimeInDay + itemFileTimeRange.duration
@@ -143,6 +121,35 @@ extension SimRadioStationData {
 private extension PlaylistBuilder {
     var station: SimStation {
         stationData.station
+    }
+
+    func trimmedTimeRange(for track: AudioFragment, at timeOffsetInFirstDay: CMTime) -> CMTimeRange {
+        var itemFileTimeRange = track.timeRange
+        var itemPlayableDuration = track.timeRange.duration
+        let parentOriginalStartTimeInDay = track.startTime
+
+        // Adjust for the time offset within the item
+        if timeOffsetInFirstDay > parentOriginalStartTimeInDay {
+            let offsetIntoItem = timeOffsetInFirstDay - parentOriginalStartTimeInDay
+            let newDuration = max(.zero, track.timeRange.duration - offsetIntoItem)
+            itemPlayableDuration = newDuration
+            itemFileTimeRange = CMTimeRange(
+                start: track.timeRange.start + offsetIntoItem,
+                duration: itemPlayableDuration
+            )
+        }
+        let remainingInDayDuration = max(
+            .zero,
+            .fullDayDuration - parentOriginalStartTimeInDay - itemFileTimeRange.start
+        )
+        let actualDurationToAdd = min(itemPlayableDuration, remainingInDayDuration)
+        if actualDurationToAdd < itemPlayableDuration {
+            itemFileTimeRange = CMTimeRange(
+                start: itemFileTimeRange.start,
+                duration: actualDurationToAdd
+            )
+        }
+        return itemFileTimeRange
     }
 
     func adjustMarkers(for timeRange: CMTimeRange, from markers: [AudioFragmentMarker]) -> [AudioFragmentMarker] {

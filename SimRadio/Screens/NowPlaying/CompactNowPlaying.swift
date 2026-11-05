@@ -14,6 +14,7 @@ struct CompactNowPlaying: View {
     @Binding var expanded: Bool
     var hideArtworkOnExpanded: Bool = true
     var animationNamespace: Namespace.ID
+    var containerWidth: CGFloat = 0
     @State var forwardAnimationTrigger: PlayerButtonTrigger = .one(bouncing: false)
     @State var viewWidth: CGFloat = .zero
 
@@ -52,7 +53,7 @@ private extension CompactNowPlaying {
     }
 
     var inlinedBottomAccessory: Bool {
-        let padding = UIScreen.size.width - viewWidth
+        let padding = containerWidth - viewWidth
         return padding > 60
     }
 

@@ -92,7 +92,7 @@ private extension RegularNowPlaying {
 
     RegularNowPlaying(
         expanded: true,
-        size: UIScreen.size,
+        size: CGSize(width: 390, height: 844),
         animationNamespace: Namespace().wrappedValue
     )
     .onAppear {

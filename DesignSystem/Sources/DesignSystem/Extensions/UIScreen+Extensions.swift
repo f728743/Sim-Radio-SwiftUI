@@ -6,15 +6,47 @@
 //
 
 import UIKit
+import SwiftUI
 
 public extension UIScreen {
-    static var deviceCornerRadius: CGFloat {
-        main.value(forKey: "_displayCornerRadius") as? CGFloat ?? 0
+    var deviceCornerRadius: CGFloat {
+        value(forKey: "_displayCornerRadius") as? CGFloat ?? 0
+    }
+}
+
+public extension View {
+    func onWindowScreenChange(_ action: @escaping @MainActor (UIScreen) -> Void) -> some View {
+        background {
+            WindowScreenReader(onChange: action)
+                .frame(width: 0, height: 0)
+        }
+    }
+}
+
+private struct WindowScreenReader: UIViewRepresentable {
+    var onChange: @MainActor (UIScreen) -> Void
+
+    func makeUIView(context _: Context) -> ScreenView {
+        let view = ScreenView()
+        view.onChange = onChange
+        return view
     }
 
-    static var hairlineWidth: CGFloat {
-        1 / main.scale
+    func updateUIView(_ uiView: ScreenView, context _: Context) {
+        uiView.onChange = onChange
     }
 
-    static let size = UIScreen.main.bounds.size
+    final class ScreenView: UIView {
+        var onChange: (@MainActor (UIScreen) -> Void)?
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            guard let screen = window?.windowScene?.screen else { return }
+            // Avoid changing SwiftUI state during a view update.
+            DispatchQueue.main.async { [weak self] in
+                guard let self, window?.windowScene?.screen === screen else { return }
+                onChange?(screen)
+            }
+        }
+    }
 }

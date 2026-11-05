@@ -85,7 +85,7 @@ extension PlayerButtonConfig {
         VStack {
             Text("Header")
                 .blendMode(.overlay)
-            PlayerButtons(spacing: UIScreen.size.width * 0.14)
+            PlayerButtons(spacing: 390 * 0.14)
             Text("Footer")
                 .blendMode(.overlay)
         }

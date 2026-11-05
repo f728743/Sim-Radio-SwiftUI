@@ -9,6 +9,7 @@ import Kingfisher
 import SwiftUI
 
 public struct ArtworkView: View {
+    @Environment(\.displayScale) private var displayScale
     let artwork: Artwork
     let cornerRadius: CGFloat
     var background: Color
@@ -20,7 +21,7 @@ public struct ArtworkView: View {
     }
 
     public var body: some View {
-        let border = UIScreen.hairlineWidth
+        let border = 1 / displayScale
         ZStack {
             background
                 .scaledToFit()

@@ -10,6 +10,7 @@ import Services
 import SwiftUI
 
 struct SeriesDetailsFoundStations: View {
+    @State private var containerWidth: CGFloat = 0
     let series: APISimRadioSeriesDTO
     let onTap: (APISimStationDTO) -> Void
 
@@ -33,6 +34,11 @@ struct SeriesDetailsFoundStations: View {
             }
             .scrollTargetLayout()
         }
+        .onGeometryChange(
+            for: CGFloat.self,
+            of: { $0.size.width },
+            action: { containerWidth = $0 }
+        )
         .scrollTargetBehavior(.viewAligned)
         .contentMargins(.horizontal, ViewConst.screenPaddings, for: .scrollContent)
     }
@@ -51,11 +57,13 @@ struct SeriesDetailsFoundStations: View {
     }
 
     static let carouselSpacing = CGFloat(12)
-    let itemWidth = ViewConst.itemWidth(
-        forItemsPerScreen: 2,
-        spacing: Self.carouselSpacing,
-        containerWidth: UIScreen.size.width
-    )
+    var itemWidth: CGFloat {
+        max(0, ViewConst.itemWidth(
+            forItemsPerScreen: 2,
+            spacing: Self.carouselSpacing,
+            containerWidth: containerWidth
+        ))
+    }
 }
 
 #Preview {

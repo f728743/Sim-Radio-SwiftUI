@@ -14,6 +14,7 @@ struct SeriesDetailsScreen: View {
     @Environment(Router.self) var router
     @Environment(Dependencies.self) var dependencies
     @State private var viewModel: SeriesDetailsScreenViewModel
+    @State private var containerWidth: CGFloat = 0
     @State var scrollOffset: CGFloat = 0
 
     init(series: APISimRadioSeriesDTO) {
@@ -26,6 +27,11 @@ struct SeriesDetailsScreen: View {
         ScrollView {
             scrollContent
         }
+        .onGeometryChange(
+            for: CGFloat.self,
+            of: { $0.size.width },
+            action:  { containerWidth = $0 }
+        )
         .onScrollGeometryChange(for: CGFloat.self) { geometry in
             geometry.contentOffset.y
         } action: { _, newValue in
@@ -41,7 +47,7 @@ struct SeriesDetailsScreen: View {
     }
 
     var detailsBarOpacity: Double {
-        let imageHeight = UIScreen.size.width
+        let imageHeight = containerWidth
         let topOffset = imageHeight - scrollOffset - SeriesDetailsBar.Const.height
         let high: CGFloat = 140
         let low: CGFloat = 25
@@ -58,7 +64,7 @@ struct SeriesDetailsScreen: View {
 private extension SeriesDetailsScreen {
     var scrollContent: some View {
         VStack(spacing: -SeriesDetailsBar.Const.height) {
-            ParallaxHeaderView(height: UIScreen.size.width) {
+            ParallaxHeaderView(height: containerWidth) {
                 KFImage.url(viewModel.series.coverLogoURL)
                     .resizable()
                     .scaledToFit()

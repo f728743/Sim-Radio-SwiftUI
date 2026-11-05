@@ -50,6 +50,11 @@ private extension ExpandableNowPlaying {
     var expandableNowPlaying: some View {
         GeometryReader {
             let size = $0.size
+            // The player ignores safe areas, while GeometryReader reports the safe-area frame.
+            let insets = insets(
+                in: $0.frame(in: .global),
+                safeAreaInsets: $0.safeAreaInsets
+            )
             ZStack(alignment: .top) {
                 NowPlayingBackground(
                     colors: model.colors.map { Color($0) },
@@ -58,7 +63,8 @@ private extension ExpandableNowPlaying {
                 )
                 CompactNowPlaying(
                     expanded: $expanded,
-                    animationNamespace: animationNamespace
+                    animationNamespace: animationNamespace,
+                    containerWidth: size.width
                 )
                 .opacity(expanded ? 0 : 1)
 
@@ -127,16 +133,16 @@ private extension ExpandableNowPlaying {
         }
     }
 
-    var insets: EdgeInsets {
+    func insets(in containerFrame: CGRect, safeAreaInsets: EdgeInsets) -> EdgeInsets {
         if expanded {
             return .init(top: 0, leading: 0, bottom: 0, trailing: 0)
         }
 
         return .init(
             top: 0,
-            leading: collapsedFrame.minX,
-            bottom: UIScreen.size.height - collapsedFrame.maxY,
-            trailing: UIScreen.size.width - collapsedFrame.maxX
+            leading: collapsedFrame.minX - (containerFrame.minX - safeAreaInsets.leading),
+            bottom: containerFrame.maxY + safeAreaInsets.bottom - collapsedFrame.maxY,
+            trailing: containerFrame.maxX + safeAreaInsets.trailing - collapsedFrame.maxX
         )
     }
 }

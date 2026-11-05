@@ -6,11 +6,12 @@
 //
 
 import Foundation
-import SwiftUI
 import Observation
+import SwiftUI
 
 @available(iOS 26, *)
 struct OverlaidRootView: View {
+    @State private var containerWidth: CGFloat = 0
     @State private var expandSheet: Bool = false
 
     @State private var placement = PlayerPlacement()
@@ -19,10 +20,16 @@ struct OverlaidRootView: View {
 
     var body: some View {
         RootTabView()
+            .onGeometryChange(
+                for: CGFloat.self,
+                of: { $0.size.width },
+                action: { containerWidth = $0 }
+            )
             .tabViewBottomAccessory {
                 CompactNowPlaying(
                     expanded: $expandSheet,
-                    animationNamespace: animationNamespace
+                    animationNamespace: animationNamespace,
+                    containerWidth: containerWidth
                 )
                 .onGeometryChange(
                     for: CGRect.self,
@@ -43,7 +50,6 @@ struct OverlaidRootView: View {
     }
 }
 
-// Geometry changes are observed only by the overlay, not by the TabView owner.
 @Observable
 private final class PlayerPlacement {
     var frame: CGRect = .zero

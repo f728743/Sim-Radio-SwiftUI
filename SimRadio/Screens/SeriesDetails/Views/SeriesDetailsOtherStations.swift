@@ -12,6 +12,7 @@ import SharedUtilities
 import SwiftUI
 
 struct SeriesDetailsOtherStations: View {
+    @State private var containerWidth: CGFloat = 0
     let series: APISimRadioSeriesDTO
     let onTap: (APISimStationDTO) -> Void
     var mediaActivity: (_ mediaID: MediaID) -> MediaActivity?
@@ -56,6 +57,11 @@ struct SeriesDetailsOtherStations: View {
             .scrollTargetLayout()
             .frame(height: Const.itemHeight * CGFloat(Const.rowsCount))
         }
+        .onGeometryChange(
+            for: CGFloat.self,
+            of: { $0.size.width },
+            action: { containerWidth = $0 }
+        )
         .scrollTargetBehavior(.viewAligned)
         .contentMargins(.horizontal, ViewConst.screenPaddings, for: .scrollContent)
     }
@@ -64,11 +70,13 @@ struct SeriesDetailsOtherStations: View {
         ((index + 1) % Const.rowsCount != 0) && (index != itemCount - 1)
     }
 
-    let itemWidth = ViewConst.itemWidth(
-        forItemsPerScreen: 1,
-        spacing: Const.carouselSpacing,
-        containerWidth: UIScreen.size.width
-    )
+    var itemWidth: CGFloat {
+        max(0, ViewConst.itemWidth(
+            forItemsPerScreen: 1,
+            spacing: Const.carouselSpacing,
+            containerWidth: containerWidth
+        ))
+    }
 }
 
 private enum Const {

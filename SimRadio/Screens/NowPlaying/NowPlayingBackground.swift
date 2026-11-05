@@ -14,6 +14,7 @@ struct NowPlayingBackground: View {
     let isFullExpanded: Bool
     var canBeExpanded: Bool = true
 
+    @State private var deviceCornerRadius: CGFloat = 0
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -26,6 +27,9 @@ struct NowPlayingBackground: View {
                     .opacity(expanded ? 1 : 0)
             }
         }
+        .onWindowScreenChange { screen in
+            deviceCornerRadius = screen.deviceCornerRadius
+        }
         .clipShape(.rect(cornerRadius: playerCornerRadius))
         .frame(height: expanded ? nil : ViewConst.compactNowPlayingHeight)
     }
@@ -37,7 +41,7 @@ private extension NowPlayingBackground {
     }
 
     var expandPlayerCornerRadius: CGFloat {
-        isFullExpanded ? 0 : UIScreen.deviceCornerRadius
+        isFullExpanded ? 0 : deviceCornerRadius
     }
 
     var collapsedPlayerCornerRadius: CGFloat {

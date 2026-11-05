@@ -326,7 +326,6 @@ private extension PlaylistBuilder {
             track: track,
             nextFragmentID: nextTag,
             starts: sec,
-            positions: station.playlistRules.positions ?? [],
             generator: &generator
         )
 
@@ -393,9 +392,9 @@ private extension PlaylistBuilder {
         track: DereferencedTruck,
         nextFragmentID: SimRadioDTO.Fragment.ID,
         starts sec: CMTime,
-        positions: [SimRadioDTO.VoiceOverPosition],
         generator: inout RandomNumberGenerator
     ) async throws -> [AudioFragment] {
+        let positions = station.playlistRules.positions ?? []
         var usedPositions: Set<SimRadioDTO.VoiceOverPosition.ID> = []
         var res: [AudioFragment] = []
         for mix in fragment.voiceOver ?? [] where try mix.condition.isSatisfied(

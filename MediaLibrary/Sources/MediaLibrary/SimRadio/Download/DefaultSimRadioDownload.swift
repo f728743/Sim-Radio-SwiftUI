@@ -8,12 +8,6 @@
 import Foundation
 import Services
 
-private enum DownloadLog {
-    case info(verbose: Bool), warning, error
-}
-
-private let logSettings: [DownloadLog] = [.warning, .error]
-
 extension DefaultSimRadioDownload: SimRadioDownload {}
 
 public actor DefaultSimRadioDownload {
@@ -25,22 +19,6 @@ public actor DefaultSimRadioDownload {
 
     public let events: AsyncStream<SimRadioDownloadEvent>
     private var eventContinuation: AsyncStream<SimRadioDownloadEvent>.Continuation?
-
-    struct StationDownloadInfo {
-        var status: SimRadioDownloadStatus
-        let trackListIDs: [TrackList.ID]
-    }
-
-    struct TrackListDownloadInfo {
-        let id: TrackList.ID
-        var status: SimRadioDownloadStatus
-        var files: [FileDownloadInfo]
-    }
-
-    struct FileDownloadInfo: Equatable {
-        let request: DownloadQueue.DownloadRequest
-        var status: SimRadioDownloadStatus
-    }
 
     public init() {
         downloadQueue = DownloadQueue(
@@ -71,12 +49,12 @@ public actor DefaultSimRadioDownload {
     }
 
     public func cancelDownloadStation(withID id: SimStation.ID) async -> Bool {
-        log(info: "Cancelling download for station \(id.value)")
+        SimRadioDownloadLogger.log(info: "Cancelling download for station \(id.value)")
         guard let requests = requestsOnlyForStation(withID: id) else {
-            log(warning: "Cannot cancel download for untracked station: \(id.value)")
+            SimRadioDownloadLogger.log(warning: "Cannot cancel download for untracked station: \(id.value)")
             return false
         }
-        log(info: "Cancelling \(requests.count) download requests for station \(id.value)")
+        SimRadioDownloadLogger.log(info: "Cancelling \(requests.count) download requests for station \(id.value)")
         for request in requests {
             await downloadQueue.cancel(request)
         }
@@ -96,16 +74,16 @@ private extension DefaultSimRadioDownload {
         // Access mediaState on the MainActor
         let stations = await mediaState.simRadio.stations
         guard let station = stations[id] else {
-            log(error: "Station \(id) not found in mediaState")
+            SimRadioDownloadLogger.log(error: "Station \(id) not found in mediaState")
             return
         }
 
         guard !stationDownloads.keys.contains(id) else {
-            log(warning: "Station \(id) already tracked for download.")
+            SimRadioDownloadLogger.log(warning: "Station \(id) already tracked for download.")
             return
         }
 
-        log(info: "Starting download for station \(id)")
+        SimRadioDownloadLogger.log(info: "Starting download for station \(id)")
         await download(station: station, missing: missing)
     }
 
@@ -135,7 +113,8 @@ private extension DefaultSimRadioDownload {
         }
 
         for (trackListID, files) in stationDownloadedFiles {
-            log(info: "Queuing trackList \(trackListID) with \(files.count) files for station \(station.id.value)")
+            SimRadioDownloadLogger
+                .log(info: "Queuing trackList \(trackListID) with \(files.count) files for station \(station.id.value)")
             Task {
                 await updateFileSizes(for: files.map(\.request.sourceURL), trackListID: trackListID)
             }
@@ -217,19 +196,19 @@ private extension DefaultSimRadioDownload {
 
     func handleDownloaderEvent(_ event: DownloadQueue.Event) async {
         guard let trackListID = trackListIDByURL[event.downloadRequest.sourceURL] else {
-            log(warning: "Missing trackListID for event: \(event)")
+            SimRadioDownloadLogger.log(warning: "Missing trackListID for event: \(event)")
             return
         }
 
         guard var trackListDownload = trackListDownloads[trackListID] else {
-            log(warning: "Group \(trackListID) not found for event: \(event)")
+            SimRadioDownloadLogger.log(warning: "Group \(trackListID) not found for event: \(event)")
             return
         }
 
         guard let fileIndex = trackListDownload.files
             .firstIndex(where: { $0.request == event.downloadRequest })
         else {
-            log(warning: "fileIndex for event: \(event)")
+            SimRadioDownloadLogger.log(warning: "fileIndex for event: \(event)")
             return
         }
 
@@ -243,7 +222,7 @@ private extension DefaultSimRadioDownload {
 
         let trackListStations = findStationIDs(for: trackListID)
         if trackListStations.isEmpty {
-            log(warning: "Could not find station for trackListID \(trackListID)")
+            SimRadioDownloadLogger.log(warning: "Could not find station for trackListID \(trackListID)")
         }
 
         if event.state.isFinished || event.state.isFailed {
@@ -257,12 +236,12 @@ private extension DefaultSimRadioDownload {
 
     func updateStationDownloadStatus(for stationID: SimStation.ID) async {
         guard let stationInfo = stationDownloads[stationID] else {
-            log(error: "Station \(stationID) not found during status calculation.")
+            SimRadioDownloadLogger.log(error: "Station \(stationID) not found during status calculation.")
             return
         }
 
         guard let newStationStatus = await calculateStationStatus(stationInfo: stationInfo) else {
-            log(warning: "nil ftatus for station with id \(stationID)")
+            SimRadioDownloadLogger.log(warning: "nil ftatus for station with id \(stationID)")
             return
         }
         if newStationStatus.state.isFinished {
@@ -316,7 +295,7 @@ private extension DefaultSimRadioDownload {
 
     /// Fetches and updates the total size for each file URL using HEAD requests.
     func updateFileSizes(for urls: [URL], trackListID: TrackList.ID) async {
-        log(info: "Updating file sizes for trackList \(trackListID)")
+        SimRadioDownloadLogger.log(info: "Updating file sizes for trackList \(trackListID)")
         await withTaskGroup(of: (URL, Int64?).self) { group in
             for url in urls {
                 group.addTask {
@@ -328,7 +307,7 @@ private extension DefaultSimRadioDownload {
                         let contentLength = response.expectedContentLength // This is Int64
                         return (url, contentLength > 0 ? contentLength : nil) // Return nil if size is unknown/invalid
                     } catch {
-                        log(error: "Failed to fetch size for \(url.lastPathComponent): \(error)")
+                        SimRadioDownloadLogger.log(error: "Failed to fetch size for \(url.lastPathComponent): \(error)")
                         return (url, nil)
                     }
                 }
@@ -341,7 +320,7 @@ private extension DefaultSimRadioDownload {
                 }
             }
         }
-        log(info: "Finished updating file sizes for trackList \(trackListID)")
+        SimRadioDownloadLogger.log(info: "Finished updating file sizes for trackList \(trackListID)")
     }
 
     /// Updates the total size for a specific file within a group.
@@ -349,7 +328,7 @@ private extension DefaultSimRadioDownload {
         guard var trackList = trackListDownloads[trackListID],
               let fileIndex = trackList.files.firstIndex(where: { $0.request.sourceURL == fileURL })
         else {
-            log(error: "File \(fileURL.lastPathComponent) " +
+            SimRadioDownloadLogger.log(error: "File \(fileURL.lastPathComponent) " +
                 "or trackList \(trackListID) not found for size update.")
             return
         }
@@ -371,227 +350,35 @@ private extension DefaultSimRadioDownload {
 
     func logProgress() {
         Task {
-            guard logSettings.logInfo else { return }
+            guard SimRadioDownloadLogger.isInfoEnabled else { return }
             let overall = await Array(stationDownloads.values).overallStatus
-            log(info: "--- Download Progress (\(Date().ISO8601Format())) ---")
+            SimRadioDownloadLogger.log(info: "--- Download Progress (\(Date().ISO8601Format())) ---")
             if let overall {
-                log(info: "Overall: \(overall.state) - \(overall.progressString)")
+                SimRadioDownloadLogger.log(info: "Overall: \(overall.state) - \(overall.progressString)")
             }
 
             for (stationID, station) in stationDownloads {
-                log(info: "  Station \(stationID.value): \(station.status.state) - \(station.status.progressString)")
+                SimRadioDownloadLogger
+                    .log(
+                        info: "  Station \(stationID.value): \(station.status.state) - \(station.status.progressString)"
+                    )
                 for groupID in station.trackListIDs {
                     let group = await groupStatus(groupID)
                     if let group {
-                        log(info: "    Group \(groupID.value): \(group.state) - \(group.progressString)")
+                        SimRadioDownloadLogger
+                            .log(info: "    Group \(groupID.value): \(group.state) - \(group.progressString)")
                     }
                     // Optional: Print individual file status within group for detailed debug
-                    if logSettings.logVerboseInfo, let group = trackListDownloads[groupID] {
+                    if SimRadioDownloadLogger.isVerboseInfoEnabled, let group = trackListDownloads[groupID] {
                         for file in group.files {
                             let fileName = file.request.sourceURL.lastPathComponent
-                            log(verboseInfo: "      File \(fileName): \(file.status.state) " +
+                            SimRadioDownloadLogger.log(verboseInfo: "      File \(fileName): \(file.status.state) " +
                                 "- \(file.status.progressString)")
                         }
                     }
                 }
             }
-            log(info: "---------------------------------------")
+            SimRadioDownloadLogger.log(info: "---------------------------------------")
         }
-    }
-}
-
-extension DefaultSimRadioDownload.FileDownloadInfo {
-    func updated(queueState: DownloadQueue.DownloadState) -> DefaultSimRadioDownload.FileDownloadInfo {
-        let newStatus: SimRadioDownloadStatus = switch queueState {
-        case .queued:
-            .init(
-                state: .scheduled,
-                downloadedBytes: status.downloadedBytes,
-                totalBytes: status.totalBytes
-            )
-        case let .progress(downloadedBytes, totalBytes):
-            .init(
-                state: .downloading,
-                downloadedBytes: downloadedBytes,
-                totalBytes: totalBytes == 0 ? status.totalBytes : totalBytes
-            )
-        case .completed:
-            .init(
-                state: .completed,
-                downloadedBytes: status.totalBytes,
-                totalBytes: status.totalBytes
-            )
-        case .canceled:
-            .init(
-                state: .canceled,
-                downloadedBytes: status.downloadedBytes,
-                totalBytes: status.totalBytes
-            )
-        case .failed:
-            .init(
-                state: .failed([request.sourceURL]),
-                downloadedBytes: status.downloadedBytes,
-                totalBytes: status.totalBytes
-            )
-        }
-        return .init(
-            request: request,
-            status: newStatus
-        )
-    }
-}
-
-private protocol SimRadioDownloadStatusProtocol {
-    var state: SimRadioDownloadState { get }
-    var totalBytes: Int64 { get }
-    var downloadedBytes: Int64 { get }
-}
-
-extension SimRadioDownloadStatus: SimRadioDownloadStatusProtocol {}
-
-extension DefaultSimRadioDownload.FileDownloadInfo: SimRadioDownloadStatusProtocol {
-    var state: SimRadioDownloadState {
-        status.state
-    }
-
-    var totalBytes: Int64 {
-        status.totalBytes
-    }
-
-    var downloadedBytes: Int64 {
-        status.downloadedBytes
-    }
-}
-
-extension DefaultSimRadioDownload.StationDownloadInfo: SimRadioDownloadStatusProtocol {
-    var state: SimRadioDownloadState {
-        status.state
-    }
-
-    var totalBytes: Int64 {
-        status.totalBytes
-    }
-
-    var downloadedBytes: Int64 {
-        status.downloadedBytes
-    }
-}
-
-/// Aggregation logic for collections
-extension Collection where Element: SimRadioDownloadStatusProtocol {
-    var overallState: SimRadioDownloadState? {
-        get async {
-            if contains(where: { $0.state == .downloading }) {
-                return .downloading
-            }
-            if contains(where: { $0.state == .scheduled }) {
-                return .scheduled
-            }
-
-            let incomplete = filter { $0.state != .completed }
-            if incomplete.isEmpty {
-                return .completed
-            }
-
-            if incomplete.contains(where: { $0.state == .canceled }) {
-                return .canceled
-            }
-
-            if incomplete.contains(where: \.state.isFailed) {
-                return .failed(flatMap(\.state.failedURLs))
-            }
-            return isEmpty ? nil : .scheduled
-        }
-    }
-
-    var overallTotalBytes: Int64 {
-        reduce(0) { $0 + $1.totalBytes }
-    }
-
-    var overallDownloadedBytes: Int64 {
-        reduce(0) { $0 + $1.downloadedBytes }
-    }
-
-    var overallStatus: SimRadioDownloadStatus? {
-        get async {
-            await overallState.map {
-                .init(
-                    state: $0,
-                    downloadedBytes: overallDownloadedBytes,
-                    totalBytes: overallTotalBytes
-                )
-            }
-        }
-    }
-}
-
-extension Int64 {
-    private nonisolated(unsafe) static let formatter: ByteCountFormatter = {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useKB, .useMB]
-        formatter.countStyle = .file
-        return formatter
-    }()
-
-    var bytesToMB: String {
-        Self.formatter.string(fromByteCount: Swift.max(0, self))
-    }
-}
-
-private func log(verboseInfo: String) {
-    guard logSettings.logVerboseInfo else { return }
-    print(verboseInfo)
-}
-
-private func log(info: String) {
-    guard logSettings.logInfo else { return }
-    print(info)
-}
-
-private func log(warning: String) {
-    guard logSettings.contains(
-        where: {
-            if case .warning = $0 {
-                return true
-            }
-            return false
-        }
-    ) else { return }
-    print(warning)
-}
-
-private func log(error: String) {
-    guard logSettings.contains(
-        where: {
-            if case .error = $0 {
-                return true
-            }
-            return false
-        }
-    ) else { return }
-    print(error)
-}
-
-extension Collection<DownloadLog> {
-    var logVerboseInfo: Bool {
-        contains(
-            where: {
-                if case let .info(verbose) = $0, verbose {
-                    return true
-                }
-                return false
-            }
-        )
-    }
-
-    var logInfo: Bool {
-        contains(
-            where: {
-                if case .info = $0 {
-                    return true
-                }
-                return false
-            }
-        )
     }
 }

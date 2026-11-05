@@ -89,6 +89,8 @@ private extension PlayerControls {
     @ViewBuilder
     var options: some View {
         if !model.modes.isEmpty {
+            // The system menu follows the window’s appearance. A local colorScheme
+            // leaves the popup unchanged, while preferredColorScheme affects the whole window.
             Menu {
                 Picker(
                     selection: Binding(
@@ -112,7 +114,6 @@ private extension PlayerControls {
                 }
             } label: {
                 optionsMenuLabel
-                    .preferredColorScheme(.dark)
             }
             .padding(.trailing, ViewConst.playerCardPaddings)
         }

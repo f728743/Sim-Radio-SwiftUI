@@ -27,6 +27,7 @@ let package = Package(
                 "SharedUtilities",
                 "MediaLibrary"
             ]
-        )
+        ),
+        .testTarget(name: "PlayerTests", dependencies: ["Player", "MediaLibrary"])
     ]
 )

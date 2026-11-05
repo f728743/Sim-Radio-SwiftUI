@@ -11,8 +11,8 @@ struct NonRepeatingRandomizer<T> {
     private let maxDiscardSize: Int
 
     init?(elements: [T], avoidRepeatsRatio ratio: Double) {
-        guard elements.count >= 2 else { return nil }
-        maxDiscardSize = max(1, Int(ratio * Double(elements.count)))
+        guard !elements.isEmpty, ratio.isFinite else { return nil }
+        maxDiscardSize = min(elements.count - 1, max(1, Int(min(1, max(0, ratio)) * Double(elements.count))))
         drawPool = elements
     }
 

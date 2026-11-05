@@ -69,6 +69,16 @@ public extension FileDownload.Event {
 }
 
 extension FileDownload: URLSessionDownloadDelegate {
+    public func urlSession(_: URLSession, task _: URLSessionTask, didCompleteWithError error: Error?) {
+        guard let error else { return }
+        if (error as? URLError)?.code == .cancelled {
+            continuation.yield(.canceled)
+        } else {
+            continuation.yield(.failed(error: error))
+        }
+        continuation.finish()
+    }
+
     public func urlSession(
         _: URLSession,
         downloadTask: URLSessionDownloadTask,

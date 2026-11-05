@@ -5,8 +5,6 @@
 //  Created by Alexey Vorobyov on 07.07.2025.
 //
 
-// swiftlint:disable file_length
-
 import AVFoundation
 import MediaLibrary
 import SharedUtilities
@@ -19,7 +17,7 @@ enum DrawPoolID: Hashable {
 
 @MainActor
 final class PlaylistBuilder {
-    enum PlaylistMode {
+    enum PlaylistMode: Hashable {
         case alternate(TimeInterval)
         case option(SimRadioDTO.SourceOption.ID)
     }
@@ -28,13 +26,16 @@ final class PlaylistBuilder {
     var trackLists: [TrackList.ID: TrackList] = [:]
     var fragments: [SimRadioDTO.Fragment.ID: SimRadioDTO.Fragment] = [:]
     let stationData: SimRadioStationData
-    var playlistCache: [Date: [PlaylistItem]] = [:]
+    private struct CacheKey: Hashable {
+        let date: Date
+        let mode: PlaylistMode?
+    }
+
+    private var playlistCache: [CacheKey: [PlaylistItem]] = [:]
 
     init(stationData: SimRadioStationData) {
         self.stationData = stationData
     }
-
-    // swiftlint:disable function_body_length
 
     /// Generates a single `PlaylistItem` starting at the specified date and time offset within that day.
     /// - Parameters:
@@ -106,7 +107,6 @@ final class PlaylistBuilder {
             mixes: adjustedMixes
         )
     }
-    // swiftlint:enable function_body_length
 }
 
 extension SimRadioStationData {
@@ -162,15 +162,23 @@ private extension PlaylistBuilder {
         for date: Date,
         mode: PlaylistMode?
     ) async throws -> [PlaylistItem] {
-        if let cached = playlistCache[date] {
+        try Task.checkCancellation()
+        let key = CacheKey(date: date, mode: mode)
+        if let cached = playlistCache[key] {
             return cached
         }
         var generator: any RandomNumberGenerator = SplitMix64(seed: UInt64(date.startOfDay.timeIntervalSince1970))
-        return try await makePlaylist(
+        drawPools.removeAll()
+        let playlist = try await makePlaylist(
             duration: .init(seconds: .fullDayDuration),
             mode: mode,
             generator: &generator
         )
+        if playlistCache.count >= 2 {
+            playlistCache.removeAll()
+        }
+        playlistCache[key] = playlist
+        return playlist
     }
 
     func populateHelperDictionaries() throws {
@@ -206,9 +214,6 @@ private extension PlaylistBuilder {
                         TrackList.ID(series: stationData.station.id.series, value: $0.value)
                     }
                 )
-                if tracks.count < 2 {
-                    return nil
-                }
                 guard let drawPool = NonRepeatingRandomizer(
                     elements: tracks,
                     avoidRepeatsRatio: 3.0 / 7.0
@@ -271,12 +276,18 @@ private extension PlaylistBuilder {
             generator: &generator
         )
         while moment < duration {
+            try Task.checkCancellation()
             let playlistItem = try await makePlaylistItem(
                 fragmentID: fragmentID,
                 nextTag: next,
                 starts: moment,
                 generator: &generator
             )
+            guard playlistItem.track.playing.duration.seconds.isFinite,
+                  playlistItem.track.playing.duration > .zero
+            else {
+                throw PlaylistGenerationError.invalidFragment(id: fragmentID)
+            }
             result.append(playlistItem)
             moment += playlistItem.track.playing.duration
             fragmentID = next
@@ -370,7 +381,6 @@ private extension PlaylistBuilder {
         throw PlaylistGenerationError.notExhaustiveFragment(id: fragmentID)
     }
 
-    // swiftlint:disable:next function_parameter_count
     func makeMixes(
         fragment: SimRadioDTO.Fragment,
         track: DereferencedTruck,
@@ -606,5 +616,3 @@ func secOfDay(hhmm: String) -> Double? {
     }
     return (h * 60 * 60) + (m * 60)
 }
-
-// swiftlint:enable file_length

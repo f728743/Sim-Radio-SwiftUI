@@ -20,6 +20,9 @@ public final class DefaultRealRadioMediaPlayer {
     private var spectrumUpdateTimer: Timer?
     private var statusObservation: NSKeyValueObservation?
     private var spectrum = SimulatedSpectrum()
+    private var playbackObservation: NSKeyValueObservation?
+    private var generation = UUID()
+    private var attemptedFallback = false
 
     public init() {}
 }
@@ -32,6 +35,11 @@ extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
               let station = mediaState.realRadio.stations[stationID],
               let stream = station.streamResolved.toHTTPS
         else {
+            delegate?.realRadioMediaPlayer(
+                self,
+                stationID: stationID,
+                didChangeStatus: .failed("Station stream is unavailable.")
+            )
             return
         }
 
@@ -42,6 +50,7 @@ extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
 
         stop()
         currentStationID = stationID
+        attemptedFallback = false
 
         print("Loading real radio station: \(station.title)")
 
@@ -57,6 +66,11 @@ extension DefaultRealRadioMediaPlayer: RealRadioMediaPlayer {
 
 private extension DefaultRealRadioMediaPlayer {
     func setupPlayerForStream(_ streamURL: URL) {
+        generation = UUID()
+        statusObservation = nil
+        playbackObservation = nil
+        player?.pause()
+        stopSimulatedSpectrumUpdates()
         let assetOptions: [String: Any] = [
             AVURLAssetAllowsCellularAccessKey: true,
             AVURLAssetAllowsConstrainedNetworkAccessKey: true,
@@ -72,9 +86,23 @@ private extension DefaultRealRadioMediaPlayer {
     }
 
     func setupPlayerObservers() {
+        let generation = generation
         statusObservation = playerItem?.observe(\.status, options: [.new, .initial]) { [weak self] _, _ in
             Task { @MainActor [weak self] in
-                self?.handlePlayerItemStatusChanged()
+                guard let self, self.generation == generation else { return }
+                handlePlayerItemStatusChanged()
+            }
+        }
+        playbackObservation = player?.observe(\.timeControlStatus, options: [.new]) { [weak self] _, _ in
+            Task { @MainActor [weak self] in
+                guard let self, self.generation == generation, let stationID = currentStationID else { return }
+                switch player?.timeControlStatus {
+                case .playing:
+                    delegate?.realRadioMediaPlayer(self, stationID: stationID, didChangeStatus: .playing)
+                case .waitingToPlayAtSpecifiedRate:
+                    delegate?.realRadioMediaPlayer(self, stationID: stationID, didChangeStatus: .loading)
+                default: break
+                }
             }
         }
     }
@@ -106,6 +134,8 @@ private extension DefaultRealRadioMediaPlayer {
     }
 
     func cleanup() {
+        generation = UUID()
+        playbackObservation = nil
         player?.pause()
         player?.replaceCurrentItem(with: nil)
 
@@ -134,8 +164,15 @@ private extension DefaultRealRadioMediaPlayer {
             startSimulatedSpectrumUpdates()
             print("Real radio stream ready to play")
         case .failed:
-            if let error = playerItem.error {
-                print("Error creating player item for real radio: \(error)")
+            if attemptedFallback {
+                if let stationID = currentStationID {
+                    delegate?.realRadioMediaPlayer(
+                        self,
+                        stationID: stationID,
+                        didChangeStatus: .failed(playerItem.error?.localizedDescription ?? "Playback failed.")
+                    )
+                }
+            } else {
                 attemptFallbackPlayback()
             }
         case .unknown:
@@ -148,13 +185,10 @@ private extension DefaultRealRadioMediaPlayer {
     func attemptFallbackPlayback() {
         guard let stationID = currentStationID,
               let station = mediaState?.realRadio.stations[stationID]
-        else {
-            return
-        }
+        else { return }
         print("Attempting fallback playback for: \(station.title)")
-        let fallbackPlayer = AVPlayer(url: station.stream)
-        fallbackPlayer.play()
-        player = fallbackPlayer
+        attemptedFallback = true
+        setupPlayerForStream(station.stream)
     }
 }
 

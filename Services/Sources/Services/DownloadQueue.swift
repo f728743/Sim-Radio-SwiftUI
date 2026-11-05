@@ -42,11 +42,11 @@ public actor DownloadQueue {
     private var downloadQueue: [QueueElement] = []
     private var activeDownloads: [DownloadRequest: FileDownload] = [:]
 
-    public init(destinationDirectory: URL, maxConcurrentDownloads: Int = 6) {
+    public init(destinationDirectory: URL, maxConcurrentDownloads: Int = 6, session: URLSession? = nil) {
         let config = URLSessionConfiguration.default
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         config.urlCache = nil
-        urlSession = URLSession(configuration: config)
+        urlSession = session ?? URLSession(configuration: config)
         self.destinationDirectory = destinationDirectory
         self.maxConcurrentDownloads = maxConcurrentDownloads
         (events, continuation) = AsyncStream.makeStream(of: Event.self)
@@ -95,8 +95,13 @@ public actor DownloadQueue {
     }
 
     public func cancelAllDownloads() async {
-        for downloadRequest in activeDownloads.keys {
-            await cancel(downloadRequest)
+        let queued = downloadQueue.filter(\.isQueued)
+        downloadQueue.removeAll { $0.isQueued }
+        for element in queued {
+            continuation.yield(Event(state: .canceled, downloadRequest: element.downloadRequest))
+        }
+        for download in activeDownloads.values {
+            download.cancel()
         }
     }
 }

@@ -41,6 +41,8 @@ extension PlayerStateObserving {
 
     func mediaActivity(_ mediaID: MediaID) -> MediaActivity? {
         switch playerState {
+        case let .loading(id, _): id == mediaID ? .buffering : nil
+        case let .failed(id, _, _): id == mediaID ? .paused : nil
         case let .paused(pausedMediaID, _): pausedMediaID == mediaID ? .paused : nil
         case let .playing(playingMediaID, _): playingMediaID == mediaID ? .spectrum(playIndicatorSpectrum) : nil
         }

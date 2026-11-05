@@ -5,8 +5,6 @@
 //  Created by Alexey Vorobyov on 25.06.2025.
 //
 
-// swiftlint:disable file_length function_body_length cyclomatic_complexity
-
 import Foundation
 import Services
 
@@ -128,10 +126,14 @@ private extension DefaultSimRadioDownload {
             let missingFiles = Set(missing?[trackList.id] ?? [])
             let files = tracks.map {
                 guard let url = $0.url, let destinationDirectoryPath = $0.destinationDirectoryPath else { fatalError() }
+                let request = DownloadQueue.DownloadRequest(
+                    sourceURL: url,
+                    destinationDirectoryPath: destinationDirectoryPath
+                )
                 return FileDownloadInfo(
-                    request: .init(sourceURL: url, destinationDirectoryPath: destinationDirectoryPath),
+                    request: request,
                     status: isPartialDownload
-                        ? missingFiles.contains(url) ? .initial : .init(state: .completed)
+                        ? missingFiles.contains(request.localFileURL) ? .initial : .init(state: .completed)
                         : .initial
                 )
             }
@@ -470,6 +472,9 @@ extension Collection where Element: SimRadioDownloadStatusProtocol {
             if contains(where: { $0.state == .downloading }) {
                 return .downloading
             }
+            if contains(where: { $0.state == .scheduled }) {
+                return .scheduled
+            }
 
             let incomplete = filter { $0.state != .completed }
             if incomplete.isEmpty {
@@ -578,5 +583,3 @@ extension Collection<DownloadLog> {
         )
     }
 }
-
-// swiftlint:enable file_length function_body_length cyclomatic_complexity

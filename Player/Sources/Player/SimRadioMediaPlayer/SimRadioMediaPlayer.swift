@@ -16,6 +16,7 @@ public protocol SimRadioMediaPlayer {
 
 @MainActor
 public protocol SimRadioMediaPlayerDelegate: AnyObject {
+    func simRadioMediaPlayer(_ player: SimRadioMediaPlayer, stationID: MediaID, didChangeStatus status: PlaybackStatus)
     func simRadioMediaPlayer(_ player: SimRadioMediaPlayer, didUpdateSpectrum spectrum: [Float])
     func simRadioMediaPlayer(_ player: SimRadioMediaPlayer, didCrossTrackMarker marker: AudioFragmentMarker?)
 }

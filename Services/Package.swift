@@ -23,6 +23,7 @@ let package = Package(
             dependencies: [
                 "SharedUtilities"
             ]
-        )
+        ),
+        .testTarget(name: "ServicesTests", dependencies: ["Services"])
     ]
 )

@@ -15,9 +15,14 @@ public final class DefaultSimRadioMediaPlayer {
     private let queuePlayer = AVQueuePlayer()
     private let audioTapProcessor: AudioTapProcessor
     private var nextPlayableItem: NextPlayableItem?
-    private var observer: NSObjectProtocol?
     private var playToEndTask: Task<Void, Never>?
     private var playTask: Task<Void, Never>?
+    private var advanceTask: Task<Void, Never>?
+    private var playbackObservation: NSKeyValueObservation?
+    private var currentItemObservation: NSKeyValueObservation?
+    private var itemStatusObservation: NSKeyValueObservation?
+    private var generation = UUID()
+    private var playlistBuilder: PlaylistBuilder?
 
     private var currentRequestedStationID: MediaID?
     private var currentRequestedMode: MediaPlaybackMode.ID?
@@ -37,41 +42,39 @@ public final class DefaultSimRadioMediaPlayer {
 
 extension DefaultSimRadioMediaPlayer: SimRadioMediaPlayer {
     public func playStation(withID stationID: MediaID, mode: MediaPlaybackMode.ID?) {
-        playTask?.cancel()
+        stop()
+        let generation = generation
 
-        // Save the ID of the new request
-        // This will serve as a "generation identifier"
         currentRequestedStationID = stationID
         currentRequestedMode = mode
+        observePlayback(generation: generation)
 
         playTask = Task { [weak self] in
-            guard let self else { return }
-
-            // If the task ID doesn't match the last requested ID,
-            // then this task is outdated and should be terminated
-            guard currentRequestedStationID == stationID, currentRequestedMode == mode else {
-                // This task is outdated, just exit
-                return
-            }
-
-            queuePlayer.removeAllItems()
-            playToEndTask?.cancel()
-            playToEndTask = nil
+            guard let self, !Task.isCancelled, self.generation == generation else { return }
 
             do {
                 try await doPlayStation(withID: stationID, mode: mode)
             } catch {
-                if !Task.isCancelled {
-                    // Log error only if it's from the *current* task
-                    if currentRequestedStationID == stationID, currentRequestedMode == mode {
-                        print("Playback error: \(error)")
-                    }
-                }
+                guard !Task.isCancelled, self.generation == generation else { return }
+                delegate?.simRadioMediaPlayer(
+                    self,
+                    stationID: stationID,
+                    didChangeStatus: .failed(error.localizedDescription)
+                )
             }
         }
     }
 
     public func stop() {
+        generation = UUID()
+        advanceTask?.cancel()
+        advanceTask = nil
+        playbackObservation = nil
+        currentItemObservation = nil
+        itemStatusObservation = nil
+        nextPlayableItem = nil
+        playlistBuilder = nil
+        queuePlayer.pause()
         queuePlayer.removeAllItems()
         playTask?.cancel()
         playTask = nil
@@ -117,10 +120,8 @@ private extension DefaultSimRadioMediaPlayer {
         let stationID: MediaID
         let item: AVPlayerItem
         /// Reference date used to calculate the day boundary for playback scheduling
-        /// - Important: Calendar operations should use this date's startOfDay
         let day: Date
         /// Precise time offset within the day for playback scheduling
-        /// - Note: Uses CMTime for frame-accurate scheduling and AVFoundation compatibility
         /// - Value represents seconds since start of day (00:00)
         let startTimeInDay: CMTime
         let mode: MediaPlaybackMode.ID?
@@ -176,14 +177,12 @@ private extension DefaultSimRadioMediaPlayer {
             throw PlayerItemLoadingError.playerItemCreatingError
         }
 
-        // Check before updating nextPlayableItem
         try Task.checkCancellation()
         guard currentRequestedStationID == stationID, currentRequestedMode == mode else {
             throw CancellationError()
         }
 
-        self.nextPlayableItem = nextPlayableItem
-        queuePlayer.insert(nextPlayableItem.item, after: nil)
+        enqueue(nextPlayableItem)
     }
 
     func makePlaylistItem(
@@ -216,8 +215,8 @@ private extension DefaultSimRadioMediaPlayer {
         else {
             throw PlayerItemLoadingError.playerItemCreatingError
         }
-        let playlistBuilder = PlaylistBuilder(stationData: stationData)
-
+        let playlistBuilder = playlistBuilder ?? PlaylistBuilder(stationData: stationData)
+        self.playlistBuilder = playlistBuilder
         return try await playlistBuilder.makePlaylistItem(
             startingOn: startingDate,
             at: startingTime,
@@ -226,23 +225,91 @@ private extension DefaultSimRadioMediaPlayer {
     }
 
     func onPlayerItemDidPlayToEndTime() {
-        guard let nextPlayableItem else { return }
+        guard let nextPlayableItem else {
+            if let stationID = currentRequestedStationID {
+                delegate?.simRadioMediaPlayer(self, stationID: stationID, didChangeStatus: .loading)
+            }
+            return
+        }
+        self.nextPlayableItem = nil
+        let generation = generation
         addDidPlayToEndObserver(to: nextPlayableItem.item)
-        removePeriodicTimeObserver()
-        Task {
-            guard let newNextPlayableItem = try await makeNextPlayableItem(
-                stationID: nextPlayableItem.stationID,
-                date: nextPlayableItem.day,
-                time: nextPlayableItem.startTimeInDay,
-                mode: nextPlayableItem.mode
-            ) else { return }
+        currentMarkers = nextPlayableItem.markers
+        lastBroadcastedMarker = nil
+        forceMarkerUpdate = true
+        addPeriodicTimeObserver()
+        advanceTask?.cancel()
+        advanceTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                guard let next = try await makeNextPlayableItem(
+                    stationID: nextPlayableItem.stationID,
+                    date: nextPlayableItem.day,
+                    time: nextPlayableItem.startTimeInDay,
+                    mode: nextPlayableItem.mode
+                ) else { throw PlayerItemLoadingError.playerItemCreatingError }
+                try Task.checkCancellation()
+                guard self.generation == generation else { return }
+                enqueue(next)
+            } catch {
+                guard !Task.isCancelled, self.generation == generation else { return }
+                delegate?.simRadioMediaPlayer(
+                    self,
+                    stationID: nextPlayableItem.stationID,
+                    didChangeStatus: .failed(error.localizedDescription)
+                )
+            }
+        }
+    }
 
-            currentMarkers = nextPlayableItem.markers
-            lastBroadcastedMarker = nil
-            forceMarkerUpdate = true
-            addPeriodicTimeObserver()
-            queuePlayer.insert(newNextPlayableItem.item, after: nil)
-            self.nextPlayableItem = newNextPlayableItem
+    func enqueue(_ next: NextPlayableItem) {
+        let wasEmpty = queuePlayer.currentItem == nil
+        nextPlayableItem = next
+        queuePlayer.insert(next.item, after: nil)
+        if wasEmpty {
+            // Preparation finished after the previous item had already ended.
+            onPlayerItemDidPlayToEndTime()
+            queuePlayer.play()
+        }
+    }
+
+    func observePlayback(generation: UUID) {
+        playbackObservation = queuePlayer.observe(\.timeControlStatus, options: [.new]) { [weak self] _, _ in
+            Task { @MainActor [weak self] in
+                guard let self, self.generation == generation,
+                      let stationID = currentRequestedStationID else { return }
+                switch queuePlayer.timeControlStatus {
+                case .playing:
+                    delegate?.simRadioMediaPlayer(self, stationID: stationID, didChangeStatus: .playing)
+                case .waitingToPlayAtSpecifiedRate:
+                    delegate?.simRadioMediaPlayer(self, stationID: stationID, didChangeStatus: .loading)
+                default: break
+                }
+            }
+        }
+        currentItemObservation = queuePlayer.observe(\.currentItem, options: [.new]) { [weak self] _, _ in
+            Task { @MainActor [weak self] in
+                guard let self, self.generation == generation else { return }
+                observeCurrentItem(generation: generation)
+            }
+        }
+    }
+
+    func observeCurrentItem(generation: UUID) {
+        itemStatusObservation = queuePlayer.currentItem?.observe(\.status, options: [
+            .initial,
+            .new
+        ]) { [weak self] _, _ in
+            Task { @MainActor [weak self] in
+                guard let self, self.generation == generation,
+                      let stationID = currentRequestedStationID,
+                      let item = queuePlayer.currentItem, item.status == .failed else { return }
+                delegate?.simRadioMediaPlayer(
+                    self,
+                    stationID: stationID,
+                    didChangeStatus: .failed(item.error?.localizedDescription ?? "Playback failed.")
+                )
+            }
         }
     }
 
@@ -328,59 +395,5 @@ private extension DefaultSimRadioMediaPlayer {
             mode: mode,
             markers: playlistItem.track.markers
         )
-    }
-}
-
-private extension Date {
-    init(_ string: String) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
-        let someDateTime = formatter.date(from: string)
-        self = someDateTime!
-    }
-}
-
-extension SimRadioDTO.Playlist {
-    var availableModes: [MediaPlaybackMode] {
-        guard let options, options.available.isEmpty == false else { return [] }
-
-        let alternate = options.alternateInterval.map { _ in
-            [MediaPlaybackMode(id: .alternate, title: "Alternate")]
-        } ?? []
-
-        let available = options.available.map {
-            MediaPlaybackMode(id: .init(value: $0.id.value), title: $0.title)
-        }
-        return alternate + available
-    }
-}
-
-extension MediaPlaybackMode.ID {
-    static var alternate: Self {
-        .init(value: "alternate_playback")
-    }
-}
-
-extension SimRadioDTO.Playlist {
-    func mode(for id: MediaPlaybackMode.ID?) throws -> PlaylistBuilder.PlaylistMode? {
-        guard let id else { return defaultMode }
-        if id == .alternate {
-            guard let interval = options?.alternateInterval else {
-                throw PlaylistGenerationError.wrongMode
-            }
-            return .alternate(interval)
-        }
-        guard let option = options?.available.first(where: { $0.id.value == id.value }) else {
-            throw PlaylistGenerationError.wrongMode
-        }
-        return .option(option.id)
-    }
-
-    private var defaultMode: PlaylistBuilder.PlaylistMode? {
-        guard let options, options.available.isEmpty == false else { return nil }
-        if let interval = options.alternateInterval {
-            return .alternate(interval)
-        }
-        return options.available.first.map { .option($0.id) }
     }
 }

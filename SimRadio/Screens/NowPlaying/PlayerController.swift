@@ -44,8 +44,16 @@ final class PlayerController {
 
     var playPauseButton: ButtonType {
         switch state {
-        case .playing: commandProfile.isLiveStream ? .stop : .pause
-        case .paused: .play
+        case .playing, .loading: commandProfile.isLiveStream ? .stop : .pause
+        case .paused, .failed: .play
+        }
+    }
+
+    var statusMessage: String? {
+        switch state {
+        case .loading: "Loading…"
+        case let .failed(_, _, message): message
+        default: nil
         }
     }
 

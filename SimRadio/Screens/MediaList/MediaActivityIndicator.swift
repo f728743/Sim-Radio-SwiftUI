@@ -17,10 +17,14 @@ struct MediaActivityIndicator: View {
     let state: MediaActivity
 
     var body: some View {
-        AudioSpectrumView(
-            size: .init(width: 16, height: 22),
-            spectrum: spectrumValues,
-        )
+        if case .buffering = state {
+            ProgressView().frame(width: 16, height: 22)
+        } else {
+            AudioSpectrumView(
+                size: .init(width: 16, height: 22),
+                spectrum: spectrumValues,
+            )
+        }
     }
 
     var spectrumValues: [Float] {

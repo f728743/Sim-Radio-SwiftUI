@@ -9,7 +9,15 @@ import Combine
 import MediaLibrary
 import UIKit
 
+public enum PlaybackStatus: Equatable, Sendable {
+    case loading
+    case playing
+    case failed(String)
+}
+
 public enum MediaPlayerState: Equatable, Hashable {
+    case loading(media: MediaID, mode: MediaPlaybackMode.ID?)
+    case failed(media: MediaID, mode: MediaPlaybackMode.ID?, message: String)
     case playing(media: MediaID, mode: MediaPlaybackMode.ID?)
     case paused(media: MediaID?, mode: MediaPlaybackMode.ID?)
 }
@@ -57,7 +65,7 @@ public final class MediaPlayer {
     // MARK: - Public Playback Controls
 
     public func togglePlayPause() {
-        if state.isPlaying {
+        if state.isActive {
             pause()
         } else {
             play(mode: state.currentMediaMode)
@@ -65,7 +73,7 @@ public final class MediaPlayer {
     }
 
     public func play(mode: MediaPlaybackMode.ID?) {
-        guard !state.isPlaying || state.currentMediaMode != mode else { return }
+        guard !state.isActive || state.currentMediaMode != mode else { return }
         if let mediaID = state.currentMediaID {
             guard let index = items.firstIndex(of: mediaID) else {
                 print("MediaPlayer Error: there is no mediaID \(mediaID) in items.")
@@ -87,12 +95,12 @@ public final class MediaPlayer {
     }
 
     func pause() {
-        guard case let .playing(mediaID, mode) = state else {
+        guard state.isActive, let mediaID = state.currentMediaID else {
             print("MediaPlayer: Not playing, cannot pause.")
             return
         }
         stopCurrentPlayerActivity()
-        state = .paused(media: mediaID, mode: mode)
+        state = .paused(media: mediaID, mode: state.currentMediaMode)
         updateMeta()
     }
 
@@ -120,17 +128,33 @@ public final class MediaPlayer {
 }
 
 private extension MediaPlayer {
+    func receive(_ status: PlaybackStatus, for mediaID: MediaID) {
+        guard state.isActive, state.currentMediaID == mediaID else { return }
+        let mode = state.currentMediaMode
+        switch status {
+        case .loading:
+            state = .loading(media: mediaID, mode: mode)
+        case .playing:
+            state = .playing(media: mediaID, mode: mode)
+        case let .failed(message):
+            stopCurrentPlayerActivity()
+            state = .failed(media: mediaID, mode: mode, message: message)
+            playIndicatorSpectrum = .init(repeating: 0, count: Const.frequencyBands)
+        }
+        updateMeta()
+    }
+
     func goToItem(at index: Int) {
         guard let newMedia = items[safe: index] else {
             fatalError("MediaPlayer Error: Invalid index \(index)")
         }
         switch state {
-        case let .playing(media, _):
+        case let .playing(media, _), let .loading(media, _):
             if newMedia != media {
                 playItem(at: index, mode: nil)
             }
-        case let .paused(media, _):
-            if newMedia != media {
+        case .paused, .failed:
+            if newMedia != state.currentMediaID {
                 state = .paused(media: items[index], mode: nil)
                 updateMeta()
                 updatePlaybackModes()
@@ -143,17 +167,16 @@ private extension MediaPlayer {
             fatalError("MediaPlayer Error: Invalid index \(index)")
         }
 
-        if case let .playing(currentID, currentMode) = state,
-           currentID == mediaID, currentMode == mode
-        {
+        if state.isActive, state.currentMediaID == mediaID, state.currentMediaMode == mode {
             print("MediaPlayer: Already playing \(mediaID).")
             return
         }
 
-        if state.isPlaying {
+        if state.isActive {
             stopCurrentPlayerActivity()
         }
 
+        state = .loading(media: mediaID, mode: mode)
         audioSession.setActive(true)
         switch mediaID {
         case let .realRadio(id):
@@ -162,7 +185,6 @@ private extension MediaPlayer {
             simPlayer?.playStation(withID: mediaID, mode: mode)
         }
 
-        state = .playing(media: mediaID, mode: mode)
         let profile = CommandProfile(isLiveStream: true, isSwitchTrackEnabled: items.count > 1)
         setCommandProfile(profile)
         updateMeta()
@@ -170,7 +192,7 @@ private extension MediaPlayer {
     }
 
     func stopCurrentPlayerActivity() {
-        if state.isPlaying, let mediaID = state.currentMediaID {
+        if state.isActive, let mediaID = state.currentMediaID {
             switch mediaID {
             case .realRadio:
                 realPlayer?.stop()
@@ -235,14 +257,21 @@ public extension MediaPlayerState {
     var currentMediaID: MediaID? {
         switch self {
         case let .paused(mediaID, _): mediaID
-        case let .playing(mediaID, _): mediaID
+        case let .playing(mediaID, _), let .loading(mediaID, _), let .failed(mediaID, _, _): mediaID
         }
     }
 
     var currentMediaMode: MediaPlaybackMode.ID? {
         switch self {
         case let .paused(_, mode): mode
-        case let .playing(_, mode): mode
+        case let .playing(_, mode), let .loading(_, mode), let .failed(_, mode, _): mode
+        }
+    }
+
+    var isActive: Bool {
+        switch self {
+        case .playing, .loading: true
+        case .paused, .failed: false
         }
     }
 
@@ -259,8 +288,8 @@ public extension MediaPlayerState {
 extension MediaPlayer: AudioSessionDelegate {
     func audioSessionInterruptionBegan() {
         audioSession.setActive(false)
-        guard case let .playing(mediaID, mode) = state else { return }
-        interruptedMedia = .init(media: mediaID, mode: mode)
+        guard state.isActive, let mediaID = state.currentMediaID else { return }
+        interruptedMedia = .init(media: mediaID, mode: state.currentMediaMode)
         pause()
     }
 
@@ -295,6 +324,12 @@ extension MediaPlayer: SystemMediaInterfaceDelegate {
 }
 
 extension MediaPlayer: SimRadioMediaPlayerDelegate {
+    public func simRadioMediaPlayer(_: SimRadioMediaPlayer, stationID: MediaID,
+                                    didChangeStatus status: PlaybackStatus)
+    {
+        receive(status, for: stationID)
+    }
+
     public func simRadioMediaPlayer(_: any SimRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
         playIndicatorSpectrum = spectrum
     }
@@ -305,6 +340,14 @@ extension MediaPlayer: SimRadioMediaPlayerDelegate {
 }
 
 extension MediaPlayer: RealRadioMediaPlayerDelegate {
+    public func realRadioMediaPlayer(
+        _: RealRadioMediaPlayer,
+        stationID: RealStation.ID,
+        didChangeStatus status: PlaybackStatus
+    ) {
+        receive(status, for: .realRadio(stationID))
+    }
+
     public func realRadioMediaPlayer(_: any RealRadioMediaPlayer, didUpdateSpectrum spectrum: [Float]) {
         playIndicatorSpectrum = spectrum
     }

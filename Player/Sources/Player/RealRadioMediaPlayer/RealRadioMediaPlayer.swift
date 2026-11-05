@@ -15,5 +15,10 @@ public protocol RealRadioMediaPlayer {
 
 @MainActor
 public protocol RealRadioMediaPlayerDelegate: AnyObject {
+    func realRadioMediaPlayer(
+        _ player: RealRadioMediaPlayer,
+        stationID: RealStation.ID,
+        didChangeStatus status: PlaybackStatus
+    )
     func realRadioMediaPlayer(_ player: RealRadioMediaPlayer, didUpdateSpectrum spectrum: [Float])
 }

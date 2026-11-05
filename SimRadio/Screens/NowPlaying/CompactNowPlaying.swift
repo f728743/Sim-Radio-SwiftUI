@@ -70,7 +70,7 @@ private extension CompactNowPlaying {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .font(.system(size: 13, weight: .semibold))
                     .id(model.display)
-                let subtitle = model.statusMessage ?? model.display.subtitle
+                let subtitle = model.display.subtitle
                 MarqueeText(subtitle, config: cfg)
                     .padding(.horizontal, -fade + 4)
                     .font(.system(size: 12, weight: .regular))

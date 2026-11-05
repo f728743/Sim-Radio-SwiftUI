@@ -69,7 +69,7 @@ private extension PlayerControls {
                 let fade = ViewConst.playerCardPaddings
                 let cfg = MarqueeText.Config(leftFade: fade, rightFade: fade)
                 let title = model.display.title.isEmpty ? " " : model.display.title
-                let subtitle = model.statusMessage ?? (model.display.subtitle.isEmpty ? " " : model.display.subtitle)
+                let subtitle = model.display.subtitle.isEmpty ? " " : model.display.subtitle
                 MarqueeText(title, config: cfg)
                     .transformEffect(.identity)
                     .font(.title3)

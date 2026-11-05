@@ -30,7 +30,12 @@ struct CompactNowPlaying: View {
             .onGeometryChange(
                 for: CGFloat.self,
                 of: { $0.size.width },
-                action: { viewWidth = $0 }
+                action: {
+                    #if DEBUG
+                    PlayerUpdateTrace.record("compactWidth", value: "\(viewWidth) -> \($0), expanded=\(expanded)")
+                    #endif
+                    viewWidth = $0
+                }
             )
     }
 }

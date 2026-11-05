@@ -33,6 +33,9 @@ struct ExpandableNowPlaying: View {
                 }
             }
             .onPreferenceChange(NowPlayingExpandProgressPreferenceKey.self) { [$expandProgress] value in
+                #if DEBUG
+                PlayerUpdateTrace.record("expandProgress", value: "\($expandProgress.wrappedValue) -> \(value)")
+                #endif
                 $expandProgress.wrappedValue = value
             }
     }
@@ -67,7 +70,16 @@ private extension ExpandableNowPlaying {
                     size: size,
                     animationNamespace: animationNamespace
                 )
+                .id(expanded)
                 .opacity(expanded ? 1 : 0)
+                #if DEBUG
+                .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) {
+                    PlayerUpdateTrace.record("regularFrame", value: "\($0), expanded=\(expanded), container=\(size)")
+                }
+                .onChange(of: expanded) { _, value in
+                    PlayerUpdateTrace.record("regularExpanded", value: "\(value), container=\(size)")
+                }
+                #endif
                 ProgressTracker(progress: progressTrackState)
             }
             .frame(height: expanded ? nil : ViewConst.compactNowPlayingHeight, alignment: .top)

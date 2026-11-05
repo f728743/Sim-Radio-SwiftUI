@@ -63,17 +63,16 @@ private extension CompactNowPlaying {
                 .frame(width: 30, height: 30)
             VStack(spacing: 0) {
                 let title = model.display.title
-                // TODO: MarqueeText
-//                    let fade = ViewConst.playerCardPaddings
-//                    let cfg = MarqueeText.Config(leftFade: fade, rightFade: fade)
-//                    let title = "#STUPiDFACEDD"
-//                    MarqueeText(title, config: cfg)
-                Text(title)
+                let fade: CGFloat = 16
+                let cfg = MarqueeText.Config(leftFade: fade, rightFade: fade)
+                MarqueeText(title, config: cfg)
+                    .padding(.horizontal, -fade + 4)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .font(.system(size: 13, weight: .semibold))
                     .id(model.display)
                 let subtitle = model.display.subtitle
-                Text(subtitle)
+                MarqueeText(subtitle, config: cfg)
+                    .padding(.horizontal, -fade + 4)
                     .font(.system(size: 12, weight: .regular))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .id(model.display)

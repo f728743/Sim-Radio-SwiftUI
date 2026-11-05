@@ -86,7 +86,7 @@ extension Dependencies {
         playerController.player = mediaPlayer
         playerController.mediaState = mediaState
 
-        let apiService = APIService(baseURL: "https://sim-radio.ru")
+        let apiService = APIService(baseURL: "https://cx10577.tw1.ru")
 
         return Dependencies(
             apiService: apiService,

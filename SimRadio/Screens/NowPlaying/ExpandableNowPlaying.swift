@@ -67,6 +67,7 @@ private extension ExpandableNowPlaying {
                     size: size,
                     animationNamespace: animationNamespace
                 )
+                .id(expanded)
                 .opacity(expanded ? 1 : 0)
                 ProgressTracker(progress: progressTrackState)
             }

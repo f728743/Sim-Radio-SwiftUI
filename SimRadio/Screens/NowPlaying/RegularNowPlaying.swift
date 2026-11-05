@@ -14,6 +14,7 @@ struct RegularNowPlaying: View {
     var expanded: Bool
     var size: CGSize
     var animationNamespace: Namespace.ID
+    @State private var controlsVisible = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -31,12 +32,28 @@ struct RegularNowPlaying: View {
                     .padding(.vertical, size.height < 700 ? 10 : 30)
                     .padding(.horizontal, 25)
 
-                PlayerControls()
-                    .transition(.move(edge: .bottom))
+                GeometryReader { geometry in
+                    PlayerControls()
+                        .offset(y: controlsVisible ? 0 : geometry.size.height)
+                        .allowsHitTesting(controlsVisible)
+                }
+                .transition(.move(edge: .bottom))
             }
         }
         .padding(.top, ViewConst.safeAreaInsets.top)
         .padding(.bottom, ViewConst.safeAreaInsets.bottom)
+        .task(id: expanded) {
+            guard expanded else {
+                controlsVisible = false
+                return
+            }
+            // Establish the offscreen starting position after this view is recreated.
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+            withAnimation(.playerExpandAnimation) {
+                controlsVisible = true
+            }
+        }
     }
 }
 

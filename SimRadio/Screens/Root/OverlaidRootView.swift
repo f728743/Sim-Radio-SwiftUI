@@ -7,12 +7,13 @@
 
 import Foundation
 import SwiftUI
+import Observation
 
 @available(iOS 26, *)
 struct OverlaidRootView: View {
     @State private var expandSheet: Bool = false
 
-    @State private var nowPlayingFrame: CGRect = .zero
+    @State private var placement = PlayerPlacement()
     @Namespace private var animationNamespace
     @Environment(\.colorScheme) private var colorScheme
 
@@ -27,19 +28,37 @@ struct OverlaidRootView: View {
                     for: CGRect.self,
                     of: { $0.frame(in: .global) },
                     action: {
-                        nowPlayingFrame = $0
+                        placement.frame = $0
                     }
                 )
             }
             .overlay {
-                ExpandableNowPlaying(
-                    show: .constant(true),
+                PlayerOverlay(
                     expanded: $expandSheet,
-                    collapsedFrame: nowPlayingFrame
+                    placement: placement
                 )
                 // Hack to fix the status bar color not updating correctly in iOS 26
                 .toolbarColorScheme(colorScheme, for: .navigationBar)
             }
+    }
+}
+
+// Geometry changes are observed only by the overlay, not by the TabView owner.
+@Observable
+private final class PlayerPlacement {
+    var frame: CGRect = .zero
+}
+
+private struct PlayerOverlay: View {
+    @Binding var expanded: Bool
+    let placement: PlayerPlacement
+
+    var body: some View {
+        ExpandableNowPlaying(
+            show: .constant(true),
+            expanded: $expanded,
+            collapsedFrame: placement.frame
+        )
     }
 }
 

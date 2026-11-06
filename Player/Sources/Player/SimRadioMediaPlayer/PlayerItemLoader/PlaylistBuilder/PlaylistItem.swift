@@ -6,6 +6,7 @@
 //
 
 import AVFoundation
+import MediaLibrary
 
 struct PlaylistItem: Sendable {
     let track: AudioFragment
@@ -128,5 +129,46 @@ extension [PlaylistItem] {
 extension [AudioFragment] {
     func description(nesting: Int) -> String {
         map { $0.description(nesting: nesting) }.joined()
+    }
+}
+
+extension AudioFragment {
+    func adjustedMix(
+        parentActualStartTimeInDay: CMTime,
+        parentActualEndTimeInDay: CMTime,
+        itemStartTimeInOutput: CMTime
+    ) -> AudioFragment? {
+        // Check for overlap: the mix must start before the end of the parent AND end after the start of the parent
+        guard startTime < parentActualEndTimeInDay,
+              playing.end > parentActualStartTimeInDay else { return nil }
+
+        // Calculate the overlap interval within the day context
+        let overlapStartInDay = max(parentActualStartTimeInDay, startTime)
+        let overlapEndInDay = min(parentActualEndTimeInDay, playing.end)
+        let overlapDuration = overlapEndInDay - overlapStartInDay
+
+        // Only include if overlap has a positive duration
+        guard overlapDuration > .zero else { return nil }
+
+        let offsetIntoMixOriginal = max(.zero, overlapStartInDay - startTime)
+
+        return AudioFragment(
+            url: url,
+            timeRange: CMTimeRange(
+                start: timeRange.start + offsetIntoMixOriginal,
+                duration: overlapDuration
+            ),
+            startTime: itemStartTimeInOutput + (overlapStartInDay - parentActualStartTimeInDay),
+            markers: nil
+        )
+    }
+}
+
+extension AudioFragmentMarker {
+    init(dto: SimRadioDTO.TrackMarker) {
+        self.init(
+            offset: .init(seconds: dto.offset),
+            value: .init(title: dto.title, artist: dto.artist)
+        )
     }
 }

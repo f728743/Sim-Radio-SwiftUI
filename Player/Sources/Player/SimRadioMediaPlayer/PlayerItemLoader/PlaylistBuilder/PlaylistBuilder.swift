@@ -9,12 +9,6 @@ import AVFoundation
 import MediaLibrary
 import SharedUtilities
 
-typealias DrawPools = [DrawPoolID: NonRepeatingRandomizer<DereferencedTruck>]
-enum DrawPoolID: Hashable {
-    case fragment(SimRadioDTO.Fragment.ID)
-    case voiceOver(SimRadioDTO.VoiceOver.ID)
-}
-
 @MainActor
 final class PlaylistBuilder {
     enum PlaylistMode: Hashable {
@@ -26,6 +20,11 @@ final class PlaylistBuilder {
     var trackLists: [TrackList.ID: TrackList] = [:]
     var fragments: [SimRadioDTO.Fragment.ID: SimRadioDTO.Fragment] = [:]
     let stationData: SimRadioStationData
+
+    var station: SimStation {
+        stationData.station
+    }
+
     private struct CacheKey: Hashable {
         let date: Date
         let mode: PlaylistMode?
@@ -87,42 +86,7 @@ final class PlaylistBuilder {
     }
 }
 
-extension SimRadioStationData {
-    func tracks(trackListIDs: [TrackList.ID]) throws -> [DereferencedTruck] {
-        let tracks = try trackListIDs.flatMap { trackListID in
-            guard let selectedTrackLists = trackLists.first(where: { $0.id == trackListID }) else {
-                throw PlaylistGenerationError.trackListNotFound(id: trackListID)
-            }
-            return selectedTrackLists.tracks
-        }
-        var truckIntros: [Track.ID: [Track.ID]] = [:]
-        for track in tracks where track.intro?.isEmpty == false {
-            truckIntros[track.id, default: []].append(contentsOf: track.intro ?? [])
-        }
-        let trackListDictionary = Dictionary(uniqueKeysWithValues: trackLists.map { ($0.id, $0) })
-        var dereferencedTruckIDs: Set<Track.ID> = []
-        var dereferencedTrucks: [DereferencedTruck] = []
-        for truck in tracks {
-            if dereferencedTruckIDs.contains(truck.id) {
-                continue
-            }
-            let truckIntros = (truckIntros[truck.id] ?? []).unique()
-            let dereferencedTruck = try truck.dereference(
-                trackLists: trackListDictionary,
-                referenceIntro: truckIntros.isEmpty ? nil : truckIntros
-            )
-            dereferencedTrucks.append(dereferencedTruck)
-            dereferencedTruckIDs.insert(truck.id)
-        }
-        return dereferencedTrucks
-    }
-}
-
 private extension PlaylistBuilder {
-    var station: SimStation {
-        stationData.station
-    }
-
     func trimmedTimeRange(for track: AudioFragment, at timeOffsetInFirstDay: CMTime) -> CMTimeRange {
         var itemFileTimeRange = track.timeRange
         var itemPlayableDuration = track.timeRange.duration
@@ -196,40 +160,6 @@ private extension PlaylistBuilder {
             throw PlaylistGenerationError.makePlaylistError
         }
         self.fragments = Dictionary(uniqueKeysWithValues: fragments.map { ($0.id, $0) })
-    }
-
-    func populateDrawPools() throws {
-        guard drawPools.isEmpty else { return }
-        let rules = station.playlistRules
-        let fragments: [(DrawPoolID, [SimRadioDTO.TrackList.ID])] = rules.fragments.compactMap {
-            guard let trackLists = $0.src.trackLists else { return nil }
-            return (.fragment($0.id), trackLists)
-        }
-        let voiceOveres: [(DrawPoolID, [SimRadioDTO.TrackList.ID])] = rules
-            .fragments
-            .compactMap(\.voiceOver)
-            .flatMap(\.self)
-            .compactMap {
-                guard let trackLists = $0.src.trackLists else { return nil }
-                return (.voiceOver($0.id), trackLists)
-            }
-
-        let drawPoolTuples: [(DrawPoolID, NonRepeatingRandomizer<DereferencedTruck>)] = try (fragments + voiceOveres)
-            .compactMap { id, trackListIDs in
-                let tracks = try stationData.tracks(
-                    trackListIDs: trackListIDs.map {
-                        TrackList.ID(series: stationData.station.id.series, value: $0.value)
-                    }
-                )
-                guard let drawPool = NonRepeatingRandomizer(
-                    elements: tracks,
-                    avoidRepeatsRatio: 3.0 / 7.0
-                ) else {
-                    throw PlaylistGenerationError.invalidDrawPool(trackListIDs: trackListIDs)
-                }
-                return (id, drawPool)
-            }
-        drawPools = Dictionary(uniqueKeysWithValues: drawPoolTuples)
     }
 
     func firstOption(for mode: PlaylistMode?) -> SimRadioDTO.SourceOption.ID? {
@@ -436,189 +366,4 @@ private extension PlaylistBuilder {
         }
         return res.sorted { $0.playing.start < $1.playing.start }
     }
-
-    func pickTrack(
-        fragment: SimRadioDTO.Fragment,
-        generator: inout RandomNumberGenerator
-    ) throws -> DereferencedTruck? {
-        try pickTrack(
-            src: fragment.src,
-            parentTrack: nil,
-            drawPoolID: .fragment(fragment.id),
-            generator: &generator
-        )
-    }
-
-    func pickTrack(
-        parentTrack: DereferencedTruck,
-        voiceOver: SimRadioDTO.VoiceOver,
-        generator: inout RandomNumberGenerator
-    ) throws -> DereferencedTruck? {
-        try pickTrack(
-            src: voiceOver.src,
-            parentTrack: parentTrack,
-            drawPoolID: .voiceOver(voiceOver.id),
-            generator: &generator
-        )
-    }
-
-    func pickTrack(
-        src: SimRadioDTO.FragmentSource,
-        parentTrack: DereferencedTruck?,
-        drawPoolID: DrawPoolID,
-        generator: inout RandomNumberGenerator
-    ) throws -> DereferencedTruck? {
-        switch src.type {
-        case .trackLists:
-            return drawPools[drawPoolID]?.next(generator: &generator)
-        case .intro:
-            if parentTrack?.intro?.isEmpty ?? true {
-                return nil
-            }
-            guard let parentTrack,
-                  let introIDs = parentTrack.intro,
-                  let introTrackListsIDs = src.introTrackLists,
-                  !introTrackListsIDs.isEmpty,
-                  !introIDs.isEmpty
-            else {
-                throw PlaylistGenerationError.invalidSource(src: src)
-            }
-            let introTrackLists = introTrackListsIDs.map {
-                TrackList.ID(
-                    series: parentTrack.id.series,
-                    value: $0.value
-                )
-            }
-            return try pickTrack(
-                from: introIDs,
-                among: introTrackLists,
-                generator: &generator
-            ).dereference(trackLists: trackLists)
-        case .track:
-            let seriesID = station.id.series
-            guard let trackListsID = src.trackLists?.first,
-                  let trackID = src.track,
-                  let trackList = trackLists[.init(series: seriesID, value: trackListsID.value)],
-                  let track = trackList.tracks.first(where: { $0.id == .init(series: seriesID, value: trackID.value) })
-            else {
-                throw PlaylistGenerationError.invalidSource(src: src)
-            }
-            return try track.dereference(trackLists: trackLists)
-        default:
-            return nil
-        }
-    }
-
-    func pickTrack(
-        from trackIDs: [Track.ID],
-        among trackListsIDs: [TrackList.ID],
-        generator: inout RandomNumberGenerator
-    ) throws -> Track {
-        let trackID = trackIDs[Int.random(in: 0 ..< trackIDs.count, using: &generator)]
-        for trackListsID in trackListsIDs {
-            if let track = trackLists[trackListsID]?.tracks.first(where: { $0.id == trackID }) {
-                return track
-            }
-        }
-        throw PlaylistGenerationError.trackIntroNotFound(trackIDs: trackIDs, trackListsIDs: trackListsIDs)
-    }
-}
-
-extension SimRadioDTO.Condition {
-    func isSatisfied(
-        nextFragmentID: SimRadioDTO.Fragment.ID,
-        startingFrom second: CMTime,
-        generator: inout RandomNumberGenerator
-    ) throws -> Bool {
-        let nextFragmentSatisfied = nextFragment == nil ?
-            true : nextFragment == nextFragmentID
-
-        let probabilitySatisfied = probability == nil ?
-            true : Double.random(in: 0 ... 1, using: &generator) >= probability!
-
-        let timeIntervalSatisfied = timeInterval == nil ?
-            true : try timeInterval!.contains(second)
-
-        return nextFragmentSatisfied && probabilitySatisfied && timeIntervalSatisfied
-    }
-}
-
-extension SimRadioDTO.TimeInterval {
-    func contains(_ second: CMTime) throws -> Bool {
-        guard let from = secOfDay(hhmm: from),
-              let to = secOfDay(hhmm: to)
-        else {
-            throw PlaylistGenerationError.invalidTimeInterval(from: from, to: to)
-        }
-        return CMTime(seconds: from) <= second && second <= CMTime(seconds: to)
-    }
-}
-
-enum SourceType {
-    case trackLists
-    case intro
-    case track
-}
-
-extension SimRadioDTO.FragmentSource {
-    var type: SourceType? {
-        if trackLists != nil, track == nil, introTrackLists == nil {
-            .trackLists
-        } else if trackLists != nil, track != nil, introTrackLists == nil {
-            .track
-        } else if trackLists == nil, track == nil, introTrackLists != nil {
-            .intro
-        } else {
-            nil
-        }
-    }
-}
-
-extension AudioFragment {
-    func adjustedMix(
-        parentActualStartTimeInDay: CMTime,
-        parentActualEndTimeInDay: CMTime,
-        itemStartTimeInOutput: CMTime
-    ) -> AudioFragment? {
-        // Check for overlap: the mix must start before the end of the parent AND end after the start of the parent
-        guard startTime < parentActualEndTimeInDay,
-              playing.end > parentActualStartTimeInDay else { return nil }
-
-        // Calculate the overlap interval within the day context
-        let overlapStartInDay = max(parentActualStartTimeInDay, startTime)
-        let overlapEndInDay = min(parentActualEndTimeInDay, playing.end)
-        let overlapDuration = overlapEndInDay - overlapStartInDay
-
-        // Only include if overlap has a positive duration
-        guard overlapDuration > .zero else { return nil }
-
-        let offsetIntoMixOriginal = max(.zero, overlapStartInDay - startTime)
-
-        return AudioFragment(
-            url: url,
-            timeRange: CMTimeRange(
-                start: timeRange.start + offsetIntoMixOriginal,
-                duration: overlapDuration
-            ),
-            startTime: itemStartTimeInOutput + (overlapStartInDay - parentActualStartTimeInDay),
-            markers: nil
-        )
-    }
-}
-
-extension AudioFragmentMarker {
-    init(dto: SimRadioDTO.TrackMarker) {
-        self.init(
-            offset: .init(seconds: dto.offset),
-            value: .init(title: dto.title, artist: dto.artist)
-        )
-    }
-}
-
-func secOfDay(hhmm: String) -> Double? {
-    let time = hhmm.split { $0 == ":" }.map(String.init)
-    guard time.count > 1, let h = Double(time[0]), let m = Double(time[1]) else {
-        return nil
-    }
-    return (h * 60 * 60) + (m * 60)
 }
